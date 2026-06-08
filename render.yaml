@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: ingles-real-ai-api
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: OPENAI_API_KEY
+        sync: false
