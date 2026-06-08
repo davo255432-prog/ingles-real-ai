@@ -45,11 +45,12 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
   const [ttsState, setTtsState]        = useState<TtsState>('idle');
   const [ttsError, setTtsError]        = useState<string | null>(null);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef        = useRef<MediaStream | null>(null);
-  const audioChunksRef   = useRef<Blob[]>([]);
-  const mountedRef       = useRef(true);
-  const ttsCallIdRef     = useRef(0);
+  const mediaRecorderRef  = useRef<MediaRecorder | null>(null);
+  const streamRef         = useRef<MediaStream | null>(null);
+  const audioChunksRef    = useRef<Blob[]>([]);
+  const dataIntervalRef   = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mountedRef        = useRef(true);
+  const ttsCallIdRef      = useRef(0);
 
   // ── Cleanup ──────────────────────────────────────────────────────────────
 
@@ -58,6 +59,7 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
     return () => {
       mountedRef.current = false;
       stopSpeech();
+      if (dataIntervalRef.current) clearInterval(dataIntervalRef.current);
       if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop();
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };
@@ -100,7 +102,14 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
 
-      mr.start(250);
+      // iOS Safari ignores the timeslice in mr.start(N) and never fires
+      // ondataavailable during recording. Fix: start without timeslice and
+      // poll requestData() every 500 ms so chunks accumulate on all platforms.
+      mr.start();
+      dataIntervalRef.current = setInterval(() => {
+        if (mr.state === 'recording') mr.requestData();
+      }, 500);
+
       setRecordState('recording');
     } catch (err) {
       streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -115,6 +124,12 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
   const handleStopRecording = async () => {
     const mr = mediaRecorderRef.current;
     if (!mr || mr.state !== 'recording') return;
+
+    // Stop the polling interval before stopping the recorder
+    if (dataIntervalRef.current) {
+      clearInterval(dataIntervalRef.current);
+      dataIntervalRef.current = null;
+    }
 
     setRecordState('processing');
 

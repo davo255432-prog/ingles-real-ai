@@ -67,6 +67,7 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
   const mediaRecorderRef  = useRef<MediaRecorder | null>(null);
   const streamRef         = useRef<MediaStream | null>(null);
   const audioChunksRef    = useRef<Blob[]>([]);
+  const dataIntervalRef   = useRef<ReturnType<typeof setInterval> | null>(null);
   const mountedRef        = useRef(true);
   const ttsCallIdRef      = useRef(0);
 
@@ -77,6 +78,7 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
     return () => {
       mountedRef.current = false;
       stopSpeech();
+      if (dataIntervalRef.current) clearInterval(dataIntervalRef.current);
       if (mediaRecorderRef.current?.state === 'recording') {
         mediaRecorderRef.current.stop();
       }
@@ -165,7 +167,13 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
 
-      mr.start(250); // collect data every 250 ms
+      // iOS Safari ignores the timeslice in mr.start(N).
+      // Fix: start without timeslice + poll requestData() every 500 ms.
+      mr.start();
+      dataIntervalRef.current = setInterval(() => {
+        if (mr.state === 'recording') mr.requestData();
+      }, 500);
+
       setVoiceState('recording');
     } catch (err) {
       streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -186,6 +194,11 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
   const handleStopRecording = async () => {
     const mr = mediaRecorderRef.current;
     if (!mr || mr.state !== 'recording') return;
+
+    if (dataIntervalRef.current) {
+      clearInterval(dataIntervalRef.current);
+      dataIntervalRef.current = null;
+    }
 
     setVoiceState('transcribing');
 
