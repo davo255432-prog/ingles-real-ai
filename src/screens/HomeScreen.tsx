@@ -4,9 +4,10 @@ interface HomeScreenProps {
   onStartFlow: () => void;
   onSituationsFlow: () => void;
   onUrgentFlow: () => void;
+  onSpeakTranslate: () => void;
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartFlow, onSituationsFlow, onUrgentFlow }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartFlow, onSituationsFlow, onUrgentFlow, onSpeakTranslate }) => {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-orange-50 to-gray-50">
       {/* Top bar */}
@@ -87,6 +88,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartFlow, onSituation
             Traduce rápido lo que necesitas decir. Frase clara en inglés, lista para usar.
           </p>
         </button>
+
+        {/* Button 4 — Speak and translate */}
+        <button
+          onClick={onSpeakTranslate}
+          className="w-full bg-purple-500 hover:bg-purple-600 active:scale-[0.98] text-white rounded-3xl p-6 text-left shadow-lg shadow-purple-200 transition-all duration-200"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+              <span className="text-2xl">🎙️</span>
+            </div>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/80">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+          <h2 className="text-white text-xl font-bold mb-1">Habla en español</h2>
+          <p className="text-white/75 text-sm leading-snug">
+            Di en español lo que necesitas. Yo lo traduzco al inglés y te lo leo en voz alta.
+          </p>
+        </button>
+
       </div>
 
       {/* Footer */}

@@ -29,6 +29,9 @@ import { SepraMiniRuleScreen } from './screens/SepraMiniRuleScreen';
 import { SepraActionScreen } from './screens/SepraActionScreen';
 import { SepraProgressScreen } from './screens/SepraProgressScreen';
 
+// Flow 4: Habla en español, yo traduzco
+import { SpeakAndTranslateScreen } from './screens/SpeakAndTranslateScreen';
+
 // Flow 3b: Trabajo y clientes → Cocina / restaurante
 import { WorkClientsScreen } from './screens/WorkClientsScreen';
 import { KitchenIntroScreen } from './screens/KitchenIntroScreen';
@@ -85,6 +88,14 @@ function App() {
           onStartFlow={() => setScreen('how-do-i-say')}
           onSituationsFlow={() => setScreen('situations')}
           onUrgentFlow={() => setScreen('urgent-say')}
+          onSpeakTranslate={() => setScreen('speak-translate')}
+        />
+      )}
+
+      {/* ── Flow 4: Habla en español, yo traduzco ── */}
+      {screen === 'speak-translate' && (
+        <SpeakAndTranslateScreen
+          onBack={() => setScreen('home')}
         />
       )}
 

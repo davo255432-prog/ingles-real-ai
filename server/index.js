@@ -621,6 +621,93 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
 });
 
 
+// ── Speak in Spanish → Translate to English ───────────────────────────────
+
+const TRANSLATE_SPEECH_PROMPT = `Eres un traductor de inglés para adultos hispanos principiantes en Estados Unidos.
+El usuario habló en español. Traduce exactamente lo que dijo al inglés más natural y útil para el trabajo o vida diaria.
+
+REGLAS OBLIGATORIAS:
+1. NUNCA omitas el sujeto en inglés. Toda frase debe tener "I", "we", "you", "he", "she", etc.
+   MAL: "Need the keys."       BIEN: "I need the keys."
+   MAL: "Have to go now."      BIEN: "I have to go now."
+
+2. Conserva el verbo "need" cuando el usuario dijo "necesito", "necesitamos" o "necesitas":
+   "necesito las llaves"   → "I need the keys."
+   "necesitamos más tiempo" → "We need more time."
+   "necesitas firmar aquí" → "You need to sign here."
+
+3. Conserva el imperativo cuando el usuario da una orden directa:
+   "tráeme el carro" → "Bring me the car." (NO "I need you to bring me the car.")
+
+4. La traducción debe ser corta, coloquial y directa — como la diría un nativo en el trabajo.
+   Evita lenguaje formal, académico o demasiado elaborado.
+
+5. Si la frase es muy corta o ambigua (menos de 3 palabras significativas), devuelve un campo "unclear: true".
+
+Devuelve SOLO este JSON válido (sin markdown ni texto extra):
+{
+  "spanish": "lo que dijo el usuario exactamente",
+  "english": "traducción al inglés",
+  "unclear": false
+}`;
+
+app.post('/api/translate-speech', upload.single('audio'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No se recibió archivo de audio.' });
+  }
+
+  const mimeType = req.file.mimetype.split(';')[0];
+  const ext = mimeToExt(mimeType);
+  console.log(`[translate-speech] Recibido: ${req.file.size} bytes — ${mimeType} → ${ext}`);
+
+  try {
+    // 1 — Transcribe in Spanish
+    const audioFile = await toFile(
+      req.file.buffer,
+      `recording.${ext}`,
+      { type: mimeType },
+    );
+
+    const transcription = await openai.audio.transcriptions.create({
+      file: audioFile,
+      model: 'gpt-4o-mini-transcribe',
+      language: 'es',
+    });
+
+    const spanish = transcription.text.trim();
+    console.log(`[translate-speech] Transcripción ES: "${spanish.slice(0, 80)}"`);
+
+    if (!spanish) {
+      return res.status(422).json({ error: 'No se detectó voz. Intenta hablar más fuerte y cerca del micrófono.' });
+    }
+
+    // 2 — Translate to English
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: TRANSLATE_SPEECH_PROMPT },
+        { role: 'user', content: `Traduce esto al inglés: "${spanish}"` },
+      ],
+      temperature: 0.3,
+      max_tokens: 200,
+      response_format: { type: 'json_object' },
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content);
+    console.log(`[translate-speech] Traducción EN: "${String(result.english ?? '').slice(0, 80)}"`);
+
+    res.json({
+      spanish: result.spanish ?? spanish,
+      english: result.english ?? '',
+      unclear: result.unclear ?? false,
+    });
+  } catch (error) {
+    console.error('❌ Error en translate-speech:', error.message);
+    res.status(500).json({ error: 'No se pudo procesar el audio. Verifica que el servidor esté activo.' });
+  }
+});
+
+
 // ── Evaluate speaking ──────────────────────────────────────────────────────
 
 const EVALUATE_PROMPT = `Eres un evaluador de práctica de inglés para adultos hispanos.

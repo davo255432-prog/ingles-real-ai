@@ -5,6 +5,8 @@ export type Screen =
   | 'practice'
   | 'voice-practice'
   | 'correction'
+  // Flow 4: Habla en español, yo traduzco
+  | 'speak-translate'
   // Flow 2: Necesito decir esto ahora
   | 'urgent-say'
   | 'urgent-phrase-ready'

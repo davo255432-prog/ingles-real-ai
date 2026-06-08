@@ -1,0 +1,10 @@
+{
+  "experimentalServices": {
+    "ingles-real-ai-api": {
+      "type": "web",
+      "routePrefix": "/",
+      "framework": "vite",
+      "buildCommand": "npm install && npm run build"
+    }
+  }
+}
