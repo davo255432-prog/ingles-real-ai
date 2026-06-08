@@ -79,9 +79,17 @@ REGLAS OBLIGATORIAS:
   "wait a minute", "hold on", "give me a second", "come here", "bring the car",
   "get the keys", "let me check", "I'll be right back", "one moment please".
 
+- REGLA PRIORITARIA — "need" siempre gana cuando el usuario dijo "necesito":
+  • Si el usuario usó "necesito", "necesitamos" o "necesitas", basicForm SIEMPRE usa "I need / We need / You need".
+  • Esta regla tiene PRIORIDAD sobre el communicativeIntent. Ni "pedir" ni ningún otro intent puede cambiar "need" por "Can I get", "Could you" o cualquier otra forma.
+  • "necesito las llaves" → basicForm: "I need the keys."  naturalForm: "I need the keys, please."
+    NUNCA: "Can I get the keys?" ← eso es pedir permiso, no expresar necesidad.
+  • "Can I get…" y "Could you…" solo se usan cuando el usuario explícitamente quiere hacer una solicitud o pedir un favor a otra persona, NO cuando simplemente expresa que necesita algo.
+
 - REGLA: intención comunicativa (communicativeIntent)
   • Si el prompt incluye "Intención comunicativa:", úsalo para construir basicForm y naturalForm:
-    – "pedir"           → usa solicitud: "Can I get…", "Could you…", "I'd like…", "Can you grab…"
+    – "pedir"           → SOLO usa "Can I get…" / "Could you…" / "Can you…" si el usuario está pidiendo algo A OTRA PERSONA, no si está expresando una necesidad propia con "necesito".
+                          Si el input tiene "necesito" → usa "I need" aunque el intent sea "pedir".
     – "informar"        → usa declarativa: "We're out of…", "The customer is…", "Just so you know…"
     – "preguntar"       → usa interrogativa: "Do you know…", "Where is…", "Is there…"
     – "confirmar"       → usa verificación: "Just to confirm…", "So we're…", "Is that right?"
@@ -275,14 +283,21 @@ REGLA ESPECIAL — "bajar el carro" es ambiguo:
   communicativeIntent: "dar instrucción"
 
 REGLAS PARA communicativeIntent:
-- "pedir"           → el usuario quiere solicitar algo a alguien.
+- "pedir"           → el usuario quiere SOLICITAR algo a otra persona (ej: "¿me puedes dar las llaves?", "necesito pedirle al supervisor...").
+                      IMPORTANTE: "necesito las llaves" NO es "pedir" — es expresar una necesidad propia. Usa "otro" en ese caso.
+                      "pedir" solo aplica cuando hay una solicitud dirigida explícitamente a otra persona.
 - "informar"        → el usuario quiere dar una información o aviso.
 - "preguntar"       → el usuario quiere hacer una pregunta.
 - "confirmar"       → el usuario quiere verificar o confirmar algo.
 - "advertir"        → el usuario quiere avisar de un riesgo o urgencia.
 - "dar instrucción" → el usuario quiere indicarle a alguien qué hacer.
-- "otro"            → ninguna de las anteriores.
+- "otro"            → necesidad propia directa ("necesito las llaves", "necesito un momento") o ninguna de las anteriores.
 - Si la misma frase puede interpretarse con dos intenciones muy distintas (ej: pedir vs informar), pide aclaración.
+
+REGLA CRÍTICA — "necesito + objeto directo":
+- "necesito las llaves" → communicativeIntent: "otro" (necesidad propia, no solicitud a alguien)
+- "necesito pedirle las llaves al supervisor" → communicativeIntent: "pedir" (hay una solicitud explícita a otra persona)
+- La diferencia: si el "necesito" va seguido de un objeto directo SIN mencionar a quién se lo pide → es "otro", no "pedir".
 
 REGLAS PARA requiredDetails:
 - Lista todos los datos concretos del input que deben aparecer en inglés.
