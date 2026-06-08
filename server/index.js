@@ -519,15 +519,16 @@ app.post('/api/speech', async (req, res) => {
     return res.status(400).json({ error: 'speed debe ser "normal" o "slow".' });
   }
 
-  // ~18 % slower than normal (within the requested 15–20 % range)
-  const speedValue = speed === 'slow' ? 0.82 : 1.0;
+  // Normal: 0.88 (slightly slower than default for clearer pronunciation)
+  // Slow:   0.75 (noticeably slower for study mode)
+  const speedValue = speed === 'slow' ? 0.75 : 0.88;
 
   console.log(`[speech] "${text.trim().slice(0, 60)}" — speed: ${speed ?? 'normal'} (${speedValue})`);
 
   try {
     const mp3 = await openai.audio.speech.create({
       model: 'tts-1',      // standard model — low latency
-      voice: 'nova',       // warm, clear, professional — ideal for teaching
+      voice: 'echo',       // PRUEBA — masculina, tranquila, pronunciación clara
       input: text.trim(),
       speed: speedValue,
       response_format: 'mp3',
