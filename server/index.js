@@ -12,9 +12,20 @@ const __dirname  = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Allow requests from the Vite dev server and the built preview
+// Allow requests from the Vite dev server, built preview, and Vercel deployments
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:4173'],
+  origin: (origin, callback) => {
+    const allowed = [
+      'http://localhost:5173',
+      'http://localhost:4173',
+    ];
+    // Allow all Vercel deployments and no-origin requests (mobile apps, Postman, etc.)
+    if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
 }));
 app.use(express.json());
 
