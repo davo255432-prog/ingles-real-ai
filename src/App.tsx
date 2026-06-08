@@ -1,0 +1,272 @@
+import { useState } from 'react';
+import type { Screen, PracticeData, UrgentPhraseData, CorrectionData } from './types';
+import { mockCorrectionData, mockUrgentCorrectionData } from './data/mockData';
+
+// Screens — Home
+import { HomeScreen } from './screens/HomeScreen';
+
+// Flow 1: ¿Cómo digo esto?
+import { HowDoISayThisScreen } from './screens/HowDoISayThisScreen';
+import { PersonalizedPracticeScreen } from './screens/PersonalizedPracticeScreen';
+import { VoicePracticeScreen } from './screens/VoicePracticeScreen';
+import { CorrectionScreen } from './screens/CorrectionScreen';
+
+// Flow 2: Necesito decir esto ahora
+import { UrgentSayScreen } from './screens/UrgentSayScreen';
+import { UrgentPhraseReadyScreen } from './screens/UrgentPhraseReadyScreen';
+import { UrgentShowBigScreen } from './screens/UrgentShowBigScreen';
+import { UrgentPracticeScreen } from './screens/UrgentPracticeScreen';
+import { UrgentCorrectionScreen } from './screens/UrgentCorrectionScreen';
+
+// Flow 3: Practicar situaciones — S.E.P.R.A.
+import { SituationsMenuScreen } from './screens/SituationsMenuScreen';
+import { SituationsFromScratchScreen } from './screens/SituationsFromScratchScreen';
+import { SepraSituationScreen } from './screens/SepraSituationScreen';
+import { SepraListenScreen } from './screens/SepraListenScreen';
+import { SepraVoicePracticeScreen } from './screens/SepraVoicePracticeScreen';
+import { SepraCorrectionScreen } from './screens/SepraCorrectionScreen';
+import { SepraMiniRuleScreen } from './screens/SepraMiniRuleScreen';
+import { SepraActionScreen } from './screens/SepraActionScreen';
+import { SepraProgressScreen } from './screens/SepraProgressScreen';
+
+// Flow 3b: Trabajo y clientes → Cocina / restaurante
+import { WorkClientsScreen } from './screens/WorkClientsScreen';
+import { KitchenIntroScreen } from './screens/KitchenIntroScreen';
+import { KitchenListenScreen } from './screens/KitchenListenScreen';
+import { KitchenPracticeScreen } from './screens/KitchenPracticeScreen';
+import { KitchenCorrectionScreen } from './screens/KitchenCorrectionScreen';
+import { KitchenRuleScreen } from './screens/KitchenRuleScreen';
+import { KitchenActionScreen } from './screens/KitchenActionScreen';
+import { KitchenProgressScreen } from './screens/KitchenProgressScreen';
+
+function App() {
+  const [screen, setScreen] = useState<Screen>('home');
+
+  // ── Flow 1 state ──
+  const [practiceData, setPracticeData] = useState<PracticeData | null>(null);
+  const [lastInput, setLastInput] = useState('');
+  const [correctionData, setCorrectionData] = useState<CorrectionData | null>(null);
+
+  const handleCreatePractice = (data: PracticeData, input: string) => {
+    setPracticeData(data);
+    setLastInput(input);
+    setScreen('practice');
+  };
+
+  const handleCreateAnother = () => {
+    setPracticeData(null);
+    setLastInput('');
+    setScreen('how-do-i-say');
+  };
+
+  // ── Flow 2 state ──
+  const [urgentData, setUrgentData] = useState<UrgentPhraseData | null>(null);
+  const [urgentInput, setUrgentInput] = useState('');
+
+  const handleTranslateUrgent = (data: UrgentPhraseData, input: string) => {
+    setUrgentData(data);
+    setUrgentInput(input);
+    setScreen('urgent-phrase-ready');
+  };
+
+  const handleTranslateAnother = () => {
+    setUrgentData(null);
+    setUrgentInput('');
+    setScreen('urgent-say');
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-200 flex justify-center items-start">
+    <div className="w-full max-w-[430px] min-h-screen bg-gray-50 relative flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.12)]">
+
+      {/* ── Home ── */}
+      {screen === 'home' && (
+        <HomeScreen
+          onStartFlow={() => setScreen('how-do-i-say')}
+          onSituationsFlow={() => setScreen('situations')}
+          onUrgentFlow={() => setScreen('urgent-say')}
+        />
+      )}
+
+      {/* ── Flow 1: ¿Cómo digo esto? ── */}
+      {screen === 'how-do-i-say' && (
+        <HowDoISayThisScreen
+          onBack={() => setScreen('home')}
+          onCreatePractice={handleCreatePractice}
+          initialInput={lastInput}
+        />
+      )}
+      {screen === 'practice' && practiceData && (
+        <PersonalizedPracticeScreen
+          data={practiceData}
+          onBack={() => setScreen('how-do-i-say')}
+          onVoicePractice={() => setScreen('voice-practice')}
+          onCreateAnother={handleCreateAnother}
+        />
+      )}
+      {screen === 'voice-practice' && practiceData && (
+        <VoicePracticeScreen
+          data={practiceData}
+          onBack={() => setScreen('practice')}
+          onCorrection={(data) => { setCorrectionData(data); setScreen('correction'); }}
+        />
+      )}
+      {screen === 'correction' && (
+        <CorrectionScreen
+          data={correctionData ?? mockCorrectionData}
+          onPracticeAgain={() => setScreen('voice-practice')}
+          onContinue={() => setScreen('practice')}
+        />
+      )}
+
+      {/* ── Flow 2: Necesito decir esto ahora ── */}
+      {screen === 'urgent-say' && (
+        <UrgentSayScreen
+          onBack={() => setScreen('home')}
+          onTranslate={handleTranslateUrgent}
+          initialInput={urgentInput}
+        />
+      )}
+      {screen === 'urgent-phrase-ready' && urgentData && (
+        <UrgentPhraseReadyScreen
+          data={urgentData}
+          onBack={() => setScreen('urgent-say')}
+          onShowBig={() => setScreen('urgent-show-big')}
+          onPractice={() => setScreen('urgent-practice')}
+          onTranslateAnother={handleTranslateAnother}
+        />
+      )}
+      {screen === 'urgent-show-big' && urgentData && (
+        <UrgentShowBigScreen
+          data={urgentData}
+          onBack={() => setScreen('urgent-phrase-ready')}
+        />
+      )}
+      {screen === 'urgent-practice' && urgentData && (
+        <UrgentPracticeScreen
+          data={urgentData}
+          onBack={() => setScreen('urgent-phrase-ready')}
+          onCorrection={() => setScreen('urgent-correction')}
+        />
+      )}
+      {screen === 'urgent-correction' && (
+        <UrgentCorrectionScreen
+          data={mockUrgentCorrectionData}
+          onPracticeAgain={() => setScreen('urgent-practice')}
+          onBackToPhrase={() => setScreen('urgent-phrase-ready')}
+        />
+      )}
+
+      {/* ── Flow 3: Practicar situaciones — S.E.P.R.A. ── */}
+      {screen === 'situations' && (
+        <SituationsMenuScreen
+          onBack={() => setScreen('home')}
+          onFromScratch={() => setScreen('situations-from-scratch')}
+          onWorkClients={() => setScreen('work-clients')}
+        />
+      )}
+      {screen === 'situations-from-scratch' && (
+        <SituationsFromScratchScreen
+          onBack={() => setScreen('situations')}
+          onStart={() => setScreen('sepra-situation')}
+        />
+      )}
+      {screen === 'sepra-situation' && (
+        <SepraSituationScreen
+          onBack={() => setScreen('situations-from-scratch')}
+          onNext={() => setScreen('sepra-listen')}
+        />
+      )}
+      {screen === 'sepra-listen' && (
+        <SepraListenScreen
+          onBack={() => setScreen('sepra-situation')}
+          onNext={() => setScreen('sepra-voice')}
+        />
+      )}
+      {screen === 'sepra-voice' && (
+        <SepraVoicePracticeScreen
+          onBack={() => setScreen('sepra-listen')}
+          onCorrection={() => setScreen('sepra-correction')}
+        />
+      )}
+      {screen === 'sepra-correction' && (
+        <SepraCorrectionScreen
+          onNext={() => setScreen('sepra-rule')}
+        />
+      )}
+      {screen === 'sepra-rule' && (
+        <SepraMiniRuleScreen
+          onBack={() => setScreen('sepra-correction')}
+          onNext={() => setScreen('sepra-action')}
+        />
+      )}
+      {screen === 'sepra-action' && (
+        <SepraActionScreen
+          onBack={() => setScreen('sepra-rule')}
+          onNext={() => setScreen('sepra-progress')}
+        />
+      )}
+      {screen === 'sepra-progress' && (
+        <SepraProgressScreen
+          onPracticeAnother={() => setScreen('situations-from-scratch')}
+          onHome={() => setScreen('home')}
+        />
+      )}
+
+      {/* ── Flow 3b: Trabajo y clientes → Cocina / restaurante ── */}
+      {screen === 'work-clients' && (
+        <WorkClientsScreen
+          onBack={() => setScreen('situations')}
+          onKitchen={() => setScreen('kitchen-intro')}
+        />
+      )}
+      {screen === 'kitchen-intro' && (
+        <KitchenIntroScreen
+          onBack={() => setScreen('work-clients')}
+          onListen={() => setScreen('kitchen-listen')}
+          onStart={() => setScreen('kitchen-practice')}
+        />
+      )}
+      {screen === 'kitchen-listen' && (
+        <KitchenListenScreen
+          onBack={() => setScreen('kitchen-intro')}
+          onNext={() => setScreen('kitchen-practice')}
+        />
+      )}
+      {screen === 'kitchen-practice' && (
+        <KitchenPracticeScreen
+          onBack={() => setScreen('kitchen-intro')}
+          onCorrection={() => setScreen('kitchen-correction')}
+        />
+      )}
+      {screen === 'kitchen-correction' && (
+        <KitchenCorrectionScreen
+          onNext={() => setScreen('kitchen-rule')}
+        />
+      )}
+      {screen === 'kitchen-rule' && (
+        <KitchenRuleScreen
+          onBack={() => setScreen('kitchen-correction')}
+          onNext={() => setScreen('kitchen-action')}
+        />
+      )}
+      {screen === 'kitchen-action' && (
+        <KitchenActionScreen
+          onBack={() => setScreen('kitchen-rule')}
+          onFinish={() => setScreen('kitchen-progress')}
+        />
+      )}
+      {screen === 'kitchen-progress' && (
+        <KitchenProgressScreen
+          onPracticeAnother={() => setScreen('kitchen-intro')}
+          onWorkClients={() => setScreen('work-clients')}
+          onHome={() => setScreen('home')}
+        />
+      )}
+
+    </div>
+    </div>
+  );
+}
+
+export default App;
