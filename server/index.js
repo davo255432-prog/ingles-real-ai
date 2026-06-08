@@ -528,7 +528,7 @@ app.post('/api/speech', async (req, res) => {
   try {
     const mp3 = await openai.audio.speech.create({
       model: 'tts-1',      // standard model — low latency
-      voice: 'echo',       // PRUEBA — masculina, tranquila, pronunciación clara
+      voice: 'sage',       // PRUEBA — madura, serena, confiable
       input: text.trim(),
       speed: speedValue,
       response_format: 'mp3',
