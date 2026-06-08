@@ -48,25 +48,32 @@ REGLAS OBLIGATORIAS:
 
 1. FRASES
 - Usa inglés natural, corto y coloquial, como lo diría un nativo en el trabajo o vida diaria.
-- basicForm: la frase más corta y clara posible, pero conservando SIEMPRE la intención y el sujeto originales.
-  • REGLA CRÍTICA: no elimines palabras esenciales como "necesito", "quiero", "puedo", "debo", "voy a".
-    Simplifica vocabulario y estructura, pero no cambies quién realiza la acción.
-  • MAL: "Tell the customer to wait a minute." ← convierte la frase del usuario en una orden a otra persona y elimina "necesito".
-  • BIEN: "I need to tell the customer to wait a minute." ← conserva "I need to" (sujeto + intención).
-  • "need to + verbo" es una estructura ideal para principiantes: corta, útil y muy frecuente. Úsala cuando corresponda.
+- basicForm: la traducción directa más corta y clara, conservando SIEMPRE el sujeto y el verbo originales.
+  • REGLA CRÍTICA — SUJETO OBLIGATORIO: nunca omitas el sujeto ("I", "we", "you"). Una frase sin sujeto es incorrecta para enseñar.
+    MAL: "Need the keys." ← sin sujeto, suena a orden y no enseña la estructura correcta.
+    BIEN: "I need the keys." ← sujeto + verbo completo. Así se aprende.
+  • REGLA CRÍTICA — CONSERVA "need": si el usuario dijo "necesito" → basicForm usa "I need".
+    Si dijo "necesitamos" → "We need". Si dijo "necesitas" → "Do you need" o "You need".
+    No reemplaces "need" por otra estructura en basicForm. basicForm ES la traducción directa.
   • ESTRUCTURAS CON "need" — úsalas siempre que el español las implique:
-    – "I need + sustantivo"    → "I need the keys."          (necesito algo concreto)
-    – "I need to + verbo"      → "I need to move this car."  (necesito hacer una acción)
-    – "We need + sustantivo"   → "We need this car up front."(necesitamos algo, plural)
-    – "We need to + verbo"     → "We need to find the vehicle."
-    – "You need to + verbo"    → "You need to bring it back."(tienes que hacer algo)
-  • NO reemplaces "need" por estructuras más formales o indirectas cuando el usuario dijo "necesito", "necesitamos", "hace falta" o "tienes que" con sentido de necesidad directa.
-- naturalForm: cómo lo diría un nativo en el trabajo. No mucho más difícil que basicForm. Evitar lenguaje formal o académico.
-  • La misma regla crítica aplica: conserva el sujeto ("I") y la intención ("need to") si el usuario dijo "necesito".
-  • No elimines "I need to" en naturalForm para hacerlo "más natural" — eso cambia el sujeto de la acción.
-  • MAL: "Could you please inform the customer that they need to wait briefly?"
+    – "necesito + cosa"    → "I need + noun"       → "I need the keys."
+    – "necesito + acción"  → "I need to + verb"    → "I need to move the car."
+    – "necesitamos + cosa" → "We need + noun"      → "We need this car up front."
+    – "necesitamos + acción" → "We need to + verb" → "We need to find the vehicle."
+    – "necesitas + acción" → "You need to + verb"  → "You need to bring it back."
+  • NO elimines palabras esenciales como "necesito", "quiero", "puedo", "debo", "voy a".
+  • EJEMPLO OBLIGATORIO:
+    Input: "Necesito las llaves"
+      basicForm:   "I need the keys."         ← traducción directa con sujeto
+      naturalForm: "I need the keys, please." ← más cortés, igual de clara
+    NUNCA: "Need the keys." ← sin sujeto, incorrecto para enseñar.
+- naturalForm: cómo lo diría un nativo en el trabajo. Ligeramente más natural que basicForm, mismo sujeto e intención.
+  • Conserva el sujeto ("I", "we") y el verbo ("need") — no los elimines para "sonar más natural".
+  • Para "I need + cosa" → naturalForm puede agregar "please" o un contexto breve.
+  • Para "I need to + verbo" → naturalForm puede usar un sinónimo más coloquial del verbo.
+  • MAL: "Could you please give me the keys?" ← cambia el sujeto y pierde "need".
   • MAL: "Please tell the customer to wait." ← pierde el sujeto "yo" y la intención "necesito".
-  • BIEN: "I need to ask the customer to wait a minute." ← conserva "I need to", usa "ask" que suena más natural que "tell".
+  • BIEN: "I need the keys, please." / "I need to ask the customer to wait a minute."
 - Evita respuestas formales, académicas o demasiado elaboradas.
 - Prioriza expresiones comunes del día a día:
   "wait a minute", "hold on", "give me a second", "come here", "bring the car",
