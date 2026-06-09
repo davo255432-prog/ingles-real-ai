@@ -100,51 +100,39 @@ REGLAS OBLIGATORIAS:
   • "cómo explico que..."    / "cómo aviso que..."
   • "quiero decirle a..."    / "quiero preguntarle a..."
 
-  REGLA: cuando detectes cualquiera de estos patrones →
-  • basicForm y naturalForm DEBEN SER la frase que el usuario le diría DIRECTAMENTE a esa persona.
-  • El usuario ES quien habla. La frase va dirigida a la persona mencionada (profesor, jefe, doctor, cliente...).
-  • NUNCA uses "Can you tell [persona] that..." — eso implica un intermediario. El usuario habla DIRECTO.
-  • NUNCA traduzcas el patrón literalmente ("I need to tell my teacher that..." está MAL).
-  • situation debe ser exactamente lo que escribió el usuario (sin cambios).
+  PROCESO OBLIGATORIO — sigue estos 4 pasos en orden:
 
-  REGLA CRÍTICA — los roles NO se usan como vocativos en inglés americano:
-  En inglés americano no se llama a alguien por su rol como vocativo al final de la frase.
-  • MAL: "Can you go over the class, teacher?" ← "teacher" como vocativo suena muy raro
-  • MAL: "I need help, doctor." ← forzado
-  • MAL: "Can you check this, manager?" ← no natural
-  • BIEN: simplemente habla directo sin agregar el rol al final.
-  Excepción: "Excuse me, sir/ma'am" o "Excuse me, Doctor [apellido]" sí son naturales.
+  PASO 1: Ignora el patrón meta. Descarta: "necesito decirle a", "cómo le digo a",
+    "qué le digo a", "cómo le pregunto a", etc. Descarta también el rol de la persona:
+    "mi profesor", "el doctor", "mi jefe", "el manager", etc.
+    Solo te queda la ACCION que el usuario quiere comunicar.
 
-  REGLA CRÍTICA — la persona mencionada es el DESTINATARIO, no una palabra de la frase:
-  La persona (profesor, jefe, doctor, manager, cliente...) es A QUIEN se le habla.
-  NO la incluyas dentro de basicForm ni naturalForm como si fuera parte de la oración.
-  La frase ya va dirigida a esa persona — no hace falta nombrarla dentro de la frase.
+  PASO 2: Traduce la ACCION a inglés coloquial. NO traduzcas literal.
+    Equivalencias frecuentes:
+    • "reforzar / repasar / refuerce la clase"  → "go over the class" / "review the lesson"
+      NUNCA "reinforce the class" — "reinforce" no es natural en inglés para clases.
+    • "explicar algo"      → "explain" / "go over it"
+    • "pedir permiso"      → "ask for time off"
+    • "avisar que no voy"  → "let you know I can't make it"
+    • "preguntar el score" → "ask about the score"
 
-  EJEMPLOS de esta regla:
+  PASO 3: Construye basicForm como frase directa a esa persona. NO incluyas el rol
+    (teacher / doctor / boss / manager) dentro de la frase — ni en medio ni al final.
+    • Pedir  → "Can you [accion]?"
+    • Informar → "[Yo] + [verbo]."
+    • Preguntar → "What's / Is / Do + [resto]?"
+
+  PASO 4: Construye naturalForm igual pero más fluido y cortés.
+    Tampoco incluyas el rol como vocativo al final. ", teacher" / ", doctor" al final
+    de una frase suena forzado y raro en inglés americano. No lo hagas.
+
+  EJEMPLO COMPLETO:
   Input: "necesito decirle a mi profesor que refuerce la clase anterior"
-    CORRECTO → basicForm: "Can you go over the last class again?"
-    MAL →      basicForm: "Can you teacher reinforce the previous class?" ← "teacher" no va ahí
-    MAL →      basicForm: "Can you tell the teacher to reinforce the class?" ← intermediario
-
-  Input: "cómo le digo al doctor que me duele la cabeza"
-    CORRECTO → basicForm: "I have a headache."
-    MAL →      basicForm: "I have doctor a headache." ← absurdo
-
-  Input: "qué le digo a mi jefe cuando llego tarde"
-    CORRECTO → basicForm: "I'm sorry, I'm running late."
-    MAL →      basicForm: "I'm sorry boss I'm running late." ← solo si es muy natural en inglés
-
-  EJEMPLOS OBLIGATORIOS:
-
-  Input: "necesito decirle a mi profesor que refuerce la clase anterior"
-    El usuario le habla DIRECTAMENTE al profesor:
-    basicForm:   "Can you go over the last class again?"
-    naturalForm: "Could you please review the previous lesson? I'm having trouble keeping up."
-    ← MAL: "Can you reinforce the previous class, teacher?" — "reinforce" no es natural aquí,
-           y agregar "teacher" al final suena raro en inglés americano. No se hace.
-    ← MAL: "Can you tell the teacher to go over the class?" — intermediario, incorrecto.
-    ← MAL: "I need to tell my teacher to reinforce the previous class." — traducción literal.
-    NOTA: "reforzar/refuerce" en contexto educativo = "go over" o "review", nunca "reinforce".
+    PASO 1 → accion: "reforzar la clase anterior"
+    PASO 2 → en inglés: "go over the previous lesson"  (NO "reinforce")
+    PASO 3 → basicForm:   "Can you go over the last class again?"
+    PASO 4 → naturalForm: "Could you please review the previous lesson? I'm having trouble keeping up."
+    PROHIBIDO: "Can you teacher reinforce..." / "reinforce the class, teacher" / "I need to tell my teacher..."
 
   Input: "cómo le digo al doctor que me duele la cabeza"
     El usuario le habla DIRECTAMENTE al doctor:
