@@ -183,18 +183,36 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
 
         setVoiceState('transcribing');
 
+        // Helper: send blob to the transcribe endpoint (retries once on network failure)
+        const transcribeBlob = async (b: Blob): Promise<string> => {
+          const send = async () => {
+            const fd = new FormData();
+            fd.append('audio', b, 'recording.webm');
+            const r = await fetch(`${API_BASE}/api/transcribe?lang=es`, {
+              method: 'POST',
+              body: fd,
+            });
+            if (!r.ok) {
+              const msg = await r.text().catch(() => '');
+              throw new Error(`server_error:${r.status}:${msg}`);
+            }
+            const json = await r.json() as { transcript?: string };
+            return (json.transcript ?? '').trim();
+          };
+
+          // First attempt
+          try {
+            return await send();
+          } catch (firstErr) {
+            // On network/server error, wait 3 s and retry once (handles Render cold start)
+            console.warn('[transcribe] 1er intento falló, reintentando en 3 s…', firstErr);
+            await new Promise(res => setTimeout(res, 3000));
+            return await send(); // throws if second attempt also fails
+          }
+        };
+
         try {
-          const formData = new FormData();
-          formData.append('audio', blob, 'recording.webm');
-
-          const res = await fetch(`${API_BASE}/api/transcribe?lang=es`, {
-            method: 'POST',
-            body: formData,
-          });
-
-          if (!res.ok) throw new Error('transcription_failed');
-          const data = await res.json() as { transcript?: string };
-          const transcribed = (data.transcript ?? '').trim();
+          const transcribed = await transcribeBlob(blob);
 
           if (!transcribed) {
             setVoiceState('error');
@@ -210,9 +228,15 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
 
           // Pass transcription directly so we don't depend on the state flush
           await handleCreate(transcribed);
-        } catch {
+        } catch (err) {
+          console.error('[transcribe] Error final:', err);
+          const msg = err instanceof Error ? err.message : '';
+          if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('network')) {
+            setVoiceError('No se pudo conectar al servidor. Verifica tu internet e intenta de nuevo.');
+          } else {
+            setVoiceError('Error al procesar el audio. Espera unos segundos e intenta de nuevo.');
+          }
           setVoiceState('error');
-          setVoiceError('Error al procesar el audio. Intenta de nuevo.');
         }
       };
 
