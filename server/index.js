@@ -101,47 +101,53 @@ REGLAS OBLIGATORIAS:
   • "quiero decirle a..."    / "quiero preguntarle a..."
 
   REGLA: cuando detectes cualquiera de estos patrones →
-  • basicForm y naturalForm DEBEN SER la frase directa que el usuario diría a esa persona.
+  • basicForm y naturalForm DEBEN SER la frase que el usuario le diría DIRECTAMENTE a esa persona.
+  • El usuario ES quien habla. La frase va dirigida a la persona mencionada (profesor, jefe, doctor, cliente...).
+  • NUNCA uses "Can you tell [persona] that..." — eso implica un intermediario. El usuario habla DIRECTO.
   • NUNCA traduzcas el patrón literalmente ("I need to tell my teacher that..." está MAL).
-  • Convierte la descripción en habla directa hacia la persona o situación mencionada.
   • situation debe ser exactamente lo que escribió el usuario (sin cambios).
 
   EJEMPLOS OBLIGATORIOS:
 
   Input: "necesito decirle a mi profesor que refuerce la clase anterior"
+    El usuario le habla DIRECTAMENTE al profesor:
     basicForm:   "Can you go over the last class again?"
-    naturalForm: "Could you please review the last lesson? I'm having trouble following along."
-    ← NO: "I need to tell my teacher to reinforce the previous class."
+    naturalForm: "Could you please go over the previous lesson? I'm having trouble following along."
+    ← MAL: "Can you tell the teacher to go over the class?" (intermediario — incorrecto)
+    ← MAL: "I need to tell my teacher to reinforce the previous class." (traducción literal)
 
   Input: "cómo le digo al doctor que me duele la cabeza"
+    El usuario le habla DIRECTAMENTE al doctor:
     basicForm:   "I have a headache."
-    naturalForm: "I've had a headache all day, it won't go away."
-    ← NO: "How do I tell the doctor that my head hurts?"
+    naturalForm: "I've had a headache all day and it won't go away."
+    ← MAL: "Can you tell the doctor I have a headache?"
 
   Input: "qué le digo a mi jefe cuando llego tarde"
+    El usuario le habla DIRECTAMENTE al jefe:
     basicForm:   "I'm sorry, I'm running late."
     naturalForm: "I'm so sorry, I'm running a little late. I'll be there soon."
-    ← NO: "I need to tell my boss that I'm late."
+    ← MAL: "Can you tell my boss I'm late?"
 
   Input: "cómo aviso que no puedo ir al trabajo"
+    El usuario avisa DIRECTAMENTE (a quien corresponda):
     basicForm:   "I can't make it today."
     naturalForm: "I'm sorry, I won't be able to come in today."
-    ← NO: "How do I say that I can't go to work?"
 
   Input: "cómo pregunto si hay trabajo disponible"
+    El usuario pregunta DIRECTAMENTE al empleador:
     basicForm:   "Is there any work available?"
     naturalForm: "Are you guys hiring right now?"
-    ← NO: "How do I ask if there is work available?"
 
   Input: "cómo explico que no entendí lo que me dijeron"
+    El usuario le dice DIRECTAMENTE a quien le habló:
     basicForm:   "I didn't understand."
     naturalForm: "Sorry, I didn't catch that. Could you say it again?"
-    ← NO: "How do I explain that I didn't understand what they told me?"
 
   Input: "cómo le hago entender al cliente que el carro no está listo"
+    El usuario le dice DIRECTAMENTE al cliente:
     basicForm:   "Your car isn't ready yet."
     naturalForm: "I'm sorry, your car isn't ready yet. It'll be a little longer."
-    ← NO: "I need to make the customer understand that the car is not ready."
+    ← MAL: "Can you tell the customer the car isn't ready?"
 
 - REGLA: intención comunicativa (communicativeIntent)
   • Si el prompt incluye "Intención comunicativa:", úsalo para construir basicForm y naturalForm:
