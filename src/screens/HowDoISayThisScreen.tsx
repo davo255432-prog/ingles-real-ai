@@ -183,12 +183,13 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
 
         setVoiceState('transcribing');
 
-        // Helper: send blob to the transcribe endpoint (retries once on network failure)
+        // Use /api/translate-speech (proven endpoint from Flow 4) and take only the
+        // Spanish transcription — avoids any issues with /api/transcribe.
         const transcribeBlob = async (b: Blob): Promise<string> => {
           const send = async () => {
             const fd = new FormData();
             fd.append('audio', b, 'recording.webm');
-            const r = await fetch(`${API_BASE}/api/transcribe?lang=es`, {
+            const r = await fetch(`${API_BASE}/api/translate-speech`, {
               method: 'POST',
               body: fd,
             });
@@ -196,8 +197,9 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
               const msg = await r.text().catch(() => '');
               throw new Error(`server_error:${r.status}:${msg}`);
             }
-            const json = await r.json() as { transcript?: string };
-            return (json.transcript ?? '').trim();
+            const json = await r.json() as { spanish?: string; unclear?: boolean };
+            if (json.unclear) return ''; // server flagged it as inaudible
+            return (json.spanish ?? '').trim();
           };
 
           // First attempt
@@ -207,7 +209,7 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
             // On network/server error, wait 3 s and retry once (handles Render cold start)
             console.warn('[transcribe] 1er intento falló, reintentando en 3 s…', firstErr);
             await new Promise(res => setTimeout(res, 3000));
-            return await send(); // throws if second attempt also fails
+            return await send();
           }
         };
 
