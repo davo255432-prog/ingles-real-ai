@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { InputMode, PracticeData } from '../types';
 import { Header } from '../components/Header';
 import { CoachMessage } from '../components/CoachMessage';
@@ -6,12 +6,15 @@ import { ModeSelector } from '../components/ModeSelector';
 import { Button } from '../components/Button';
 import { analyzeContext, generatePractice } from '../services/practiceApi';
 import type { RequiredDetail, CommunicativeIntent } from '../services/practiceApi';
+import { API_BASE } from '../config/api';
 
 interface HowDoISayThisScreenProps {
   onBack: () => void;
   onCreatePractice: (data: PracticeData, input: string) => void;
   initialInput?: string;
 }
+
+type VoiceState = 'idle' | 'requesting' | 'recording' | 'transcribing' | 'error';
 
 export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
   onBack,
@@ -35,7 +38,24 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
   const [pendingCommIntent, setPendingCommIntent] = useState<CommunicativeIntent | null>(null);
   const [pendingIntentExpl, setPendingIntentExpl] = useState<string | null>(null);
 
-  // ── Helpers ────────────────────────────────────────────────────────────
+  // ── Voice recording state ─────────────────────────────────────────────────
+  const [voiceState, setVoiceState] = useState<VoiceState>('idle');
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef        = useRef<Blob[]>([]);
+  const dataIntervalRef  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const streamRef        = useRef<MediaStream | null>(null);
+
+  // Cleanup mic/intervals on unmount
+  useEffect(() => {
+    return () => {
+      if (dataIntervalRef.current) clearInterval(dataIntervalRef.current);
+      streamRef.current?.getTracks().forEach(t => t.stop());
+    };
+  }, []);
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
   const resetClarification = () => {
     setClarifyingQuestion(null);
@@ -67,22 +87,23 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
     onCreatePractice(result.data, originalInput);
   };
 
-  // ── Step 1: analyze before generating ─────────────────────────────────
-
-  const handleCreate = async () => {
-    if (!input.trim()) return;
+  // ── Step 1: analyze before generating ─────────────────────────────────────
+  // Accepts an optional inputText so voice mode can pass the transcription
+  // directly without waiting for React to flush the `input` state update.
+  const handleCreate = async (inputText?: string) => {
+    const text = (inputText ?? input).trim();
+    if (!text) return;
     resetClarification();
     setUsedFallback(false);
     setLoadingMsg('Analizando...');
 
-    const analysis = await analyzeContext(input.trim());
+    const analysis = await analyzeContext(text);
     console.log('[handleCreate] analysis recibido:', analysis);
     setLoadingMsg(null);
 
     if (analysis && analysis.needsClarification && analysis.clarifyingQuestion) {
       console.log('[handleCreate] → mostrando aclaración');
       setClarifyingQuestion(analysis.clarifyingQuestion);
-      // Store whatever was extracted before asking (may be partial)
       setPendingIntent(analysis.intent);
       setPendingDetails(analysis.requiredDetails ?? []);
       setPendingCommIntent(analysis.communicativeIntent);
@@ -92,7 +113,7 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
 
     console.log('[handleCreate] → generando práctica directamente');
     await runGenerate(
-      input.trim(),
+      text,
       undefined,
       analysis?.intent ?? undefined,
       analysis?.requiredDetails ?? [],
@@ -101,7 +122,7 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
     );
   };
 
-  // ── Step 2: user provided clarification → generate ─────────────────────
+  // ── Step 2: user provided clarification → generate ─────────────────────────
 
   const handleContinue = async () => {
     if (!clarificationInput.trim()) return;
@@ -111,13 +132,209 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
     const commIntent = pendingCommIntent;
     const intentExpl = pendingIntentExpl;
     resetClarification();
-    // Pass original input unchanged; all extra context goes separately
     await runGenerate(input.trim(), clarContext, intent, details, commIntent, intentExpl);
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────
+  // ── Voice recording ────────────────────────────────────────────────────────
+
+  const handleStartRecording = async () => {
+    setVoiceError(null);
+    setVoiceState('requesting');
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setVoiceState('error');
+      setVoiceError('Tu navegador no soporta grabación de voz.');
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : '';
+
+      const mr = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+      mediaRecorderRef.current = mr;
+      chunksRef.current = [];
+
+      mr.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      mr.onstop = async () => {
+        if (dataIntervalRef.current) {
+          clearInterval(dataIntervalRef.current);
+          dataIntervalRef.current = null;
+        }
+        stream.getTracks().forEach(t => t.stop());
+
+        const blob = new Blob(chunksRef.current, { type: mr.mimeType || 'audio/webm' });
+        chunksRef.current = [];
+
+        if (blob.size === 0) {
+          setVoiceState('error');
+          setVoiceError('No se grabó audio. Intenta de nuevo.');
+          return;
+        }
+
+        setVoiceState('transcribing');
+
+        try {
+          const formData = new FormData();
+          formData.append('audio', blob, 'recording.webm');
+
+          const res = await fetch(`${API_BASE}/api/transcribe?lang=es`, {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!res.ok) throw new Error('transcription_failed');
+          const data = await res.json() as { transcript?: string };
+          const transcribed = (data.transcript ?? '').trim();
+
+          if (!transcribed) {
+            setVoiceState('error');
+            setVoiceError('No entendí lo que dijiste. Intenta hablar más fuerte o más cerca del micrófono.');
+            return;
+          }
+
+          // Populate the text input and switch to write mode so the user
+          // can see what was transcribed, then auto-trigger the analysis.
+          setInput(transcribed);
+          setMode('write');
+          setVoiceState('idle');
+
+          // Pass transcription directly so we don't depend on the state flush
+          await handleCreate(transcribed);
+        } catch {
+          setVoiceState('error');
+          setVoiceError('Error al procesar el audio. Intenta de nuevo.');
+        }
+      };
+
+      // iOS Safari fix: start() without timeslice, use interval to request data
+      mr.start();
+      dataIntervalRef.current = setInterval(() => {
+        if (mr.state === 'recording') mr.requestData();
+      }, 500);
+
+      setVoiceState('recording');
+    } catch (err: unknown) {
+      const name = err instanceof Error ? err.name : '';
+      if (name === 'NotAllowedError') {
+        setVoiceState('error');
+        setVoiceError('Necesitas permitir el acceso al micrófono en tu dispositivo.');
+      } else if (name === 'NotFoundError') {
+        setVoiceState('error');
+        setVoiceError('No se encontró un micrófono. Verifica que esté conectado.');
+      } else {
+        setVoiceState('error');
+        setVoiceError('No se pudo acceder al micrófono. Intenta de nuevo.');
+      }
+    }
+  };
+
+  const handleStopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+  };
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   const isLoading = loadingMsg !== null;
+
+  // ── Voice mode UI helper ───────────────────────────────────────────────────
+
+  const renderVoiceArea = () => {
+    if (voiceState === 'recording') {
+      return (
+        <div className="w-full bg-white border-2 border-red-300 rounded-2xl p-6 flex flex-col items-center gap-4 min-h-[160px] justify-center">
+          {/* Pulsing red ring */}
+          <div className="relative flex items-center justify-center">
+            <div className="absolute w-20 h-20 rounded-full bg-red-100 animate-ping opacity-60" />
+            <button
+              onClick={handleStopRecording}
+              className="relative w-16 h-16 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg shadow-red-200 active:scale-95 transition-all"
+            >
+              {/* Stop icon */}
+              <div className="w-5 h-5 bg-white rounded-sm" />
+            </button>
+          </div>
+          <p className="text-red-600 text-sm font-semibold text-center">
+            Grabando… toca para detener
+          </p>
+        </div>
+      );
+    }
+
+    if (voiceState === 'requesting') {
+      return (
+        <div className="w-full bg-white border-2 border-orange-200 rounded-2xl p-6 flex flex-col items-center gap-4 min-h-[160px] justify-center">
+          <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+          <p className="text-gray-400 text-sm text-center">Accediendo al micrófono…</p>
+        </div>
+      );
+    }
+
+    if (voiceState === 'transcribing') {
+      return (
+        <div className="w-full bg-white border-2 border-orange-200 rounded-2xl p-6 flex flex-col items-center gap-4 min-h-[160px] justify-center">
+          <div className="flex gap-1 items-center">
+            <span className="w-2 h-5 bg-orange-400 rounded animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="w-2 h-5 bg-orange-400 rounded animate-bounce" style={{ animationDelay: '120ms' }} />
+            <span className="w-2 h-5 bg-orange-400 rounded animate-bounce" style={{ animationDelay: '240ms' }} />
+          </div>
+          <p className="text-gray-500 text-sm text-center">Procesando tu voz…</p>
+        </div>
+      );
+    }
+
+    if (voiceState === 'error') {
+      return (
+        <div className="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-6 flex flex-col items-center gap-4 min-h-[160px] justify-center">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+            <span className="text-red-500 text-2xl">⚠️</span>
+          </div>
+          <p className="text-red-600 text-sm text-center leading-snug">{voiceError}</p>
+          <button
+            onClick={() => { setVoiceState('idle'); setVoiceError(null); }}
+            className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-full transition-colors"
+          >
+            Intentar de nuevo
+          </button>
+        </div>
+      );
+    }
+
+    // idle
+    return (
+      <div className="w-full bg-white border-2 border-orange-200 rounded-2xl p-6 flex flex-col items-center gap-4 min-h-[160px] justify-center">
+        <button
+          onClick={handleStartRecording}
+          disabled={isLoading}
+          className="w-16 h-16 bg-orange-500 hover:bg-orange-600 active:scale-95 disabled:opacity-50 rounded-full flex items-center justify-center shadow-lg shadow-orange-200 transition-all duration-200"
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="23" />
+            <line x1="8" y1="23" x2="16" y2="23" />
+          </svg>
+        </button>
+        <div className="text-center">
+          <p className="text-gray-600 text-sm font-medium">Toca para grabar tu voz</p>
+          <p className="text-gray-400 text-xs mt-0.5">Di en español lo que necesitas comunicar</p>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -137,7 +354,12 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
           <p className="text-gray-400 text-sm">Puedes hablar o escribir en español.</p>
         </div>
 
-        <ModeSelector mode={mode} onModeChange={setMode} />
+        <ModeSelector mode={mode} onModeChange={(m) => {
+          setMode(m);
+          // Reset voice state when switching tabs
+          setVoiceState('idle');
+          setVoiceError(null);
+        }} />
 
         {/* ── Input area ── */}
         {mode === 'write' ? (
@@ -146,7 +368,6 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
               value={input}
               onChange={(e) => {
                 setInput(e.target.value);
-                // Dismiss clarification if the user changes the original input
                 if (clarifyingQuestion) resetClarification();
               }}
               placeholder="Ejemplo: ¿Cómo le digo al chef que se acabaron las cebollas y hay que pedirlas urgente al manager?"
@@ -160,20 +381,7 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
           </div>
         ) : (
           <div className="mb-5">
-            <div className="w-full bg-white border-2 border-orange-200 rounded-2xl p-6 flex flex-col items-center gap-4 min-h-[140px] justify-center">
-              <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                  <line x1="12" y1="19" x2="12" y2="23" />
-                  <line x1="8" y1="23" x2="16" y2="23" />
-                </svg>
-              </div>
-              <p className="text-gray-400 text-sm text-center">
-                Toca para grabar tu voz<br />
-                <span className="text-xs">(disponible próximamente)</span>
-              </p>
-            </div>
+            {renderVoiceArea()}
           </div>
         )}
 
@@ -231,10 +439,10 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
           </div>
         )}
 
-        {/* ── Main button (hidden while clarification card is active) ── */}
-        {!clarifyingQuestion && (
+        {/* ── Main button (write mode only; voice mode auto-submits after transcription) ── */}
+        {mode === 'write' && !clarifyingQuestion && (
           <Button
-            onClick={handleCreate}
+            onClick={() => handleCreate()}
             color="orange"
             variant="primary"
             size="lg"
@@ -258,6 +466,18 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
           >
             {isLoading ? (loadingMsg ?? 'Crear práctica') : 'Crear práctica'}
           </Button>
+        )}
+
+        {/* Loading message shown in voice mode while analyzing/generating */}
+        {mode === 'voice' && isLoading && (
+          <div className="flex items-center justify-center gap-3 py-4">
+            <div className="flex gap-1">
+              <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+            <p className="text-orange-600 text-sm font-medium">{loadingMsg}</p>
+          </div>
         )}
       </div>
     </div>

@@ -612,7 +612,9 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
 
   const mimeType = req.file.mimetype.split(';')[0];
   const ext = mimeToExt(mimeType);
-  console.log(`[transcribe] Recibido: ${req.file.size} bytes — ${mimeType} → ${ext}`);
+  // Accept ?lang=es for Spanish transcription (used by HowDoISayThisScreen voice input)
+  const lang = req.query.lang === 'es' ? 'es' : 'en';
+  console.log(`[transcribe] Recibido: ${req.file.size} bytes — ${mimeType} → ${ext} — lang: ${lang}`);
 
   try {
     const audioFile = await toFile(
@@ -624,7 +626,7 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
       model: 'gpt-4o-mini-transcribe',
-      language: 'en',
+      language: lang,
     });
 
     console.log(`[transcribe] ✅ "${transcription.text.slice(0, 80)}"`);
