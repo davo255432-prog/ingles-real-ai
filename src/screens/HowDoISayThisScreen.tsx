@@ -232,11 +232,13 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
           await handleCreate(transcribed);
         } catch (err) {
           console.error('[transcribe] Error final:', err);
-          const msg = err instanceof Error ? err.message : '';
+          const msg = err instanceof Error ? err.message : String(err);
+          // Show the raw error so we can diagnose — will clean up once fixed
+          const display = msg.replace('server_error:', 'Servidor: ').slice(0, 120);
           if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('network')) {
-            setVoiceError('No se pudo conectar al servidor. Verifica tu internet e intenta de nuevo.');
+            setVoiceError('No se pudo conectar al servidor. Verifica tu internet.');
           } else {
-            setVoiceError('Error al procesar el audio. Espera unos segundos e intenta de nuevo.');
+            setVoiceError(`Error: ${display}`);
           }
           setVoiceState('error');
         }
