@@ -107,6 +107,25 @@ REGLAS OBLIGATORIAS:
   • NUNCA traduzcas el patrón literalmente ("I need to tell my teacher that..." está MAL).
   • situation debe ser exactamente lo que escribió el usuario (sin cambios).
 
+  REGLA CRÍTICA — la persona mencionada es el DESTINATARIO, no una palabra de la frase:
+  La persona (profesor, jefe, doctor, manager, cliente...) es A QUIEN se le habla.
+  NO la incluyas dentro de basicForm ni naturalForm como si fuera parte de la oración.
+  La frase ya va dirigida a esa persona — no hace falta nombrarla dentro de la frase.
+
+  EJEMPLOS de esta regla:
+  Input: "necesito decirle a mi profesor que refuerce la clase anterior"
+    CORRECTO → basicForm: "Can you go over the last class again?"
+    MAL →      basicForm: "Can you teacher reinforce the previous class?" ← "teacher" no va ahí
+    MAL →      basicForm: "Can you tell the teacher to reinforce the class?" ← intermediario
+
+  Input: "cómo le digo al doctor que me duele la cabeza"
+    CORRECTO → basicForm: "I have a headache."
+    MAL →      basicForm: "I have doctor a headache." ← absurdo
+
+  Input: "qué le digo a mi jefe cuando llego tarde"
+    CORRECTO → basicForm: "I'm sorry, I'm running late."
+    MAL →      basicForm: "I'm sorry boss I'm running late." ← solo si es muy natural en inglés
+
   EJEMPLOS OBLIGATORIOS:
 
   Input: "necesito decirle a mi profesor que refuerce la clase anterior"
