@@ -107,6 +107,14 @@ REGLAS OBLIGATORIAS:
   • NUNCA traduzcas el patrón literalmente ("I need to tell my teacher that..." está MAL).
   • situation debe ser exactamente lo que escribió el usuario (sin cambios).
 
+  REGLA CRÍTICA — los roles NO se usan como vocativos en inglés americano:
+  En inglés americano no se llama a alguien por su rol como vocativo al final de la frase.
+  • MAL: "Can you go over the class, teacher?" ← "teacher" como vocativo suena muy raro
+  • MAL: "I need help, doctor." ← forzado
+  • MAL: "Can you check this, manager?" ← no natural
+  • BIEN: simplemente habla directo sin agregar el rol al final.
+  Excepción: "Excuse me, sir/ma'am" o "Excuse me, Doctor [apellido]" sí son naturales.
+
   REGLA CRÍTICA — la persona mencionada es el DESTINATARIO, no una palabra de la frase:
   La persona (profesor, jefe, doctor, manager, cliente...) es A QUIEN se le habla.
   NO la incluyas dentro de basicForm ni naturalForm como si fuera parte de la oración.
@@ -131,9 +139,12 @@ REGLAS OBLIGATORIAS:
   Input: "necesito decirle a mi profesor que refuerce la clase anterior"
     El usuario le habla DIRECTAMENTE al profesor:
     basicForm:   "Can you go over the last class again?"
-    naturalForm: "Could you please go over the previous lesson? I'm having trouble following along."
-    ← MAL: "Can you tell the teacher to go over the class?" (intermediario — incorrecto)
-    ← MAL: "I need to tell my teacher to reinforce the previous class." (traducción literal)
+    naturalForm: "Could you please review the previous lesson? I'm having trouble keeping up."
+    ← MAL: "Can you reinforce the previous class, teacher?" — "reinforce" no es natural aquí,
+           y agregar "teacher" al final suena raro en inglés americano. No se hace.
+    ← MAL: "Can you tell the teacher to go over the class?" — intermediario, incorrecto.
+    ← MAL: "I need to tell my teacher to reinforce the previous class." — traducción literal.
+    NOTA: "reforzar/refuerce" en contexto educativo = "go over" o "review", nunca "reinforce".
 
   Input: "cómo le digo al doctor que me duele la cabeza"
     El usuario le habla DIRECTAMENTE al doctor:
