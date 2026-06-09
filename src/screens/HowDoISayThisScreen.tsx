@@ -183,13 +183,12 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
 
         setVoiceState('transcribing');
 
-        // Use /api/translate-speech (proven endpoint from Flow 4) and take only the
-        // Spanish transcription — avoids any issues with /api/transcribe.
+        // /api/transcribe-es uses whisper-1 which accepts webm (Chrome) and mp4 (Safari)
         const transcribeBlob = async (b: Blob): Promise<string> => {
           const send = async () => {
             const fd = new FormData();
             fd.append('audio', b, 'recording.webm');
-            const r = await fetch(`${API_BASE}/api/translate-speech`, {
+            const r = await fetch(`${API_BASE}/api/transcribe-es`, {
               method: 'POST',
               body: fd,
             });
@@ -197,9 +196,8 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
               const msg = await r.text().catch(() => '');
               throw new Error(`server_error:${r.status}:${msg}`);
             }
-            const json = await r.json() as { spanish?: string; unclear?: boolean };
-            if (json.unclear) return ''; // server flagged it as inaudible
-            return (json.spanish ?? '').trim();
+            const json = await r.json() as { transcript?: string };
+            return (json.transcript ?? '').trim();
           };
 
           // First attempt

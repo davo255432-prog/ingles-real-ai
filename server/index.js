@@ -638,6 +638,41 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
 });
 
 
+// ── Transcribe Spanish audio (whisper-1 — accepts webm/mp4/ogg from any browser) ──
+
+app.post('/api/transcribe-es', upload.single('audio'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No se recibió archivo de audio.' });
+  }
+
+  const mimeType = req.file.mimetype.split(';')[0];
+  const ext = mimeToExt(mimeType);
+  console.log(`[transcribe-es] Recibido: ${req.file.size} bytes — ${mimeType} → .${ext}`);
+
+  try {
+    const audioFile = await toFile(
+      req.file.buffer,
+      `recording.${ext}`,
+      { type: mimeType },
+    );
+
+    // whisper-1 is the most format-compatible model (webm/mp4/ogg/wav/etc.)
+    const transcription = await openai.audio.transcriptions.create({
+      file: audioFile,
+      model: 'whisper-1',
+      language: 'es',
+    });
+
+    const text = (transcription.text ?? '').trim();
+    console.log(`[transcribe-es] ✅ "${text.slice(0, 80)}"`);
+    res.json({ transcript: text });
+  } catch (error) {
+    console.error('❌ Error en transcribe-es:', error.message);
+    res.status(500).json({ error: `Transcripción fallida: ${error.message}` });
+  }
+});
+
+
 // ── Speak in Spanish → Translate to English ───────────────────────────────
 
 const TRANSLATE_SPEECH_PROMPT = `Eres un traductor de inglés para adultos hispanos principiantes en Estados Unidos.
