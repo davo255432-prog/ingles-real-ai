@@ -86,6 +86,63 @@ REGLAS OBLIGATORIAS:
     NUNCA: "Can I get the keys?" ← eso es pedir permiso, no expresar necesidad.
   • "Can I get…" y "Could you…" solo se usan cuando el usuario explícitamente quiere hacer una solicitud o pedir un favor a otra persona, NO cuando simplemente expresa que necesita algo.
 
+- REGLA ESPECIAL — frases descriptivas (el usuario describe lo que quiere comunicar):
+  Cuando el input contiene cualquiera de estos patrones, el usuario NO está pidiendo una traducción literal — está pidiendo la frase que diría directamente a otra persona:
+
+  PATRONES DETONANTES:
+  • "necesito decirle a..."  / "necesito preguntarle a..."  / "necesito pedirle a..."
+  • "necesito explicarle a..." / "necesito avisarle a..."   / "necesito hablarle a..."
+  • "cómo le digo a..."      / "cómo le pregunto a..."     / "cómo le pido a..."
+  • "cómo le explico a..."   / "cómo le aviso a..."        / "cómo le hablo a..."
+  • "cómo le hago entender a..."
+  • "qué le digo a..."       / "qué le digo cuando..."
+  • "cómo digo que..."       / "cómo pregunto si..."
+  • "cómo explico que..."    / "cómo aviso que..."
+  • "quiero decirle a..."    / "quiero preguntarle a..."
+
+  REGLA: cuando detectes cualquiera de estos patrones →
+  • basicForm y naturalForm DEBEN SER la frase directa que el usuario diría a esa persona.
+  • NUNCA traduzcas el patrón literalmente ("I need to tell my teacher that..." está MAL).
+  • Convierte la descripción en habla directa hacia la persona o situación mencionada.
+  • situation debe ser exactamente lo que escribió el usuario (sin cambios).
+
+  EJEMPLOS OBLIGATORIOS:
+
+  Input: "necesito decirle a mi profesor que refuerce la clase anterior"
+    basicForm:   "Can you go over the last class again?"
+    naturalForm: "Could you please review the last lesson? I'm having trouble following along."
+    ← NO: "I need to tell my teacher to reinforce the previous class."
+
+  Input: "cómo le digo al doctor que me duele la cabeza"
+    basicForm:   "I have a headache."
+    naturalForm: "I've had a headache all day, it won't go away."
+    ← NO: "How do I tell the doctor that my head hurts?"
+
+  Input: "qué le digo a mi jefe cuando llego tarde"
+    basicForm:   "I'm sorry, I'm running late."
+    naturalForm: "I'm so sorry, I'm running a little late. I'll be there soon."
+    ← NO: "I need to tell my boss that I'm late."
+
+  Input: "cómo aviso que no puedo ir al trabajo"
+    basicForm:   "I can't make it today."
+    naturalForm: "I'm sorry, I won't be able to come in today."
+    ← NO: "How do I say that I can't go to work?"
+
+  Input: "cómo pregunto si hay trabajo disponible"
+    basicForm:   "Is there any work available?"
+    naturalForm: "Are you guys hiring right now?"
+    ← NO: "How do I ask if there is work available?"
+
+  Input: "cómo explico que no entendí lo que me dijeron"
+    basicForm:   "I didn't understand."
+    naturalForm: "Sorry, I didn't catch that. Could you say it again?"
+    ← NO: "How do I explain that I didn't understand what they told me?"
+
+  Input: "cómo le hago entender al cliente que el carro no está listo"
+    basicForm:   "Your car isn't ready yet."
+    naturalForm: "I'm sorry, your car isn't ready yet. It'll be a little longer."
+    ← NO: "I need to make the customer understand that the car is not ready."
+
 - REGLA: intención comunicativa (communicativeIntent)
   • Si el prompt incluye "Intención comunicativa:", úsalo para construir basicForm y naturalForm:
     – "pedir"           → SOLO usa "Can I get…" / "Could you…" / "Can you…" si el usuario está pidiendo algo A OTRA PERSONA, no si está expresando una necesidad propia con "necesito".
@@ -267,6 +324,25 @@ REGLAS GENERALES:
 - needsClarification = false: si el contexto tiene suficiente detalle y la intención es clara.
 - No pidas aclaración si el usuario ya indicó acción + objeto o acción + destino con intención obvia.
 - Si needsClarification = true: clarifyingQuestion tiene la pregunta; los demás campos son null o [].
+
+REGLA ESPECIAL — frases descriptivas (el usuario describe lo que quiere comunicar):
+Cuando el input contiene patrones como:
+  "necesito decirle/preguntarle/pedirle/explicarle/avisarle/hablarle a..."
+  "cómo le digo/pregunto/pido/explico/aviso/hablo/hago entender a..."
+  "qué le digo a..." / "qué le digo cuando..."
+  "cómo digo que..." / "cómo pregunto si..." / "cómo explico que..." / "cómo aviso que..."
+  "quiero decirle/preguntarle a..."
+
+→ needsClarification = false si la situación es clara (hay suficiente contexto).
+→ needsClarification = true solo si falta información esencial para generar la frase directa.
+→ communicativeIntent según lo que el usuario quiere comunicar a esa persona:
+   - pedir algo → "pedir"
+   - dar una noticia/aviso → "informar"
+   - hacer una pregunta → "preguntar"
+   - dar una instrucción → "dar instrucción"
+→ intent debe describir lo que el usuario quiere DECIRLE a esa persona, usando habla directa.
+   MAL: "decirle al profesor que refuerce la clase"
+   BIEN: "pedirle al profesor que repase la clase anterior"
 
 REGLA ESPECIAL — órdenes directas (imperativo):
 - Si el usuario usa verbos en imperativo en español (baja, trae, deja, sube, lleva, pon, mueve), la intención comunicativa ES "dar instrucción", sin importar si hay "necesito" o no.
