@@ -304,6 +304,38 @@ REGLAS OBLIGATORIAS:
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
+/**
+ * Cleans up AI-generated English phrases:
+ * - Removes unnatural role vocatives at the end: ", teacher?" ", doctor." etc.
+ * - Replaces "reinforce the class/lesson" with "go over the lesson" (not natural English)
+ */
+function cleanPhrase(text) {
+  if (typeof text !== 'string') return text;
+
+  // Remove role vocatives at the end of a phrase: ", teacher?" / ", teacher." / ", teacher"
+  const roles = 'teacher|doctor|boss|manager|coach|nurse|sir|ma\'am|officer|chef|supervisor';
+  text = text.replace(new RegExp(`,\\s*(${roles})[?.!]?$`, 'i'), (match) => {
+    // Keep the punctuation that was at the very end if any
+    const punct = match.match(/[?.!]$/);
+    return punct ? punct[0] : '';
+  });
+
+  // "reinforce the class/lesson/material" → "go over the class/lesson/material"
+  text = text.replace(/\breinforce\s+the\s+(class|lesson|material|topic|subject|content|unit)\b/gi,
+    (_, noun) => `go over the ${noun}`);
+
+  return text.trim();
+}
+
+/**
+ * Applies cleanPhrase to basicForm and naturalForm of a generated practice object.
+ */
+function cleanPracticeData(data) {
+  if (data.basicForm)   data.basicForm   = cleanPhrase(data.basicForm);
+  if (data.naturalForm) data.naturalForm = cleanPhrase(data.naturalForm);
+  return data;
+}
+
 async function callGenerate(messages, maxTokens = 1500) {
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
@@ -613,11 +645,11 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
       }
 
       console.log(`✅ Práctica generada correctamente (con retry)`);
-      return res.json(retryData);
+      return res.json(cleanPracticeData(retryData));
     }
 
     console.log(`✅ Práctica generada correctamente`);
-    res.json(data);
+    res.json(cleanPracticeData(data));
   } catch (error) {
     console.error('❌ Error al generar práctica:', error.message);
     res.status(500).json({ error: 'No se pudo generar la práctica. Intenta de nuevo.' });
