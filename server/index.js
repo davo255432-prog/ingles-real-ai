@@ -682,7 +682,7 @@ app.post('/api/speech', async (req, res) => {
   try {
     const mp3 = await openai.audio.speech.create({
       model: 'tts-1',      // standard model — low latency
-      voice: 'onyx',       // Masculina, profunda, pausada, con autoridad — igual que ChatGPT
+      voice: 'echo',       // Masculina, clara, natural — mejor para aprender pronunciación
       input: text.trim(),
       speed: speedValue,
       response_format: 'mp3',
