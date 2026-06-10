@@ -47,6 +47,7 @@ export interface KeywordEntry {
 export interface PracticeData {
   situation: string;
   basicForm: string;
+  basicPronunciation?: string;
   naturalForm: string;
   pronunciation: string;
   grammarRule: string;

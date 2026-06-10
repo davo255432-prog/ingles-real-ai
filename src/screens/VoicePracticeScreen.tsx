@@ -47,6 +47,7 @@ const RECORD_LABEL: Record<VoiceState, string> = {
 
 interface VoicePracticeScreenProps {
   data: PracticeData;
+  practicePhrase?: string;   // override which phrase to practice (basic or natural)
   onBack: () => void;
   onCorrection: (data: CorrectionData) => void;
   breadcrumb?: string;
@@ -54,10 +55,13 @@ interface VoicePracticeScreenProps {
 
 export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
   data,
+  practicePhrase,
   onBack,
   onCorrection,
   breadcrumb: _breadcrumb,
 }) => {
+  // Use the selected phrase (basic or natural) — defaults to naturalForm
+  const targetPhrase = practicePhrase ?? data.naturalForm;
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [voiceError, setVoiceError] = useState<VoiceError | null>(null);
   const [ttsState, setTtsState]     = useState<TtsState>('idle');
@@ -108,7 +112,7 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
     setTtsState('loading');
 
     try {
-      const playPromise = generateSpeech(data.naturalForm, speed);
+      const playPromise = generateSpeech(targetPhrase, speed);
 
       if (mountedRef.current && ttsCallIdRef.current === callId) {
         setTtsState('playing');
@@ -229,7 +233,7 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
       setVoiceState('evaluating');
       const evaluation = await evaluateSpeaking({
         transcript,
-        expectedPhrase: data.naturalForm,
+        expectedPhrase: targetPhrase,
         situation: data.situation,
         pronunciationGuide: data.pronunciation,
       });
@@ -238,7 +242,7 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
       const correctionData: CorrectionData = evaluation
         ? {
             whatYouSaid: transcript,
-            correctForm: data.naturalForm,
+            correctForm: targetPhrase,
             correction: evaluation.correction,
             pronunciation: data.pronunciation,
             coachNote: evaluation.coachNote,
@@ -252,7 +256,7 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
         : {
             ...mockCorrectionData,
             whatYouSaid: transcript,
-            correctForm: data.naturalForm,
+            correctForm: targetPhrase,
             usedFallback: true,
           };
 
@@ -340,7 +344,7 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
         <div className="mb-6">
           <div className="bg-blue-500 rounded-t-2xl px-5 pt-5 pb-4">
             <p className="text-xs font-semibold text-blue-100 uppercase tracking-wide mb-2">Frase para practicar</p>
-            <p className="text-white font-bold text-xl leading-snug">"{data.naturalForm}"</p>
+            <p className="text-white font-bold text-xl leading-snug">"{targetPhrase}"</p>
           </div>
           {data.pronunciation && (
             <div className="bg-blue-50 border border-blue-100 rounded-b-2xl px-5 py-3">

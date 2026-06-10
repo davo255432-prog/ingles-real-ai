@@ -21,26 +21,25 @@ export const PracticeCard: React.FC<PracticeCardProps> = ({ data }) => {
         <p className="text-xs font-semibold text-blue-500 uppercase tracking-wide mb-2">
           Forma básica
         </p>
-        <p className="text-gray-800 font-semibold text-lg leading-snug">
+        <p className="text-gray-800 font-semibold text-lg leading-snug mb-1">
           "{data.basicForm}"
         </p>
+        {data.basicPronunciation && (
+          <p className="text-blue-400 text-sm italic font-medium leading-snug">
+            {data.basicPronunciation}
+          </p>
+        )}
       </Card>
 
       <Card accent="green">
         <p className="text-xs font-semibold text-green-600 uppercase tracking-wide mb-2">
           Forma natural
         </p>
-        <p className="text-gray-800 font-semibold text-lg leading-snug">
+        <p className="text-gray-800 font-semibold text-lg leading-snug mb-1">
           "{data.naturalForm}"
         </p>
-      </Card>
-
-      <Card accent="purple" className="bg-purple-50">
-        <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-2">
-          Pronunciación aproximada
-        </p>
-        <p className="text-purple-700 font-medium italic leading-relaxed">
-          "{data.pronunciation}"
+        <p className="text-green-500 text-sm italic font-medium leading-snug">
+          {data.pronunciation}
         </p>
       </Card>
 

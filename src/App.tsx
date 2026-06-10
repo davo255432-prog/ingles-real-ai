@@ -49,6 +49,7 @@ function App() {
   const [practiceData, setPracticeData] = useState<PracticeData | null>(null);
   const [lastInput, setLastInput] = useState('');
   const [correctionData, setCorrectionData] = useState<CorrectionData | null>(null);
+  const [practicePhrase, setPracticePhrase] = useState<string | null>(null);
 
   const handleCreatePractice = (data: PracticeData, input: string) => {
     setPracticeData(data);
@@ -59,7 +60,13 @@ function App() {
   const handleCreateAnother = () => {
     setPracticeData(null);
     setLastInput('');
+    setPracticePhrase(null);
     setScreen('how-do-i-say');
+  };
+
+  const handleVoicePractice = (phrase: string) => {
+    setPracticePhrase(phrase);
+    setScreen('voice-practice');
   };
 
   // ── Flow 2 state ──
@@ -111,13 +118,14 @@ function App() {
         <PersonalizedPracticeScreen
           data={practiceData}
           onBack={() => setScreen('how-do-i-say')}
-          onVoicePractice={() => setScreen('voice-practice')}
+          onVoicePractice={handleVoicePractice}
           onCreateAnother={handleCreateAnother}
         />
       )}
       {screen === 'voice-practice' && practiceData && (
         <VoicePracticeScreen
           data={practiceData}
+          practicePhrase={practicePhrase ?? undefined}
           onBack={() => setScreen('practice')}
           onCorrection={(data) => { setCorrectionData(data); setScreen('correction'); }}
         />

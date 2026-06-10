@@ -583,6 +583,7 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
 {
   "situation": "copia exacta de lo que escribió el usuario",
   "basicForm": "frase en inglés más simple y directa (puede ser traducción literal)",
+  "basicPronunciation": "pronunciación de basicForm en sílabas para hispanohablantes",
   "naturalForm": "cómo lo diría un nativo con la intención comunicativa correcta (no solo más palabras)",
   "pronunciation": "pronunciación de naturalForm en sílabas para hispanohablantes",
   "grammarRule": "mini regla en español, máximo 2 oraciones",

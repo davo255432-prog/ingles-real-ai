@@ -13,7 +13,7 @@ type TtsState = 'idle' | 'loading' | 'playing' | 'error';
 interface PersonalizedPracticeScreenProps {
   data: PracticeData;
   onBack: () => void;
-  onVoicePractice: () => void;
+  onVoicePractice: (phrase: string) => void;
   onCreateAnother: () => void;
 }
 
@@ -28,6 +28,7 @@ export const PersonalizedPracticeScreen: React.FC<PersonalizedPracticeScreenProp
   const [saved, setSaved] = useState(false);
   const [ttsState, setTtsState] = useState<TtsState>('idle');
   const [ttsError, setTtsError] = useState<string | null>(null);
+  const [showPhraseSelector, setShowPhraseSelector] = useState(false);
 
   // Track active call so stale async updates don't land after unmount / new call
   const callIdRef = useRef(0);
@@ -195,7 +196,7 @@ export const PersonalizedPracticeScreen: React.FC<PersonalizedPracticeScreenProp
         </Button>
 
         <Button
-          onClick={onVoicePractice}
+          onClick={() => setShowPhraseSelector(true)}
           color="orange"
           variant="primary"
           size="lg"
@@ -223,6 +224,51 @@ export const PersonalizedPracticeScreen: React.FC<PersonalizedPracticeScreenProp
           Crear otra práctica
         </Button>
       </div>
+
+      {/* ── Phrase selector overlay ── */}
+      {showPhraseSelector && (
+        <div className="absolute inset-0 bg-black/50 flex items-end z-50"
+             onClick={() => setShowPhraseSelector(false)}>
+          <div className="w-full bg-white rounded-t-3xl px-5 pt-6 pb-8 safe-pb"
+               onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-5" />
+            <p className="text-gray-800 font-bold text-lg text-center mb-5">
+              ¿Con cuál frase quieres practicar?
+            </p>
+
+            {/* Basic phrase option */}
+            <button
+              onClick={() => { setShowPhraseSelector(false); onVoicePractice(data.basicForm); }}
+              className="w-full text-left bg-blue-50 border-2 border-blue-200 hover:border-blue-400 active:scale-[0.98] rounded-2xl p-4 mb-3 transition-all"
+            >
+              <p className="text-xs font-semibold text-blue-500 uppercase tracking-wide mb-1">Forma básica</p>
+              <p className="text-gray-800 font-bold text-base leading-snug mb-1">"{data.basicForm}"</p>
+              {data.basicPronunciation && (
+                <p className="text-blue-400 text-sm italic">{data.basicPronunciation}</p>
+              )}
+              <p className="text-blue-600 text-xs font-semibold mt-2">Elegir esta →</p>
+            </button>
+
+            {/* Natural phrase option */}
+            <button
+              onClick={() => { setShowPhraseSelector(false); onVoicePractice(data.naturalForm); }}
+              className="w-full text-left bg-green-50 border-2 border-green-200 hover:border-green-400 active:scale-[0.98] rounded-2xl p-4 mb-4 transition-all"
+            >
+              <p className="text-xs font-semibold text-green-600 uppercase tracking-wide mb-1">Forma natural</p>
+              <p className="text-gray-800 font-bold text-base leading-snug mb-1">"{data.naturalForm}"</p>
+              <p className="text-green-500 text-sm italic">{data.pronunciation}</p>
+              <p className="text-green-600 text-xs font-semibold mt-2">Elegir esta →</p>
+            </button>
+
+            <button
+              onClick={() => setShowPhraseSelector(false)}
+              className="w-full text-center text-gray-400 text-sm py-2"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
