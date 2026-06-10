@@ -397,7 +397,7 @@ async function callGenerate(messages, maxTokens = 1500) {
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages,
-    temperature: 0.7,
+    temperature: 0.3,
     max_tokens: maxTokens,
     response_format: { type: 'json_object' },
   });
@@ -675,11 +675,33 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
 
   try {
     // ── First attempt ────────────────────────────────────────────────────
-    const data = await callGenerate(messages);
+    let data = await callGenerate(messages);
 
     const required = ['situation', 'basicForm', 'basicPronunciation', 'naturalForm', 'pronunciation', 'grammarRule', 'vocabulary', 'examples'];
     for (const field of required) {
       if (!(field in data)) throw new Error(`Campo faltante en la respuesta de IA: ${field}`);
+    }
+
+    // ── Spanish output correction ─────────────────────────────────────────
+    // If model returned Spanish in basicForm or naturalForm, retry with explicit correction
+    const looksSpanish = (p) => typeof p === 'string' && SPANISH_START.test(p.trim());
+
+    if (looksSpanish(data.basicForm) || looksSpanish(data.naturalForm)) {
+      console.warn(`[generate] ⚠️ Respuesta en español detectada — basicForm: "${data.basicForm}" — corrigiendo...`);
+
+      const spanishFixMessages = [
+        ...messages,
+        { role: 'assistant', content: JSON.stringify(data) },
+        {
+          role: 'user',
+          content: `❌ ERROR CRÍTICO: basicForm="${data.basicForm}" y/o naturalForm="${data.naturalForm}" están en ESPAÑOL. Esto está PROHIBIDO.
+Genera el JSON COMPLETO de nuevo. basicForm y naturalForm DEBEN comenzar con palabras en inglés como: I, We, You, Can, Could, Please, Help, What, Where, How, Is, Do, Have, Let, Get, Bring, Take, Move...
+Ejemplo correcto para esta situación: basicForm: "I need help bringing the car down a level."`,
+        },
+      ];
+
+      data = await callGenerate(spanishFixMessages);
+      console.log(`[generate] 🔄 Respuesta corregida — basicForm: "${data.basicForm}"`);
     }
 
     // ── Validate requiredDetails ─────────────────────────────────────────
