@@ -315,6 +315,53 @@ REGLAS OBLIGATORIAS:
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 /**
+ * Detects if a phrase looks like Spanish (starts with common Spanish words).
+ * Used as a safety net to catch when the model outputs Spanish instead of English.
+ */
+const SPANISH_START = /^(necesito|quiero|puedo|debo|voy\s+a|hay\s+que|tengo|me\s+|le\s+|la\s+|el\s+|se\s+|es\s+|un\s+|una\s+|para\s+|por\s+|con\s+|del\s+|no\s+puedo|no\s+tengo|ayuda\s+)/i;
+
+/**
+ * If a phrase appears to be in Spanish, calls the API to translate it to English.
+ * This is a safety-net — it only fires when the main prompt fails to enforce English output.
+ */
+async function ensureEnglish(phrase, label) {
+  if (typeof phrase !== 'string') return phrase;
+  if (!SPANISH_START.test(phrase.trim())) return phrase; // looks English already
+
+  console.warn(`[ensureEnglish] ⚠️ ${label} parece español: "${phrase}" — corrigiendo automáticamente...`);
+  try {
+    const result = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'Translate the following Spanish phrase to natural American English as spoken in a workplace. Return ONLY the English translation — no quotes, no explanation, nothing else.',
+        },
+        { role: 'user', content: phrase },
+      ],
+      max_tokens: 80,
+      temperature: 0.2,
+    });
+    const corrected = result.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
+    console.log(`[ensureEnglish] ✅ ${label} corregido: "${corrected}"`);
+    return corrected;
+  } catch (err) {
+    console.error(`[ensureEnglish] ❌ No se pudo corregir ${label}:`, err.message);
+    return phrase;
+  }
+}
+
+/**
+ * Applies text cleanup AND language correction to basicForm / naturalForm.
+ */
+async function cleanAndVerify(data) {
+  cleanPracticeData(data);
+  data.basicForm   = await ensureEnglish(data.basicForm,   'basicForm');
+  data.naturalForm = await ensureEnglish(data.naturalForm, 'naturalForm');
+  return data;
+}
+
+/**
  * Cleans up AI-generated English phrases:
  * - Removes unnatural role vocatives at the end: ", teacher?" ", doctor." etc.
  * - Replaces "reinforce the class/lesson" with "go over the lesson" (not natural English)
@@ -656,11 +703,11 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
       }
 
       console.log(`✅ Práctica generada correctamente (con retry)`);
-      return res.json(cleanPracticeData(retryData));
+      return res.json(await cleanAndVerify(retryData));
     }
 
     console.log(`✅ Práctica generada correctamente`);
-    res.json(cleanPracticeData(data));
+    res.json(await cleanAndVerify(data));
   } catch (error) {
     console.error('❌ Error al generar práctica:', error.message);
     res.status(500).json({ error: 'No se pudo generar la práctica. Intenta de nuevo.' });
