@@ -5,9 +5,11 @@ import type { KeywordEntry } from '../types';
 
 interface PracticeCardProps {
   data: PracticeData;
+  onPracticeBasic?: () => void;
+  onPracticeNatural?: () => void;
 }
 
-export const PracticeCard: React.FC<PracticeCardProps> = ({ data }) => {
+export const PracticeCard: React.FC<PracticeCardProps> = ({ data, onPracticeBasic, onPracticeNatural }) => {
   return (
     <div className="flex flex-col gap-4">
       <Card accent="orange">
@@ -25,9 +27,24 @@ export const PracticeCard: React.FC<PracticeCardProps> = ({ data }) => {
           "{data.basicForm}"
         </p>
         {data.basicPronunciation && (
-          <p className="text-blue-400 text-sm italic font-medium leading-snug">
+          <p className="text-blue-400 text-sm italic font-medium leading-snug mb-2">
             {data.basicPronunciation}
           </p>
+        )}
+        <p className="text-gray-500 text-xs mb-3">📍 {data.situation}</p>
+        {onPracticeBasic && (
+          <button
+            onClick={onPracticeBasic}
+            className="w-full bg-blue-500 hover:bg-blue-600 active:scale-[0.98] text-white text-sm font-bold rounded-xl py-2.5 flex items-center justify-center gap-2 transition-all"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
+            </svg>
+            Practicar esta frase
+          </button>
         )}
       </Card>
 
@@ -38,9 +55,24 @@ export const PracticeCard: React.FC<PracticeCardProps> = ({ data }) => {
         <p className="text-gray-800 font-semibold text-lg leading-snug mb-1">
           "{data.naturalForm}"
         </p>
-        <p className="text-green-500 text-sm italic font-medium leading-snug">
+        <p className="text-green-500 text-sm italic font-medium leading-snug mb-2">
           {data.pronunciation}
         </p>
+        <p className="text-gray-500 text-xs mb-3">📍 {data.situation}</p>
+        {onPracticeNatural && (
+          <button
+            onClick={onPracticeNatural}
+            className="w-full bg-green-500 hover:bg-green-600 active:scale-[0.98] text-white text-sm font-bold rounded-xl py-2.5 flex items-center justify-center gap-2 transition-all"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
+            </svg>
+            Practicar esta frase
+          </button>
+        )}
       </Card>
 
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">

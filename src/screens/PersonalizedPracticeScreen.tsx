@@ -28,7 +28,6 @@ export const PersonalizedPracticeScreen: React.FC<PersonalizedPracticeScreenProp
   const [saved, setSaved] = useState(false);
   const [ttsState, setTtsState] = useState<TtsState>('idle');
   const [ttsError, setTtsError] = useState<string | null>(null);
-  const [showPhraseSelector, setShowPhraseSelector] = useState(false);
 
   // Track active call so stale async updates don't land after unmount / new call
   const callIdRef = useRef(0);
@@ -123,7 +122,11 @@ export const PersonalizedPracticeScreen: React.FC<PersonalizedPracticeScreenProp
           accent="blue"
         />
 
-        <PracticeCard data={data} />
+        <PracticeCard
+          data={data}
+          onPracticeBasic={() => onVoicePractice(data.basicForm)}
+          onPracticeNatural={() => onVoicePractice(data.naturalForm)}
+        />
       </div>
 
       {/* Bottom actions */}
@@ -196,25 +199,6 @@ export const PersonalizedPracticeScreen: React.FC<PersonalizedPracticeScreenProp
         </Button>
 
         <Button
-          onClick={() => setShowPhraseSelector(true)}
-          color="orange"
-          variant="primary"
-          size="lg"
-          fullWidth
-          className="mb-2"
-          icon={
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-              <line x1="12" y1="19" x2="12" y2="23" />
-              <line x1="8" y1="23" x2="16" y2="23" />
-            </svg>
-          }
-        >
-          Practicar con voz ahora
-        </Button>
-
-        <Button
           onClick={onCreateAnother}
           color="gray"
           variant="ghost"
@@ -224,51 +208,6 @@ export const PersonalizedPracticeScreen: React.FC<PersonalizedPracticeScreenProp
           Crear otra práctica
         </Button>
       </div>
-
-      {/* ── Phrase selector overlay ── */}
-      {showPhraseSelector && (
-        <div className="absolute inset-0 bg-black/50 flex items-end z-50"
-             onClick={() => setShowPhraseSelector(false)}>
-          <div className="w-full bg-white rounded-t-3xl px-5 pt-6 pb-8 safe-pb"
-               onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-5" />
-            <p className="text-gray-800 font-bold text-lg text-center mb-5">
-              ¿Con cuál frase quieres practicar?
-            </p>
-
-            {/* Basic phrase option */}
-            <button
-              onClick={() => { setShowPhraseSelector(false); onVoicePractice(data.basicForm); }}
-              className="w-full text-left bg-blue-50 border-2 border-blue-200 hover:border-blue-400 active:scale-[0.98] rounded-2xl p-4 mb-3 transition-all"
-            >
-              <p className="text-xs font-semibold text-blue-500 uppercase tracking-wide mb-1">Forma básica</p>
-              <p className="text-gray-800 font-bold text-base leading-snug mb-1">"{data.basicForm}"</p>
-              {data.basicPronunciation && (
-                <p className="text-blue-400 text-sm italic">{data.basicPronunciation}</p>
-              )}
-              <p className="text-blue-600 text-xs font-semibold mt-2">Elegir esta →</p>
-            </button>
-
-            {/* Natural phrase option */}
-            <button
-              onClick={() => { setShowPhraseSelector(false); onVoicePractice(data.naturalForm); }}
-              className="w-full text-left bg-green-50 border-2 border-green-200 hover:border-green-400 active:scale-[0.98] rounded-2xl p-4 mb-4 transition-all"
-            >
-              <p className="text-xs font-semibold text-green-600 uppercase tracking-wide mb-1">Forma natural</p>
-              <p className="text-gray-800 font-bold text-base leading-snug mb-1">"{data.naturalForm}"</p>
-              <p className="text-green-500 text-sm italic">{data.pronunciation}</p>
-              <p className="text-green-600 text-xs font-semibold mt-2">Elegir esta →</p>
-            </button>
-
-            <button
-              onClick={() => setShowPhraseSelector(false)}
-              className="w-full text-center text-gray-400 text-sm py-2"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

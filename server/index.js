@@ -634,6 +634,11 @@ app.post('/api/generate-practice', async (req, res) => {
 
   const userPrompt = `El usuario escribió: "${userInput.trim()}"${intentNote}${communicativeNote}${contextNote}${detailsNote}
 
+⚠️ REGLA CRÍTICA DE IDIOMA — basicForm y naturalForm SIEMPRE en INGLÉS AMERICANO:
+✗ INCORRECTO (español): "Necesito ayuda para bajar el coche."
+✓ CORRECTO (inglés):    "I need help bringing the car down."
+Si algún campo empieza con una palabra española → corrígelo a inglés antes de responder.
+
 REGLA IMPORTANTE: el campo "situation" debe contener EXACTAMENTE lo que escribió el usuario, sin agregar ni quitar palabras.
 
 Devuelve exactamente este JSON (sin markdown, sin texto extra):
