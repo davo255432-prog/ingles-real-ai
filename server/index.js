@@ -615,7 +615,7 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
     // ── First attempt ────────────────────────────────────────────────────
     const data = await callGenerate(messages);
 
-    const required = ['situation', 'basicForm', 'naturalForm', 'pronunciation', 'grammarRule', 'vocabulary', 'examples'];
+    const required = ['situation', 'basicForm', 'basicPronunciation', 'naturalForm', 'pronunciation', 'grammarRule', 'vocabulary', 'examples'];
     for (const field of required) {
       if (!(field in data)) throw new Error(`Campo faltante en la respuesta de IA: ${field}`);
     }
