@@ -100,39 +100,42 @@ REGLAS OBLIGATORIAS:
   • "cómo explico que..."    / "cómo aviso que..."
   • "quiero decirle a..."    / "quiero preguntarle a..."
 
-  PROCESO OBLIGATORIO — sigue estos 4 pasos en orden:
+  ⚠️ CONDICIÓN DE ACTIVACIÓN — este proceso SOLO aplica si el input contiene
+  EXPLÍCITAMENTE uno de estos patrones detonantes:
+    "necesito decirle a", "necesito preguntarle a", "necesito pedirle a",
+    "cómo le digo a", "cómo le pregunto a", "cómo le pido a",
+    "qué le digo a", "qué le digo cuando", "quiero decirle a",
+    "cómo digo que", "cómo pregunto si", "cómo explico que", "cómo aviso que"
 
-  PASO 1: Ignora el patrón meta. Descarta: "necesito decirle a", "cómo le digo a",
-    "qué le digo a", "cómo le pregunto a", etc. Descarta también el rol de la persona:
-    "mi profesor", "el doctor", "mi jefe", "el manager", etc.
+  Si el input NO contiene ninguno de estos patrones exactos → genera basicForm y
+  naturalForm en inglés de forma normal, sin aplicar los pasos siguientes.
+
+  PROCESO — 4 pasos en orden (solo cuando se activa el patrón):
+
+  PASO 1: Descarta el patrón meta ("necesito decirle a", "cómo le digo a", etc.)
+    y el rol de la persona ("mi profesor", "el doctor", "mi jefe"...).
     Solo te queda la ACCION que el usuario quiere comunicar.
 
   PASO 2: Traduce la ACCION a inglés coloquial. NO traduzcas literal.
-    Equivalencias frecuentes:
-    • "reforzar / repasar / refuerce la clase"  → "go over the class" / "review the lesson"
-      NUNCA "reinforce the class" — "reinforce" no es natural en inglés para clases.
-    • "explicar algo"      → "explain" / "go over it"
-    • "pedir permiso"      → "ask for time off"
-    • "avisar que no voy"  → "let you know I can't make it"
-    • "preguntar el score" → "ask about the score"
+    • "reforzar / repasar / refuerce la clase" → "go over the class" / "review the lesson"
+      NUNCA "reinforce the class"
+    • "explicar algo"     → "explain" / "go over it"
+    • "avisar que no voy" → "let you know I can't make it"
+    • "pedir permiso"     → "ask for time off"
 
-  PASO 3: Construye basicForm como frase directa a esa persona. NO incluyas el rol
-    (teacher / doctor / boss / manager) dentro de la frase — ni en medio ni al final.
-    • Pedir  → "Can you [accion]?"
+  PASO 3: Construye basicForm como frase directa. NO incluyas el rol dentro de la frase.
+    • Pedir    → "Can you [accion]?"
     • Informar → "[Yo] + [verbo]."
     • Preguntar → "What's / Is / Do + [resto]?"
 
   PASO 4: Construye naturalForm igual pero más fluido y cortés.
-    Tampoco incluyas el rol como vocativo al final. ", teacher" / ", doctor" al final
-    de una frase suena forzado y raro en inglés americano. No lo hagas.
+    No agregues el rol como vocativo al final (", teacher" / ", doctor" suena raro en inglés).
 
-  EJEMPLO COMPLETO:
+  EJEMPLO:
   Input: "necesito decirle a mi profesor que refuerce la clase anterior"
-    PASO 1 → accion: "reforzar la clase anterior"
-    PASO 2 → en inglés: "go over the previous lesson"  (NO "reinforce")
-    PASO 3 → basicForm:   "Can you go over the last class again?"
-    PASO 4 → naturalForm: "Could you please review the previous lesson? I'm having trouble keeping up."
-    PROHIBIDO: "Can you teacher reinforce..." / "reinforce the class, teacher" / "I need to tell my teacher..."
+    basicForm:   "Can you go over the last class again?"
+    naturalForm: "Could you please review the previous lesson? I'm having trouble keeping up."
+    PROHIBIDO: "Can you teacher reinforce..." / "reinforce the class, teacher"
 
   Input: "cómo le digo al doctor que me duele la cabeza"
     El usuario le habla DIRECTAMENTE al doctor:
