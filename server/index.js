@@ -560,6 +560,9 @@ Input: "Tráeme el carro."
 → intentExplanation: "El usuario da una orden directa para que le traigan el carro"
 → requiredDetails: [{ "original": "carro", "requiredEnglish": "car" }]`;
 
+// ── Keepalive ping — wakes Render from cold start ─────────────────────────
+app.get('/api/ping', (_req, res) => res.json({ ok: true }));
+
 app.post('/api/analyze-context', async (req, res) => {
   const { userInput } = req.body;
 

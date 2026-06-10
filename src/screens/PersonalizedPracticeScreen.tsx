@@ -3,7 +3,7 @@ import type { PracticeData } from '../types';
 import { Header } from '../components/Header';
 import { PracticeCard } from '../components/PracticeCard';
 import { Button } from '../components/Button';
-import { generateSpeech, stopSpeech } from '../services/speechApi';
+import { generateSpeech, stopSpeech, prefetchSpeech } from '../services/speechApi';
 import type { SpeechSpeed } from '../services/speechApi';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -35,11 +35,13 @@ export const PersonalizedPracticeScreen: React.FC<PersonalizedPracticeScreenProp
 
   useEffect(() => {
     mountedRef.current = true;
+    // Pre-warm TTS in background so "Escuchar frase" plays instantly
+    void prefetchSpeech(data.naturalForm, 'normal');
     return () => {
       mountedRef.current = false;
       stopSpeech();
     };
-  }, []);
+  }, [data.naturalForm]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 

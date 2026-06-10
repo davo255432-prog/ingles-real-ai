@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { API_BASE } from './config/api';
 import type { Screen, PracticeData, UrgentPhraseData, CorrectionData } from './types';
 import { mockCorrectionData, mockUrgentCorrectionData } from './data/mockData';
 
@@ -44,6 +45,11 @@ import { KitchenProgressScreen } from './screens/KitchenProgressScreen';
 
 function App() {
   const [screen, setScreen] = useState<Screen>('home');
+
+  // Wake up Render server on app load so first real request doesn't hit a cold start
+  useEffect(() => {
+    fetch(`${API_BASE}/api/ping`).catch(() => {});
+  }, []);
 
   // ── Flow 1 state ──
   const [practiceData, setPracticeData] = useState<PracticeData | null>(null);

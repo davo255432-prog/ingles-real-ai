@@ -62,10 +62,11 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
 }) => {
   // Use the selected phrase (basic or natural) — defaults to naturalForm
   const targetPhrase = practicePhrase ?? data.naturalForm;
-  const [voiceState, setVoiceState] = useState<VoiceState>('idle');
-  const [voiceError, setVoiceError] = useState<VoiceError | null>(null);
-  const [ttsState, setTtsState]     = useState<TtsState>('idle');
-  const [ttsError, setTtsError]     = useState<string | null>(null);
+  const [voiceState, setVoiceState]       = useState<VoiceState>('idle');
+  const [voiceError, setVoiceError]       = useState<VoiceError | null>(null);
+  const [transcribedText, setTranscribedText] = useState<string | null>(null);
+  const [ttsState, setTtsState]           = useState<TtsState>('idle');
+  const [ttsError, setTtsError]           = useState<string | null>(null);
 
   // Refs — survive re-renders, cleaned up on unmount
   const mediaRecorderRef  = useRef<MediaRecorder | null>(null);
@@ -164,7 +165,10 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
         'audio/mp4',
       ].find((t) => MediaRecorder.isTypeSupported(t)) ?? '';
 
-      const mr = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      const mr = new MediaRecorder(stream, {
+        ...(mimeType ? { mimeType } : {}),
+        audioBitsPerSecond: 16000, // 16 kbps — 8× smaller upload, fine for Whisper
+      });
       mediaRecorderRef.current = mr;
 
       mr.ondataavailable = (e) => {
@@ -229,6 +233,9 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
       // 1 — Transcribe
       const transcript = await transcribeAudio(audioBlob);
 
+      // Show transcription immediately — user sees feedback while evaluation runs
+      setTranscribedText(transcript);
+
       // 2 — Evaluate
       setVoiceState('evaluating');
       const evaluation = await evaluateSpeaking({
@@ -280,6 +287,7 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
   const handleRepeat = () => {
     setVoiceState('idle');
     setVoiceError(null);
+    setTranscribedText(null);
   };
 
   // ── Record button style ──────────────────────────────────────────────────
@@ -406,6 +414,14 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
             <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-2.5">
               <span className="text-amber-400 text-base flex-shrink-0 mt-0.5">⚠️</span>
               <p className="text-amber-700 text-sm leading-snug">{ttsError}</p>
+            </div>
+          )}
+
+          {/* Transcription preview — shown immediately after STT, while evaluation runs */}
+          {voiceState === 'evaluating' && transcribedText && (
+            <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+              <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1">Lo que dijiste</p>
+              <p className="text-gray-700 text-sm italic leading-snug">"{transcribedText}"</p>
             </div>
           )}
 

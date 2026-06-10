@@ -1,19 +1,18 @@
 import { API_BASE } from '../config/api';
 
 // ── Audio singleton — one playback at a time ───────────────────────────────
-// A module-level Audio instance is reused so that calling generateSpeech()
-// again automatically cancels any in-progress fetch/playback first.
 
 let _audio: HTMLAudioElement | null = null;
 let _blobUrl: string | null = null;
 let _abortCtrl: AbortController | null = null;
 
+// ── Pre-warm cache — stores pre-fetched blob URLs keyed by "speed:text" ────
+const _cache = new Map<string, string>();
+
 function cleanup() {
-  // Stop in-flight fetch
   _abortCtrl?.abort();
   _abortCtrl = null;
 
-  // Stop playback and release the object URL
   if (_audio) {
     _audio.pause();
     _audio.src = '';
@@ -30,39 +29,76 @@ function cleanup() {
 export type SpeechSpeed = 'normal' | 'slow';
 
 /**
- * Fetches TTS audio from the server and plays it.
- * Any previous playback (including its fetch) is stopped before starting.
- * Resolves when playback ends; rejects on network / server errors.
+ * Pre-fetches TTS audio in the background and stores it in a cache.
+ * Call this as soon as you know which phrase will be played so that
+ * generateSpeech() can skip the network round-trip and play instantly.
+ * Safe to call multiple times — ignores phrases that are already cached.
  */
-export async function generateSpeech(text: string, speed: SpeechSpeed = 'normal'): Promise<void> {
-  // Cancel whatever was playing / loading
-  cleanup();
+export async function prefetchSpeech(text: string, speed: SpeechSpeed = 'normal'): Promise<void> {
+  const key = `${speed}:${text}`;
+  if (_cache.has(key)) return;
 
-  _abortCtrl = new AbortController();
-  const { signal } = _abortCtrl;
-
-  let response: Response;
   try {
-    response = await fetch(`${API_BASE}/api/speech`, {
+    const response = await fetch(`${API_BASE}/api/speech`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, speed }),
-      signal,
     });
-  } catch (err) {
-    if (err instanceof Error && err.name === 'AbortError') return; // cancelled — not an error
-    throw new Error('No se pudo conectar con el servidor de voz.');
+    if (!response.ok) return; // silently fail — prefetch is best-effort
+    const blob = await response.blob();
+    _cache.set(key, URL.createObjectURL(blob));
+    console.log('[speech] Pre-warmed:', text.slice(0, 40));
+  } catch {
+    // Network error during prefetch — ignore, generateSpeech will retry
+  }
+}
+
+/**
+ * Fetches TTS audio from the server (or uses the pre-warm cache) and plays it.
+ * Any previous playback is stopped before starting.
+ * Resolves when playback ends; rejects on network / server errors.
+ */
+export async function generateSpeech(text: string, speed: SpeechSpeed = 'normal'): Promise<void> {
+  cleanup();
+
+  const key = `${speed}:${text}`;
+  const cachedUrl = _cache.get(key);
+
+  let url: string;
+
+  if (cachedUrl) {
+    // Cache hit — play immediately without a network round-trip
+    _cache.delete(key);
+    url = cachedUrl;
+    console.log('[speech] Cache hit — playing instantly');
+  } else {
+    // Cache miss — fetch normally
+    _abortCtrl = new AbortController();
+    const { signal } = _abortCtrl;
+
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE}/api/speech`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, speed }),
+        signal,
+      });
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      throw new Error('No se pudo conectar con el servidor de voz.');
+    }
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({})) as { error?: string };
+      throw new Error(body.error ?? `Error del servidor: ${response.status}`);
+    }
+
+    const audioBlob = await response.blob();
+    url = URL.createObjectURL(audioBlob);
   }
 
-  if (!response.ok) {
-    const body = await response.json().catch(() => ({})) as { error?: string };
-    throw new Error(body.error ?? `Error del servidor: ${response.status}`);
-  }
-
-  const audioBlob = await response.blob();
-  const url = URL.createObjectURL(audioBlob);
   _blobUrl = url;
-
   const audio = new Audio(url);
   _audio = audio;
 
@@ -77,9 +113,8 @@ export async function generateSpeech(text: string, speed: SpeechSpeed = 'normal'
     };
     audio.play().catch((err: unknown) => {
       cleanup();
-      // Autoplay blocked — treat as non-fatal abort
       if (err instanceof Error && err.name === 'NotAllowedError') {
-        resolve();
+        resolve(); // Autoplay blocked — non-fatal
       } else {
         reject(new Error('No se pudo reproducir el audio.'));
       }
@@ -89,7 +124,6 @@ export async function generateSpeech(text: string, speed: SpeechSpeed = 'normal'
 
 /**
  * Immediately stops any in-progress speech fetch or playback.
- * Safe to call even when nothing is playing.
  */
 export function stopSpeech(): void {
   cleanup();

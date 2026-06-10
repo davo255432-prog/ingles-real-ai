@@ -157,7 +157,10 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
         ? 'audio/webm'
         : '';
 
-      const mr = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+      const mr = new MediaRecorder(stream, {
+        ...(mimeType ? { mimeType } : {}),
+        audioBitsPerSecond: 16000, // 16 kbps — 8× smaller upload, Whisper quality unaffected
+      });
       mediaRecorderRef.current = mr;
       chunksRef.current = [];
 
