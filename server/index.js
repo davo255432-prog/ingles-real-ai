@@ -688,9 +688,9 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
 {
   "situation": "copia exacta de lo que escribió el usuario",
   "basicForm": "frase en inglés más simple y directa (puede ser traducción literal)",
-  "basicPronunciation": "pronunciación de basicForm en sílabas para hispanohablantes",
+  "basicPronunciation": "pronunciación SOLO de basicForm — NUNCA copies la pronunciación de naturalForm aquí. Ejemplo: si basicForm='We are out of onions.' → basicPronunciation='wir aut ov ón-yons'",
   "naturalForm": "cómo lo diría un nativo con la intención comunicativa correcta (no solo más palabras)",
-  "pronunciation": "pronunciación de naturalForm en sílabas para hispanohablantes",
+  "pronunciation": "pronunciación SOLO de naturalForm en sílabas para hispanohablantes. Ejemplo: si naturalForm='Just so you know, we\\'re out of onions.' → pronunciation='yast so yu nou, wir aut ov ón-yons'",
   "grammarRule": "mini regla en español, máximo 2 oraciones",
   "vocabulary": ["palabra clave 1", "palabra clave 2", "palabra clave 3"],
   "examples": [
@@ -752,7 +752,9 @@ Devuelve SOLO la pronunciación de la frase completa, en una línea, sin comilla
         console.log(`[generate] ✅ basicPronunciation generado: "${data.basicPronunciation}"`);
       } catch (err) {
         console.warn('[generate] ⚠️ No se pudo generar basicPronunciation:', err.message);
-        data.basicPronunciation = data.basicPronunciation?.trim() || data.pronunciation || '';
+        // Do NOT fall back to data.basicPronunciation (model always copies naturalForm there).
+        // Leave it empty — an empty pronunciation is better than a wrong one.
+        data.basicPronunciation = '';
       }
     }
 
