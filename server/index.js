@@ -718,10 +718,34 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
       if (!(field in data)) throw new Error(`Campo faltante en la respuesta de IA: ${field}`);
     }
 
-    // If basicPronunciation came back empty, fill it from the pronunciation guide
-    // (model sometimes omits it even though the field is required)
-    if (!data.basicPronunciation?.trim() && data.pronunciation?.trim()) {
-      data.basicPronunciation = data.pronunciation;
+    // If basicPronunciation came back empty, generate it from basicForm directly.
+    // Do NOT fall back to pronunciation (that belongs to naturalForm and would be wrong).
+    if (!data.basicPronunciation?.trim() && data.basicForm?.trim()) {
+      try {
+        const pronResult = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: `Escribe la pronunciación aproximada de esta frase en inglés tal como la escucharía un hispanohablante.
+Usa sílabas en español que imiten el sonido real. Reglas:
+• "we" → "wi"  • "are" → "ar"  • "out" → "aut"  • "of" → "ov"  • "the" → "de/di"
+• "just" → "yast"  • "so" → "so"  • "you" → "yu"  • "know" → "nou"
+• "we're" → "wir"  • "need" → "nid"  • "can" → "kan"  • "get" → "guet"
+Devuelve SOLO la pronunciación, sin comillas ni explicación.`,
+            },
+            { role: 'user', content: data.basicForm },
+          ],
+          max_tokens: 40,
+          temperature: 0.1,
+        });
+        data.basicPronunciation = pronResult.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
+        console.log(`[generate] ✅ basicPronunciation generado: "${data.basicPronunciation}"`);
+      } catch (err) {
+        // Last resort only: copy naturalForm pronunciation rather than show nothing
+        console.warn('[generate] ⚠️ No se pudo generar basicPronunciation, usando fallback:', err.message);
+        data.basicPronunciation = data.pronunciation ?? '';
+      }
     }
 
     // ── Spanish output correction ─────────────────────────────────────────
