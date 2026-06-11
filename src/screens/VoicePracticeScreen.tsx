@@ -62,6 +62,10 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
 }) => {
   // Use the selected phrase (basic or natural) — defaults to naturalForm
   const targetPhrase = practicePhrase ?? data.naturalForm;
+  // Use the matching pronunciation for the selected phrase
+  const targetPronunciation = (practicePhrase === data.basicForm && data.basicPronunciation)
+    ? data.basicPronunciation
+    : data.pronunciation;
   const [voiceState, setVoiceState]       = useState<VoiceState>('idle');
   const [voiceError, setVoiceError]       = useState<VoiceError | null>(null);
   const [transcribedText, setTranscribedText] = useState<string | null>(null);
@@ -354,13 +358,13 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
             <p className="text-xs font-semibold text-blue-100 uppercase tracking-wide mb-2">Frase para practicar</p>
             <p className="text-white font-bold text-xl leading-snug">"{targetPhrase}"</p>
           </div>
-          {data.pronunciation && (
+          {targetPronunciation && (
             <div className="bg-blue-50 border border-blue-100 rounded-b-2xl px-5 py-3">
               <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1">
                 Pronunciación aproximada
               </p>
               <p className="text-blue-700 text-sm italic leading-relaxed">
-                {data.pronunciation}
+                {targetPronunciation}
               </p>
             </div>
           )}

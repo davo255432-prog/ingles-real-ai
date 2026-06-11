@@ -685,6 +685,12 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
       if (!(field in data)) throw new Error(`Campo faltante en la respuesta de IA: ${field}`);
     }
 
+    // If basicPronunciation came back empty, fill it from the pronunciation guide
+    // (model sometimes omits it even though the field is required)
+    if (!data.basicPronunciation?.trim() && data.pronunciation?.trim()) {
+      data.basicPronunciation = data.pronunciation;
+    }
+
     // ── Spanish output correction ─────────────────────────────────────────
     // If model returned Spanish in basicForm or naturalForm, retry with explicit correction
     const looksSpanish = (p) => typeof p === 'string' && SPANISH_START.test(p.trim());
