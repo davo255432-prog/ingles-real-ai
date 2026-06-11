@@ -283,17 +283,23 @@ REGLAS OBLIGATORIAS:
 - Cortos, prácticos, distintos entre sí.
 
 5. PEDAGOGÍA
-⚠️ REGLA CRÍTICA DE PEDAGOGÍA: phraseBreakdown Y keywords se generan SIEMPRE a partir de naturalForm — NUNCA de basicForm.
-   Si naturalForm es "Just so you know, we're out of onions." → analiza ESA frase, no "We are out of onions."
+⚠️ REGLA CRÍTICA DE PEDAGOGÍA: El alumno necesita entender AMBAS frases.
+   - basicPhraseBreakdown → divide basicForm en bloques (máximo 3). Traducción directa de cada parte.
+   - phraseBreakdown → divide naturalForm en bloques (máximo 4). Explica las expresiones coloquiales.
 
-- phraseBreakdown: divide naturalForm en bloques exactos (máximo 4). Significado preciso, no genérico.
-    Ejemplo correcto (naturalForm = "Just so you know, we're out of onions."):
+- basicPhraseBreakdown: divide basicForm en bloques exactos (máximo 3). Significado preciso.
+    Ejemplo (basicForm = "We are out of onions."):
+      "We are out of" → "No tenemos más / Se nos acabó"
+      "onions" → "cebollas"
+    Ejemplo (basicForm = "I need the keys."):
+      "I need" → "Necesito" | "the keys" → "las llaves"
+
+- phraseBreakdown: divide naturalForm en bloques exactos (máximo 4). Explica expresiones coloquiales.
+    Ejemplo (naturalForm = "Just so you know, we're out of onions."):
       "Just so you know" → "Para que sepas / Para informarte"
       "we're out of" → "nos quedamos sin / no tenemos más"
       "onions" → "cebollas"
-    Ejemplo correcto (naturalForm = "We need to carry the boxes."):
-      "We need to" → "Necesitamos / hay que" | "carry the boxes" → "llevar las cajas"
-    ❌ MAL: usar bloques de basicForm ("We are out of", "I need") cuando naturalForm es diferente.
+    ❌ MAL: usar bloques de basicForm aquí cuando naturalForm es diferente.
 
 - whyThisPhrase: 1-2 oraciones explicando por qué esas palabras específicas de naturalForm. No genérico.
     Mal: "Esta construcción es adecuada para expresar necesidad."
@@ -803,10 +809,14 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
     { "english": "variación útil", "spanish": "traducción" },
     { "english": "variación útil", "spanish": "traducción" }
   ],
+  "basicPhraseBreakdown": [
+    { "part": "bloque de basicForm", "meaning": "significado exacto" },
+    { "part": "bloque de basicForm", "meaning": "significado exacto" }
+  ],
   "phraseBreakdown": [
-    { "part": "bloque", "meaning": "significado exacto" },
-    { "part": "bloque", "meaning": "significado exacto" },
-    { "part": "bloque", "meaning": "significado exacto" }
+    { "part": "bloque de naturalForm", "meaning": "significado exacto" },
+    { "part": "bloque de naturalForm", "meaning": "significado exacto" },
+    { "part": "bloque de naturalForm", "meaning": "significado exacto" }
   ],
   "whyThisPhrase": "por qué estas palabras específicas en español",
   "whenToUse": "cuándo usarla en la vida real, 1 oración",

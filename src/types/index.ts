@@ -53,6 +53,7 @@ export interface PracticeData {
   grammarRule: string;
   grammarExamples: string[];
   // Pedagogical enrichment — optional for backward compatibility with mock data
+  basicPhraseBreakdown?: { part: string; meaning: string }[];
   phraseBreakdown?: { part: string; meaning: string }[];
   whyThisPhrase?: string;
   whenToUse?: string;

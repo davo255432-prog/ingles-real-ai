@@ -14,6 +14,7 @@ interface ApiPracticeResponse {
   vocabulary: string[];
   examples: { english: string; spanish: string }[];
   // Pedagogical enrichment (optional)
+  basicPhraseBreakdown?: { part: string; meaning: string }[];
   phraseBreakdown?: { part: string; meaning: string }[];
   whyThisPhrase?: string;
   whenToUse?: string;
@@ -67,6 +68,7 @@ function mapToPracticeData(api: ApiPracticeResponse): PracticeData {
     pronunciation: api.pronunciation,
     grammarRule: api.grammarRule,
     grammarExamples: api.examples.map((e) => e.english),
+    basicPhraseBreakdown: api.basicPhraseBreakdown,
     phraseBreakdown: api.phraseBreakdown,
     whyThisPhrase: api.whyThisPhrase,
     whenToUse: api.whenToUse,

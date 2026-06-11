@@ -89,24 +89,49 @@ export const PracticeCard: React.FC<PracticeCardProps> = ({ data, onPracticeBasi
       </div>
 
       {/* ── Phrase breakdown ─────────────────────────────────────── */}
-      {data.phraseBreakdown && data.phraseBreakdown.length > 0 && (
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
-          <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-3">
-            Entiende la frase
+      {(data.basicPhraseBreakdown?.length || data.phraseBreakdown?.length) ? (
+        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 flex flex-col gap-4">
+          <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
+            Entiende las frases
           </p>
-          <div className="flex flex-col gap-2">
-            {data.phraseBreakdown.map((item, i) => (
-              <div key={i} className="flex items-center gap-2 flex-wrap">
-                <span className="bg-blue-500 text-white text-sm font-bold px-3 py-1 rounded-lg">
-                  {item.part}
-                </span>
-                <span className="text-blue-400 font-bold text-sm">→</span>
-                <span className="text-gray-700 text-sm font-medium">{item.meaning}</span>
+
+          {/* Basic breakdown */}
+          {data.basicPhraseBreakdown && data.basicPhraseBreakdown.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-blue-400 mb-2">Forma básica</p>
+              <div className="flex flex-col gap-2">
+                {data.basicPhraseBreakdown.map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 flex-wrap">
+                    <span className="bg-blue-400 text-white text-sm font-bold px-3 py-1 rounded-lg">
+                      {item.part}
+                    </span>
+                    <span className="text-blue-400 font-bold text-sm">→</span>
+                    <span className="text-gray-700 text-sm font-medium">{item.meaning}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          {/* Natural breakdown */}
+          {data.phraseBreakdown && data.phraseBreakdown.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-blue-600 mb-2">Forma natural</p>
+              <div className="flex flex-col gap-2">
+                {data.phraseBreakdown.map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 flex-wrap">
+                    <span className="bg-blue-500 text-white text-sm font-bold px-3 py-1 rounded-lg">
+                      {item.part}
+                    </span>
+                    <span className="text-blue-400 font-bold text-sm">→</span>
+                    <span className="text-gray-700 text-sm font-medium">{item.meaning}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      ) : null}
 
       {/* ── Keywords ─────────────────────────────────────────────── */}
       {data.keywords && data.keywords.length > 0 && (
