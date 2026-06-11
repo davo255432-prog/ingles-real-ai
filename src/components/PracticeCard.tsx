@@ -26,11 +26,9 @@ export const PracticeCard: React.FC<PracticeCardProps> = ({ data, onPracticeBasi
         <p className="text-gray-800 font-semibold text-lg leading-snug mb-1">
           "{data.basicForm}"
         </p>
-        {data.basicPronunciation && (
-          <p className="text-blue-400 text-sm italic font-medium leading-snug mb-2">
-            {data.basicPronunciation}
-          </p>
-        )}
+        <p className="text-blue-400 text-sm italic font-medium leading-snug mb-2">
+          {data.basicPronunciation || data.pronunciation}
+        </p>
         <p className="text-gray-500 text-xs mb-3">📍 {data.situation}</p>
         {onPracticeBasic && (
           <button
