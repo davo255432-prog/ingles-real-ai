@@ -733,7 +733,7 @@ Usa sílabas en español que imiten el sonido real. Reglas fonéticas:
 • "we" → "wi"    • "are" → "ar"   • "out" → "aut"  • "of" → "ov"   • "the" → "de/di"
 • "just" → "yast" • "so" → "so"   • "you" → "yu"   • "know" → "nou"
 • "we're" → "wir" • "need" → "nid" • "can" → "kan"  • "get" → "guet"
-• "onions" → "óniens"  • "help" → "jelp"  • "keys" → "kiis"
+• "onions" → "ón-yons"  • "help" → "jelp"  • "keys" → "kiis"
 Devuelve SOLO la pronunciación de la frase completa, en una línea, sin comillas ni explicación.`,
             },
             { role: 'user', content: data.basicForm },
