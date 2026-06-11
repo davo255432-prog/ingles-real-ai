@@ -393,6 +393,7 @@ async function cleanAndVerify(data) {
   cleanPracticeData(data);
   data.basicForm   = await ensureEnglish(data.basicForm,   'basicForm');
   data.naturalForm = await ensureEnglish(data.naturalForm, 'naturalForm');
+  await ensureDistinctNatural(data);
   return data;
 }
 
@@ -422,6 +423,84 @@ function cleanPhrase(text) {
     (_, noun) => `go over the ${noun}`);
 
   return text.trim();
+}
+
+/**
+ * Checks if naturalForm is too similar to basicForm (just a contraction or trivial change).
+ * Returns true if they are essentially the same phrase.
+ */
+function tooSimilar(basic, natural) {
+  if (typeof basic !== 'string' || typeof natural !== 'string') return false;
+  // Normalize: lowercase, expand common contractions, strip punctuation
+  const norm = (s) => s.toLowerCase()
+    .replace(/we're/g, 'we are').replace(/i'm/g, 'i am')
+    .replace(/he's/g, 'he is').replace(/she's/g, 'she is')
+    .replace(/it's/g, 'it is').replace(/they're/g, 'they are')
+    .replace(/you're/g, 'you are').replace(/that's/g, 'that is')
+    .replace(/don't/g, 'do not').replace(/can't/g, 'cannot')
+    .replace(/won't/g, 'will not').replace(/isn't/g, 'is not')
+    .replace(/aren't/g, 'are not').replace(/wasn't/g, 'was not')
+    .replace(/[.,!?'"]/g, '').replace(/\s+/g, ' ').trim();
+  return norm(basic) === norm(natural);
+}
+
+/**
+ * If naturalForm is too similar to basicForm, asks the model to generate a distinct one.
+ */
+async function ensureDistinctNatural(data) {
+  if (!tooSimilar(data.basicForm, data.naturalForm)) return;
+
+  console.warn(`[generate] ⚠️ naturalForm es casi igual a basicForm: "${data.naturalForm}" — corrigiendo...`);
+  try {
+    const result = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: `You are helping create a natural-sounding English phrase for Spanish-speaking English learners.
+The user has a basic/direct phrase. Generate a MORE NATURAL version that a native speaker would actually say at work.
+Rules:
+- Add context or tone: "Just so you know,", "Heads up,", "Hey,", "FYI,", etc.
+- Or rephrase with common colloquial expressions.
+- Must be clearly DIFFERENT from the basic phrase, not just a contraction.
+- Keep the same meaning and subject.
+- Return ONLY the natural phrase, nothing else.`,
+        },
+        { role: 'user', content: `Basic phrase: "${data.basicForm}"\nGenerate a natural version:` },
+      ],
+      max_tokens: 60,
+      temperature: 0.5,
+    });
+    const improved = result.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
+    if (improved && !tooSimilar(data.basicForm, improved)) {
+      data.naturalForm = improved;
+      console.log(`[generate] ✅ naturalForm corregido: "${data.naturalForm}"`);
+
+      // Also regenerate pronunciation for the new naturalForm
+      try {
+        const pronResult = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: `Escribe la pronunciación aproximada de esta frase en inglés tal como la escucharía un hispanohablante.
+Usa sílabas en español que imiten el sonido real.
+Devuelve SOLO la pronunciación, en una línea, sin comillas ni explicación.`,
+            },
+            { role: 'user', content: data.naturalForm },
+          ],
+          max_tokens: 60,
+          temperature: 0.1,
+        });
+        data.pronunciation = pronResult.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
+        console.log(`[generate] ✅ pronunciation actualizado: "${data.pronunciation}"`);
+      } catch (pronErr) {
+        console.warn('[generate] ⚠️ No se pudo regenerar pronunciation:', pronErr.message);
+      }
+    }
+  } catch (err) {
+    console.warn('[generate] ⚠️ No se pudo corregir naturalForm:', err.message);
+  }
 }
 
 /**
