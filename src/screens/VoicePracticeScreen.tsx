@@ -246,7 +246,7 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
         transcript,
         expectedPhrase: targetPhrase,
         situation: data.situation,
-        pronunciationGuide: data.pronunciation,
+        pronunciationGuide: targetPronunciation,
       });
 
       // 3 — Build CorrectionData and navigate
@@ -255,7 +255,7 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
             whatYouSaid: transcript,
             correctForm: targetPhrase,
             correction: evaluation.correction,
-            pronunciation: data.pronunciation,
+            pronunciation: targetPronunciation,
             coachNote: evaluation.coachNote,
             score: evaluation.score,
             missingWords: evaluation.missingWords,
