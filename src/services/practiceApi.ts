@@ -7,6 +7,7 @@ import { API_BASE } from '../config/api';
 interface ApiPracticeResponse {
   situation: string;
   basicForm: string;
+  basicPronunciation?: string;
   naturalForm: string;
   pronunciation: string;
   grammarRule: string;
@@ -61,6 +62,7 @@ function mapToPracticeData(api: ApiPracticeResponse): PracticeData {
   return {
     situation: api.situation,
     basicForm: api.basicForm,
+    basicPronunciation: api.basicPronunciation,
     naturalForm: api.naturalForm,
     pronunciation: api.pronunciation,
     grammarRule: api.grammarRule,
