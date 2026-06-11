@@ -310,24 +310,36 @@ REGLAS OBLIGATORIAS:
 - basicVsNatural: compara las frases concretas. NUNCA uses "basicForm" ni "naturalForm" como nombres.
     Bien: "'We are out of onions' es directo. 'Just so you know, we're out of onions' suena más natural y amigable al informar."
 
+⚠️ REGLA CRÍTICA DE PALABRAS CLAVE: El alumno necesita las palabras de AMBAS frases.
+   - basicKeywords → hasta 3 palabras/expresiones clave extraídas de basicForm.
+   - keywords → hasta 4 palabras/expresiones clave extraídas de naturalForm.
+
+- basicKeywords: hasta 3 palabras o expresiones clave de basicForm. Para cada una:
+    • word: la palabra o expresión exacta tal como aparece en basicForm.
+    • meaning: significado en español, claro y breve.
+    • pronunciation: pronunciación aproximada para hispanohablantes (usa las reglas fonéticas).
+    • usage: cómo funciona en basicForm concretamente. 1 oración.
+    • exampleEnglish: ejemplo corto en inglés.
+    • exampleSpanish: traducción del ejemplo.
+  Prioriza el verbo principal y sustantivos clave de basicForm.
+  REGLA ESPECIAL — "need": si basicForm contiene "need", SIEMPRE inclúyela en basicKeywords:
+    { "word": "need", "meaning": "necesitar", "pronunciation": "nid",
+      "usage": "Se usa para expresar que necesitas algo ('I need the keys') o una acción ('I need to move the car').",
+      "exampleEnglish": "I need the keys.", "exampleSpanish": "Necesito las llaves." }
+  NO incluyas artículos ni pronombres básicos ("I", "the", "a") salvo que sean parte de una expresión.
+
 - keywords: hasta 4 palabras o expresiones clave extraídas de naturalForm. Para cada una:
-    • word: la palabra o expresión exacta tal como aparece en la frase.
+    • word: la palabra o expresión exacta tal como aparece en naturalForm.
     • meaning: significado en español, claro y breve.
     • pronunciation: pronunciación aproximada para hispanohablantes (usa las reglas fonéticas del sistema).
     • usage: cómo funciona esa palabra o expresión en esta frase concreta. 1 oración.
     • exampleEnglish: ejemplo corto y reutilizable en inglés.
     • exampleSpanish: traducción del ejemplo al español.
-  Prioriza verbos de acción, sustantivos clave y expresiones reutilizables ("Can I get", "need to", "move the car", "second floor").
-  REGLA ESPECIAL — "need": si "need" es la palabra central de la frase (el usuario dijo "necesito", "necesitamos", "hace falta"), SIEMPRE inclúyela como keyword con estos valores exactos:
-    { "word": "need", "meaning": "necesitar", "pronunciation": "nid",
-      "usage": "Se usa para expresar que necesitas algo ('I need the keys') o que necesitas realizar una acción ('I need to move the car').",
-      "exampleEnglish": "I need the keys.", "exampleSpanish": "Necesito las llaves." }
-  Adapta el exampleEnglish al contexto real de la frase cuando sea más claro que el ejemplo genérico.
+  Prioriza las expresiones coloquiales únicas de naturalForm ("Just so you know", "Heads up", "Can I get", "real quick").
+  NO repitas exactamente los bloques de phraseBreakdown — céntrate en vocabulario reutilizable.
   NO incluyas artículos ni pronombres básicos ("I", "the", "a") salvo que sean parte de una expresión clave.
-  NO repitas exactamente los bloques de phraseBreakdown — céntrate en vocabulario que el usuario puede reutilizar en otras situaciones.
-  Ejemplo para "Can I get the keys to move the car?":
+  Ejemplo para naturalForm = "Can I get the keys to move the car?":
     { "word": "Can I get", "meaning": "¿Me pueden dar? / ¿Puedo obtener?", "pronunciation": "kan ai guet", "usage": "Forma natural y cortés de pedir algo.", "exampleEnglish": "Can I get a menu?", "exampleSpanish": "¿Me pueden dar un menú?" }
-    { "word": "keys", "meaning": "llaves", "pronunciation": "kiis", "usage": "Objeto que se pide en esta situación.", "exampleEnglish": "Where are the keys?", "exampleSpanish": "¿Dónde están las llaves?" }
     { "word": "move the car", "meaning": "mover el carro", "pronunciation": "muv de kar", "usage": "Expresión para indicar que hay que cambiar el carro de lugar.", "exampleEnglish": "Can you move the car?", "exampleSpanish": "¿Puedes mover el carro?" }
 
 6. FORMATO
@@ -821,8 +833,11 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
   "whyThisPhrase": "por qué estas palabras específicas en español",
   "whenToUse": "cuándo usarla en la vida real, 1 oración",
   "basicVsNatural": "diferencia entre las dos frases mencionando las frases reales, no 'basicForm' ni 'naturalForm'",
+  "basicKeywords": [
+    { "word": "palabra o expresión clave de basicForm", "meaning": "significado en español", "pronunciation": "pronunciación para hispanohablantes", "usage": "cómo funciona en basicForm", "exampleEnglish": "ejemplo corto en inglés", "exampleSpanish": "traducción del ejemplo" }
+  ],
   "keywords": [
-    { "word": "palabra o expresión clave", "meaning": "significado en español", "pronunciation": "pronunciación para hispanohablantes", "usage": "cómo funciona en esta frase", "exampleEnglish": "ejemplo corto en inglés", "exampleSpanish": "traducción del ejemplo" }
+    { "word": "palabra o expresión clave de naturalForm", "meaning": "significado en español", "pronunciation": "pronunciación para hispanohablantes", "usage": "cómo funciona en esta frase", "exampleEnglish": "ejemplo corto en inglés", "exampleSpanish": "traducción del ejemplo" }
   ]
 }`;
 

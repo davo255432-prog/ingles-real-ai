@@ -19,6 +19,14 @@ interface ApiPracticeResponse {
   whyThisPhrase?: string;
   whenToUse?: string;
   basicVsNatural?: string;
+  basicKeywords?: {
+    word: string;
+    meaning: string;
+    pronunciation: string;
+    usage: string;
+    exampleEnglish: string;
+    exampleSpanish: string;
+  }[];
   keywords?: {
     word: string;
     meaning: string;
@@ -73,6 +81,7 @@ function mapToPracticeData(api: ApiPracticeResponse): PracticeData {
     whyThisPhrase: api.whyThisPhrase,
     whenToUse: api.whenToUse,
     basicVsNatural: api.basicVsNatural,
+    basicKeywords: api.basicKeywords,
     keywords: api.keywords,
   };
 }

@@ -134,37 +134,64 @@ export const PracticeCard: React.FC<PracticeCardProps> = ({ data, onPracticeBasi
       ) : null}
 
       {/* ── Keywords ─────────────────────────────────────────────── */}
-      {data.keywords && data.keywords.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-5">
-          <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide mb-3">
+      {(data.basicKeywords?.length || data.keywords?.length) ? (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-5 flex flex-col gap-4">
+          <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide">
             Palabras clave
           </p>
-          <div className="flex flex-col gap-3">
-            {data.keywords.map((kw: KeywordEntry, i: number) => (
-              <div key={i} className="bg-white border border-yellow-100 rounded-xl p-3">
-                {/* Word + pronunciation */}
-                <div className="flex items-baseline justify-between gap-2 mb-1">
-                  <span className="font-bold text-yellow-700 text-sm leading-snug">
-                    {kw.word}
-                  </span>
-                  <span className="text-yellow-500 text-xs italic font-medium shrink-0">
-                    {kw.pronunciation}
-                  </span>
-                </div>
-                {/* Meaning */}
-                <p className="text-gray-700 text-sm font-semibold mb-1">{kw.meaning}</p>
-                {/* Usage note */}
-                <p className="text-gray-500 text-xs leading-relaxed mb-2">{kw.usage}</p>
-                {/* Example */}
-                <div className="bg-yellow-50 border border-yellow-100 rounded-lg px-3 py-2 flex flex-col gap-0.5">
-                  <p className="text-gray-800 text-xs font-semibold">{kw.exampleEnglish}</p>
-                  <p className="text-gray-500 text-xs">{kw.exampleSpanish}</p>
-                </div>
+
+          {/* Basic keywords */}
+          {data.basicKeywords && data.basicKeywords.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-yellow-600 mb-3">Forma básica</p>
+              <div className="flex flex-col gap-3">
+                {data.basicKeywords.map((kw: KeywordEntry, i: number) => (
+                  <div key={i} className="bg-white border border-yellow-100 rounded-xl p-3">
+                    <div className="flex items-baseline justify-between gap-2 mb-1">
+                      <span className="font-bold text-yellow-700 text-sm leading-snug">{kw.word}</span>
+                      <span className="text-yellow-500 text-xs italic font-medium shrink-0">{kw.pronunciation}</span>
+                    </div>
+                    <p className="text-gray-700 text-sm font-semibold mb-1">{kw.meaning}</p>
+                    <p className="text-gray-500 text-xs leading-relaxed mb-2">{kw.usage}</p>
+                    <div className="bg-yellow-50 border border-yellow-100 rounded-lg px-3 py-2 flex flex-col gap-0.5">
+                      <p className="text-gray-800 text-xs font-semibold">{kw.exampleEnglish}</p>
+                      <p className="text-gray-500 text-xs">{kw.exampleSpanish}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          {/* Divider between sections */}
+          {data.basicKeywords && data.basicKeywords.length > 0 && data.keywords && data.keywords.length > 0 && (
+            <div className="border-t border-yellow-200" />
+          )}
+
+          {/* Natural keywords */}
+          {data.keywords && data.keywords.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-yellow-700 mb-3">Forma natural</p>
+              <div className="flex flex-col gap-3">
+                {data.keywords.map((kw: KeywordEntry, i: number) => (
+                  <div key={i} className="bg-white border border-yellow-100 rounded-xl p-3">
+                    <div className="flex items-baseline justify-between gap-2 mb-1">
+                      <span className="font-bold text-yellow-700 text-sm leading-snug">{kw.word}</span>
+                      <span className="text-yellow-500 text-xs italic font-medium shrink-0">{kw.pronunciation}</span>
+                    </div>
+                    <p className="text-gray-700 text-sm font-semibold mb-1">{kw.meaning}</p>
+                    <p className="text-gray-500 text-xs leading-relaxed mb-2">{kw.usage}</p>
+                    <div className="bg-yellow-50 border border-yellow-100 rounded-lg px-3 py-2 flex flex-col gap-0.5">
+                      <p className="text-gray-800 text-xs font-semibold">{kw.exampleEnglish}</p>
+                      <p className="text-gray-500 text-xs">{kw.exampleSpanish}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      ) : null}
 
       {/* ── Why this phrase ──────────────────────────────────────── */}
       {data.whyThisPhrase && (

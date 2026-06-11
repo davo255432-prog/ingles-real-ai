@@ -58,6 +58,7 @@ export interface PracticeData {
   whyThisPhrase?: string;
   whenToUse?: string;
   basicVsNatural?: string;
+  basicKeywords?: KeywordEntry[];
   keywords?: KeywordEntry[];
 }
 
