@@ -697,7 +697,7 @@ Input: "Tráeme el carro."
 → requiredDetails: [{ "original": "carro", "requiredEnglish": "car" }]`;
 
 // ── Keepalive ping — wakes Render from cold start ─────────────────────────
-app.get('/api/ping', (_req, res) => res.json({ ok: true }));
+app.get('/api/ping', (_req, res) => res.json({ ok: true, version: 7 }));
 
 app.post('/api/analyze-context', async (req, res) => {
   const { userInput } = req.body;
