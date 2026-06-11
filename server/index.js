@@ -316,16 +316,24 @@ REGLAS OBLIGATORIAS:
 
 /**
  * Detects if a phrase is in Spanish.
- * Checks both the start of the phrase AND Spanish content words anywhere inside it.
- * Catches tricky cases like "Chef, nos hemos quedado sin cebollas." that start
- * with an English role word but are otherwise fully Spanish.
+ * Three-layer check:
+ *   1. Spanish accented characters / punctuation — 100% reliable signal
+ *   2. Spanish words at the START of the phrase
+ *   3. Spanish content words anywhere in the phrase
  */
-const SPANISH_START = /^(necesito|quiero|puedo|debo|voy\s+a|hay\s+que|tengo|me\s+|le\s+|la\s+|el\s+|se\s+|es\s+|un\s+|una\s+|para\s+|por\s+|con\s+|del\s+|no\s+puedo|no\s+tengo|ayuda\s+)/i;
-const SPANISH_CONTENT = /\b(nos|hemos|quedado|necesitamos|podría|pedirle|gerente|cebollas|estamos|tenemos|también|cuando|después|ahora|nuestro|ellos|nosotros|vosotros|porque|aunque|mientras|entonces|además|tampoco|ningún|ninguna|alguien|nadie|algo|nada|siempre|nunca|todavía|ya\s+no|haber|tener|hacer|decir|estar|poder|querer|saber|volver|poner|seguir|llevar|dejar|pasar|quedar|partir|acabar|faltar|sobrar|urgente)\b/i;
+// Layer 1 — accented chars unique to Spanish (never appear in natural English)
+const SPANISH_ACCENT = /[áéíóúüñ¡¿àèì]/i;
+
+// Layer 2 — strong Spanish words at phrase START
+const SPANISH_START = /^(necesito|quiero|puedo|debo|voy\s+a|hay\s+que|tengo|me\s+|le\s+|la\s+|las\s+|los\s+|el\s+|se\s+|es\s+|un\s+|una\s+|para\s+|por\s+|con\s+|del\s+|no\s+puedo|no\s+tengo|ayuda\s+)/i;
+
+// Layer 3 — unambiguous Spanish words that never appear in English phrases
+const SPANISH_CONTENT = /\b(nos|hemos|quedado|necesitamos|podría|pedirle|gerente|cebollas|estamos|tenemos|también|cuando|después|ahora|nuestro|ellos|nosotros|vosotros|porque|aunque|mientras|entonces|además|tampoco|ningún|ninguna|alguien|nadie|siempre|nunca|todavía|ya\s+no|quedan|acabado|acabaron|han\s+\w+|se\s+han|se\s+acabaron|se\s+fue|se\s+van|quedó|faltan|sobran)\b/i;
 
 function looksSpanish(phrase) {
   if (typeof phrase !== 'string' || !phrase.trim()) return false;
-  return SPANISH_START.test(phrase.trim()) || SPANISH_CONTENT.test(phrase);
+  const t = phrase.trim();
+  return SPANISH_ACCENT.test(t) || SPANISH_START.test(t) || SPANISH_CONTENT.test(t);
 }
 
 /**
@@ -337,7 +345,8 @@ async function ensureEnglish(phrase, label) {
   if (!looksSpanish(phrase)) return phrase; // looks English already
 
   console.warn(`[ensureEnglish] ⚠️ ${label} parece español: "${phrase}" — corrigiendo automáticamente...`);
-  try {
+
+  const translate = async () => {
     const result = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
@@ -350,12 +359,23 @@ async function ensureEnglish(phrase, label) {
       max_tokens: 80,
       temperature: 0.2,
     });
-    const corrected = result.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
-    console.log(`[ensureEnglish] ✅ ${label} corregido: "${corrected}"`);
-    return corrected;
-  } catch (err) {
-    console.error(`[ensureEnglish] ❌ No se pudo corregir ${label}:`, err.message);
-    return phrase;
+    return result.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
+  };
+
+  // Try up to 2 times before giving up
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const corrected = await translate();
+      console.log(`[ensureEnglish] ✅ ${label} corregido (intento ${attempt}): "${corrected}"`);
+      return corrected;
+    } catch (err) {
+      console.error(`[ensureEnglish] ❌ Intento ${attempt} fallido para ${label}:`, err.message);
+      if (attempt === 2) {
+        // Last resort: return a safe English placeholder so the user sees English, not Spanish
+        console.error(`[ensureEnglish] ⚠️ Devolviendo placeholder en inglés para ${label}`);
+        return '[Translation unavailable — please try again]';
+      }
+    }
   }
 }
 
