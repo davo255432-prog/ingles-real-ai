@@ -360,12 +360,15 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
           </div>
           {targetPronunciation && (
             <div className="bg-blue-50 border border-blue-100 rounded-b-2xl px-5 py-3">
-              <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1">
+              <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-2">
                 Pronunciación aproximada
               </p>
-              <p className="text-blue-700 text-sm italic leading-relaxed">
-                {targetPronunciation}
-              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-blue-400 text-base">🔊</span>
+                <p className="text-blue-700 text-base font-semibold italic leading-snug">
+                  {targetPronunciation}
+                </p>
+              </div>
             </div>
           )}
         </div>

@@ -36,9 +36,12 @@ export const CorrectionCard: React.FC<CorrectionCardProps> = ({ data }) => {
         <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-2">
           Pronunciación aproximada
         </p>
-        <p className="text-purple-700 font-medium italic leading-relaxed">
-          "{data.pronunciation}"
-        </p>
+        <div className="flex items-center gap-2">
+          <span className="text-purple-400 text-base">🔊</span>
+          <p className="text-purple-700 text-base font-semibold italic leading-snug">
+            {data.pronunciation}
+          </p>
+        </div>
       </Card>
 
       <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex gap-3">
