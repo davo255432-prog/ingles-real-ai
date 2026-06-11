@@ -283,17 +283,26 @@ REGLAS OBLIGATORIAS:
 - Cortos, prácticos, distintos entre sí.
 
 5. PEDAGOGÍA
-- phraseBreakdown: divide naturalForm en bloques exactos (máximo 4). Significado preciso, no genérico.
-    Ejemplo: "We need to" → "Necesitamos / hay que" | "carry the boxes" → "llevar las cajas"
+⚠️ REGLA CRÍTICA DE PEDAGOGÍA: phraseBreakdown Y keywords se generan SIEMPRE a partir de naturalForm — NUNCA de basicForm.
+   Si naturalForm es "Just so you know, we're out of onions." → analiza ESA frase, no "We are out of onions."
 
-- whyThisPhrase: 1-2 oraciones explicando por qué esas palabras específicas. No genérico.
+- phraseBreakdown: divide naturalForm en bloques exactos (máximo 4). Significado preciso, no genérico.
+    Ejemplo correcto (naturalForm = "Just so you know, we're out of onions."):
+      "Just so you know" → "Para que sepas / Para informarte"
+      "we're out of" → "nos quedamos sin / no tenemos más"
+      "onions" → "cebollas"
+    Ejemplo correcto (naturalForm = "We need to carry the boxes."):
+      "We need to" → "Necesitamos / hay que" | "carry the boxes" → "llevar las cajas"
+    ❌ MAL: usar bloques de basicForm ("We are out of", "I need") cuando naturalForm es diferente.
+
+- whyThisPhrase: 1-2 oraciones explicando por qué esas palabras específicas de naturalForm. No genérico.
     Mal: "Esta construcción es adecuada para expresar necesidad."
-    Bien: "Usamos 'carry' porque las cajas se transportan físicamente con las manos."
+    Bien: "Usamos 'Just so you know' porque es una forma coloquial de introducir información importante sin sonar brusco."
 
 - whenToUse: 1 oración relacionada con el caso real del usuario.
 
 - basicVsNatural: compara las frases concretas. NUNCA uses "basicForm" ni "naturalForm" como nombres.
-    Bien: "'I need the keys' es directo. 'Can I get the keys?' suena más natural como solicitud."
+    Bien: "'We are out of onions' es directo. 'Just so you know, we're out of onions' suena más natural y amigable al informar."
 
 - keywords: hasta 4 palabras o expresiones clave extraídas de naturalForm. Para cada una:
     • word: la palabra o expresión exacta tal como aparece en la frase.
