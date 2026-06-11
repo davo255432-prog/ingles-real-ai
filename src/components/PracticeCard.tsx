@@ -23,12 +23,15 @@ export const PracticeCard: React.FC<PracticeCardProps> = ({ data, onPracticeBasi
         <p className="text-xs font-semibold text-blue-500 uppercase tracking-wide mb-2">
           Forma básica
         </p>
-        <p className="text-gray-800 font-semibold text-lg leading-snug mb-1">
+        <p className="text-gray-800 font-semibold text-lg leading-snug mb-2">
           "{data.basicForm}"
         </p>
-        <p className="text-blue-400 text-sm italic font-medium leading-snug mb-2">
-          {data.basicPronunciation || data.pronunciation}
-        </p>
+        <div className="bg-blue-50 rounded-xl px-3 py-2 mb-2 flex items-center gap-2">
+          <span className="text-blue-400 text-base">🔊</span>
+          <p className="text-blue-700 text-base font-semibold italic leading-snug">
+            {data.basicPronunciation || data.pronunciation}
+          </p>
+        </div>
         <p className="text-gray-500 text-xs mb-3">📍 {data.situation}</p>
         {onPracticeBasic && (
           <button
@@ -50,12 +53,15 @@ export const PracticeCard: React.FC<PracticeCardProps> = ({ data, onPracticeBasi
         <p className="text-xs font-semibold text-green-600 uppercase tracking-wide mb-2">
           Forma natural
         </p>
-        <p className="text-gray-800 font-semibold text-lg leading-snug mb-1">
+        <p className="text-gray-800 font-semibold text-lg leading-snug mb-2">
           "{data.naturalForm}"
         </p>
-        <p className="text-green-500 text-sm italic font-medium leading-snug mb-2">
-          {data.pronunciation}
-        </p>
+        <div className="bg-green-50 rounded-xl px-3 py-2 mb-2 flex items-center gap-2">
+          <span className="text-green-400 text-base">🔊</span>
+          <p className="text-green-700 text-base font-semibold italic leading-snug">
+            {data.pronunciation}
+          </p>
+        </div>
         <p className="text-gray-500 text-xs mb-3">📍 {data.situation}</p>
         {onPracticeNatural && (
           <button
