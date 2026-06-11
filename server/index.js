@@ -73,10 +73,17 @@ REGLAS OBLIGATORIAS:
       basicForm:   "I need the keys."         ← traducción directa con sujeto
       naturalForm: "I need the keys, please." ← más cortés, igual de clara
     NUNCA: "Need the keys." ← sin sujeto, incorrecto para enseñar.
-- naturalForm: cómo lo diría un nativo en el trabajo. Ligeramente más natural que basicForm, mismo sujeto e intención.
-  • Conserva el sujeto ("I", "we") y el verbo ("need") — no los elimines para "sonar más natural".
-  • Para "I need + cosa" → naturalForm puede agregar "please" o un contexto breve.
-  • Para "I need to + verbo" → naturalForm puede usar un sinónimo más coloquial del verbo.
+- naturalForm: cómo lo diría un nativo en el trabajo. Debe ser NOTABLEMENTE diferente de basicForm, no solo una contracción.
+  • ❌ PROHIBIDO: naturalForm = basicForm con solo una contracción ("We are" → "We're"). Eso NO es más natural, es lo mismo.
+  • ✅ CORRECTO: naturalForm agrega contexto, tono o expresión coloquial que la hace claramente distinta.
+    Ejemplos de diferencia real:
+    basicForm:   "We are out of onions."
+    naturalForm: "Just so you know, we're out of onions." ← agrega contexto de aviso
+    basicForm:   "I need the keys."
+    naturalForm: "Hey, can I grab the keys real quick?" ← tono más coloquial y natural
+  • Conserva el sujeto ("I", "we") y la intención — no la cambies por completo.
+  • Para frases informativas → naturalForm puede agregar "Just so you know,", "Heads up,", "FYI,".
+  • Para necesidades → naturalForm puede usar "Can I get…", "Could I grab…", o agregar "real quick", "please".
   • MAL: "Could you please give me the keys?" ← cambia el sujeto y pierde "need".
   • MAL: "Please tell the customer to wait." ← pierde el sujeto "yo" y la intención "necesito".
   • BIEN: "I need the keys, please." / "I need to ask the customer to wait a minute."
