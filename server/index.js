@@ -315,10 +315,18 @@ REGLAS OBLIGATORIAS:
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 /**
- * Detects if a phrase looks like Spanish (starts with common Spanish words).
- * Used as a safety net to catch when the model outputs Spanish instead of English.
+ * Detects if a phrase is in Spanish.
+ * Checks both the start of the phrase AND Spanish content words anywhere inside it.
+ * Catches tricky cases like "Chef, nos hemos quedado sin cebollas." that start
+ * with an English role word but are otherwise fully Spanish.
  */
 const SPANISH_START = /^(necesito|quiero|puedo|debo|voy\s+a|hay\s+que|tengo|me\s+|le\s+|la\s+|el\s+|se\s+|es\s+|un\s+|una\s+|para\s+|por\s+|con\s+|del\s+|no\s+puedo|no\s+tengo|ayuda\s+)/i;
+const SPANISH_CONTENT = /\b(nos|hemos|quedado|necesitamos|podría|pedirle|gerente|cebollas|estamos|tenemos|también|cuando|después|ahora|nuestro|ellos|nosotros|vosotros|porque|aunque|mientras|entonces|además|tampoco|ningún|ninguna|alguien|nadie|algo|nada|siempre|nunca|todavía|ya\s+no|haber|tener|hacer|decir|estar|poder|querer|saber|volver|poner|seguir|llevar|dejar|pasar|quedar|partir|acabar|faltar|sobrar|urgente)\b/i;
+
+function looksSpanish(phrase) {
+  if (typeof phrase !== 'string' || !phrase.trim()) return false;
+  return SPANISH_START.test(phrase.trim()) || SPANISH_CONTENT.test(phrase);
+}
 
 /**
  * If a phrase appears to be in Spanish, calls the API to translate it to English.
@@ -326,7 +334,7 @@ const SPANISH_START = /^(necesito|quiero|puedo|debo|voy\s+a|hay\s+que|tengo|me\s
  */
 async function ensureEnglish(phrase, label) {
   if (typeof phrase !== 'string') return phrase;
-  if (!SPANISH_START.test(phrase.trim())) return phrase; // looks English already
+  if (!looksSpanish(phrase)) return phrase; // looks English already
 
   console.warn(`[ensureEnglish] ⚠️ ${label} parece español: "${phrase}" — corrigiendo automáticamente...`);
   try {
@@ -369,10 +377,15 @@ async function cleanAndVerify(data) {
 function cleanPhrase(text) {
   if (typeof text !== 'string') return text;
 
-  // Remove role vocatives at the end of a phrase: ", teacher?" / ", teacher." / ", teacher"
+  // Remove role vocatives at the START of a phrase: "Chef, ..." / "Doctor, ..."
   const roles = 'teacher|doctor|boss|manager|coach|nurse|sir|ma\'am|officer|chef|supervisor';
+  text = text.replace(new RegExp(`^(${roles}),?\\s*`, 'i'), '');
+
+  // Capitalize the first letter after removing the vocative
+  if (text.length > 0) text = text.charAt(0).toUpperCase() + text.slice(1);
+
+  // Remove role vocatives at the END of a phrase: ", teacher?" / ", teacher." / ", teacher"
   text = text.replace(new RegExp(`,\\s*(${roles})[?.!]?$`, 'i'), (match) => {
-    // Keep the punctuation that was at the very end if any
     const punct = match.match(/[?.!]$/);
     return punct ? punct[0] : '';
   });
@@ -693,8 +706,6 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
 
     // ── Spanish output correction ─────────────────────────────────────────
     // If model returned Spanish in basicForm or naturalForm, retry with explicit correction
-    const looksSpanish = (p) => typeof p === 'string' && SPANISH_START.test(p.trim());
-
     if (looksSpanish(data.basicForm) || looksSpanish(data.naturalForm)) {
       console.warn(`[generate] ⚠️ Respuesta en español detectada — basicForm: "${data.basicForm}" — corrigiendo...`);
 
