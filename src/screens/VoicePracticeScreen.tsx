@@ -31,7 +31,7 @@ const ERROR_MESSAGES: Record<VoiceError, string> = {
   'mic-denied': 'El micrófono está bloqueado. Permite el acceso en la barra del navegador.',
   'mic-not-found': 'No se encontró micrófono. Verifica que esté conectado.',
   'recording-empty': 'No se grabó audio. Intenta de nuevo y habla más fuerte.',
-  'server-error': 'No se pudo analizar el audio. Verifica que el servidor esté activo.',
+  'server-error': 'No se pudo analizar el audio. Verifica tu conexión a internet e intenta de nuevo.',
 };
 
 const RECORD_LABEL: Record<VoiceState, string> = {
@@ -171,7 +171,7 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
 
       const mr = new MediaRecorder(stream, {
         ...(mimeType ? { mimeType } : {}),
-        audioBitsPerSecond: 16000, // 16 kbps — 8× smaller upload, fine for Whisper
+        audioBitsPerSecond: 64000, // 64 kbps — good quality for Whisper on both iOS and Android
       });
       mediaRecorderRef.current = mr;
 
