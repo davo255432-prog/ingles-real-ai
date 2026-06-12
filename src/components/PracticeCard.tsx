@@ -27,7 +27,7 @@ export const PracticeCard: React.FC<PracticeCardProps> = ({ data, onPracticeBasi
           "{data.basicForm}"
         </p>
         <div className="bg-blue-50 rounded-xl px-3 py-2 mb-2 flex items-center gap-2">
-          <span className="text-blue-400 text-base">🔊</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400 shrink-0"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
           <p className="text-blue-700 text-base font-semibold italic leading-snug">
             {data.basicPronunciation || data.pronunciation}
           </p>
@@ -57,7 +57,7 @@ export const PracticeCard: React.FC<PracticeCardProps> = ({ data, onPracticeBasi
           "{data.naturalForm}"
         </p>
         <div className="bg-green-50 rounded-xl px-3 py-2 mb-2 flex items-center gap-2">
-          <span className="text-green-400 text-base">🔊</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-400 shrink-0"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
           <p className="text-green-700 text-base font-semibold italic leading-snug">
             {data.pronunciation}
           </p>
