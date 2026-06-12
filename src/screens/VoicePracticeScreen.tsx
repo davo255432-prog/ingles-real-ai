@@ -375,7 +375,12 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
 
         {/* Instruction */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-base">👂</div>
+          <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-orange-500">
+              <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+              <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+            </svg>
+          </div>
           <p className="text-gray-600 font-medium">Escucha y luego repite con tu voz.</p>
         </div>
 
