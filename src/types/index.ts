@@ -31,7 +31,9 @@ export type Screen =
   | 'kitchen-correction'
   | 'kitchen-rule'
   | 'kitchen-action'
-  | 'kitchen-progress';
+  | 'kitchen-progress'
+  // Coach IA (módulo aislado — la navegación interna vive en CoachScreen)
+  | 'coach';
 
 export type InputMode = 'write' | 'voice';
 

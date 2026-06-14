@@ -19,8 +19,11 @@ app.use(cors({
       'http://localhost:5173',
       'http://localhost:4173',
     ];
+    // En desarrollo, Vite puede usar cualquier puerto libre (5174, 5178, …),
+    // así que aceptamos cualquier localhost/127.0.0.1 sin importar el puerto.
+    const isLocalhost = !!origin && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
     // Allow all Vercel deployments and no-origin requests (mobile apps, Postman, etc.)
-    if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
+    if (!origin || allowed.includes(origin) || isLocalhost || origin.endsWith('.vercel.app')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

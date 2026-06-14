@@ -43,6 +43,9 @@ import { KitchenRuleScreen } from './screens/KitchenRuleScreen';
 import { KitchenActionScreen } from './screens/KitchenActionScreen';
 import { KitchenProgressScreen } from './screens/KitchenProgressScreen';
 
+// Coach IA — módulo aislado (gestiona su propia navegación interna)
+import { CoachRoot } from './coach/CoachRoot';
+
 function App() {
   const [screen, setScreen] = useState<Screen>('home');
 
@@ -102,7 +105,13 @@ function App() {
           onSituationsFlow={() => setScreen('situations')}
           onUrgentFlow={() => setScreen('urgent-say')}
           onSpeakTranslate={() => setScreen('speak-translate')}
+          onCoach={() => setScreen('coach')}
         />
+      )}
+
+      {/* ── Coach IA — módulo aislado ── */}
+      {screen === 'coach' && (
+        <CoachRoot onExit={() => setScreen('home')} />
       )}
 
       {/* ── Flow 4: Habla en español, yo traduzco ── */}
