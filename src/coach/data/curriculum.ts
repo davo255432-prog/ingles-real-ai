@@ -32,6 +32,8 @@ const U_ARTICLES = unitKey(1, 'articles');
 // Lecciones (IDs estables).
 // L_PRON: primera lección real del nivel (Unidad 1 — Pronombres).
 const L_PRON = lessonKey(U_PRONOUNS, 'pronouns-basics');
+// L_TO_BE: Unidad 2 — Verbo to be (am / is / are).
+const L_TO_BE = lessonKey(U_TO_BE, 'to-be-basics');
 // L1: lección existente "I need the car keys." — ID y contenido INALTERADOS.
 //     Se conserva dentro de la Unidad 3 (Verbos esenciales) para más adelante.
 const L1 = lessonKey(U_ESSENTIALS, 'car-keys');
@@ -49,8 +51,7 @@ export const LEVEL_1_UNITS: Unit[] = [
     levelId: 1,
     title: 'Verbo to be',
     description: 'Cómo usar am, is y are para describir y presentarte.',
-    lessonIds: [],
-    comingSoon: true,
+    lessonIds: [L_TO_BE],
   },
   {
     id: U_ESSENTIALS,
@@ -335,6 +336,157 @@ export const PRONOUNS_INFO: PronounInfo[] = [
   },
 ];
 
+// ── Unidad 2 · Datos del verbo "to be" (am / is / are) ───────────────────────
+// Contenido visual de la Unidad 2. Cada frase trae inglés, traducción,
+// pronunciación aproximada (DEFINIDA aquí), una figura/escena y una explicación
+// breve del Coach. La pantalla autónoma ToBePractice consume estos datos.
+export type BeForm = 'am' | 'is' | 'are';
+
+export interface BePhrase {
+  id: string;     // clave estable interna de la frase
+  en: string;     // frase en inglés ("I am ready.")
+  es: string;     // traducción al español
+  pron: string;   // pronunciación aproximada ("ai am rédi")
+  form: BeForm;   // am / is / are
+  icon: string;   // figura o escena (emoji estático)
+  coach: string;  // explicación breve del Coach
+}
+
+export interface BeBlock {
+  id: BeForm;            // 'am' | 'is' | 'are'
+  pronouns: string;      // "I" | "he / she / it" | "you / we / they"
+  verb: BeForm;          // verbo del grupo
+  title: string;         // "I + am"
+  intro: string;         // explicación breve del Coach al abrir el bloque
+  phrases: BePhrase[];   // frases que se enseñan
+  speakPhraseIds: string[]; // frases a repetir con la voz tras el bloque
+}
+
+export interface BeDialogue {
+  id: string;
+  aEn: string; aEs: string; aPron: string;
+  bEn: string; bEs: string; bPron: string;
+}
+
+// Mapa pronombre → verbo (para el cuadro visual y ejercicios de relación).
+export const TO_BE_GROUPS: { verb: BeForm; pronouns: string; example: string }[] = [
+  { verb: 'am', pronouns: 'I', example: 'I am' },
+  { verb: 'is', pronouns: 'he / she / it', example: 'he is' },
+  { verb: 'are', pronouns: 'you / we / they', example: 'you are' },
+];
+
+export const TO_BE_BLOCKS: BeBlock[] = [
+  {
+    id: 'am',
+    verb: 'am',
+    pronouns: 'I',
+    title: 'I + am',
+    intro: 'Con "I" (yo) siempre usamos am. Sirve para decir quién eres o cómo estás.',
+    phrases: [
+      {
+        id: 'am-david', en: 'I am David.', es: 'Yo soy David.', pron: 'ai am déivid',
+        form: 'am', icon: '🙋‍♂️', coach: 'Para presentarte: "I am" + tu nombre.',
+      },
+      {
+        id: 'am-ready', en: 'I am ready.', es: 'Estoy listo.', pron: 'ai am rédi',
+        form: 'am', icon: '✅', coach: '"I am" también dice cómo estás en este momento.',
+      },
+    ],
+    speakPhraseIds: ['am-ready'],
+  },
+  {
+    id: 'is',
+    verb: 'is',
+    pronouns: 'he / she / it',
+    title: 'he / she / it + is',
+    intro: 'Con he (él), she (ella) e it (una cosa) usamos is.',
+    phrases: [
+      {
+        id: 'is-tired', en: 'He is tired.', es: 'Él está cansado.', pron: 'hi is táierd',
+        form: 'is', icon: '😴', coach: 'he (un hombre) → is.',
+      },
+      {
+        id: 'is-happy', en: 'She is happy.', es: 'Ella está feliz.', pron: 'shi is jápi',
+        form: 'is', icon: '😊', coach: 'she (una mujer) → is.',
+      },
+      {
+        id: 'is-open', en: 'It is open.', es: 'Está abierto.', pron: 'it is óupen',
+        form: 'is', icon: '🚪', coach: 'it (una cosa) → is.',
+      },
+    ],
+    speakPhraseIds: ['is-tired', 'is-happy'],
+  },
+  {
+    id: 'are',
+    verb: 'are',
+    pronouns: 'you / we / they',
+    title: 'you / we / they + are',
+    intro: 'Con you (tú/ustedes), we (nosotros) y they (ellos) usamos are.',
+    phrases: [
+      {
+        id: 'are-here', en: 'You are here.', es: 'Tú estás aquí.', pron: 'yu ar jíer',
+        form: 'are', icon: '📍', coach: 'you → are.',
+      },
+      {
+        id: 'are-ready', en: 'We are ready.', es: 'Estamos listos.', pron: 'uí ar rédi',
+        form: 'are', icon: '👥', coach: 'we (nosotros) → are.',
+      },
+      {
+        id: 'are-outside', en: 'They are outside.', es: 'Ellos están afuera.', pron: 'déi ar autsáid',
+        form: 'are', icon: '🌳', coach: 'they (ellos) → are.',
+      },
+    ],
+    speakPhraseIds: ['are-ready', 'are-outside'],
+  },
+];
+
+export const TO_BE_DIALOGUES: BeDialogue[] = [
+  {
+    id: 'dlg-ready',
+    aEn: 'Are you ready?', aEs: '¿Estás listo?', aPron: 'ar yu rédi',
+    bEn: 'Yes, I am.', bEs: 'Sí, lo estoy.', bPron: 'yes, ai am',
+  },
+  {
+    id: 'dlg-here',
+    aEn: 'Is she here?', aEs: '¿Ella está aquí?', aPron: 'is shi jíer',
+    bEn: 'Yes, she is.', bEs: 'Sí, lo está.', bPron: 'yes, shi is',
+  },
+  {
+    id: 'dlg-outside',
+    aEn: 'Are they outside?', aEs: '¿Ellos están afuera?', aPron: 'ar déi autsáid',
+    bEn: 'Yes, they are.', bEs: 'Sí, lo están.', bPron: 'yes, déi ar',
+  },
+];
+
+// Todas las frases en un índice plano (para oído, voz y ejercicios mezclados).
+export const TO_BE_PHRASES: BePhrase[] = TO_BE_BLOCKS.flatMap((b) => b.phrases);
+
+/** Busca una frase del to-be por su id. */
+export function getBePhrase(id: string): BePhrase | undefined {
+  return TO_BE_PHRASES.find((p) => p.id === id);
+}
+
+/** ID estable de la lección de la Unidad 2 (lo usa ToBePractice para los pasos). */
+export const TO_BE_LESSON_ID = L_TO_BE;
+
+// ── Unidad 2 · Lección "Verbo to be" ─────────────────────────────────────────
+// Toda la unidad (bienvenida, cuadro visual, bloques, oído, voz, diálogos,
+// ejercicios, resumen y cierre) la maneja la pantalla autónoma ToBePractice.
+const LESSON_TO_BE: Lesson = {
+  id: L_TO_BE,
+  unitId: U_TO_BE,
+  title: 'Verbo to be: am, is, are',
+  goalPhrase: 'I am · he is · you are',
+  goalSpanish: 'soy/estoy · es/está · eres/estás',
+  steps: [
+    {
+      id: stepKey(L_TO_BE, 'unit'),
+      type: 'exercise',
+      toBe: true,
+    },
+  ],
+};
+
 // ── Lección 1 · "I need the car keys." ───────────────────────────────────────
 const LESSON_1: Lesson = {
   id: L1,
@@ -424,6 +576,7 @@ export const ALL_UNITS: Unit[] = [...LEVEL_1_UNITS];
 /** Todas las lecciones del contenido, indexadas por ID estable. */
 export const LESSONS: Record<string, Lesson> = {
   [LESSON_PRONOUNS.id]: LESSON_PRONOUNS,
+  [LESSON_TO_BE.id]: LESSON_TO_BE, // Unidad 2 — Verbo to be
   [LESSON_1.id]: LESSON_1, // car-keys: conservada (ID/contenido/progreso intactos)
 };
 

@@ -88,6 +88,7 @@ export interface Step {
   icon?: string;              // figura/icono simple (emoji) para el paso "teach"
   coachIntro?: boolean;       // bienvenida del Coach IA (saludo personalizado)
   practice?: boolean;         // práctica final de unidad (la maneja PronounsPractice)
+  toBe?: boolean;             // Unidad 2 completa (la maneja ToBePractice, pantalla autónoma)
   // Práctica oral (paso "speak"): pronombres a repetir con la voz.
   speakPronounIds?: string[]; // ids de pronombres a practicar en orden
   speakRandomCount?: number;  // si se define, elige N pronombres al azar

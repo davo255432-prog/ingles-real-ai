@@ -20,6 +20,12 @@ export const CoachUnitsScreen: React.FC<CoachUnitsScreenProps> = ({
   onBack,
   onOpenLesson,
 }) => {
+  // Primera unidad bloqueada: se marca como "Siguiente" en el mapa.
+  const firstLockedIndex = units.findIndex((u) => {
+    const fl = u.lessonIds[0];
+    return u.comingSoon || !fl || !getLesson(fl);
+  });
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
       {/* Top bar */}
@@ -99,7 +105,12 @@ export const CoachUnitsScreen: React.FC<CoachUnitsScreenProps> = ({
                     <p className={locked ? 'text-gray-400 font-bold' : 'text-gray-900 font-bold'}>
                       {unit.title}
                     </p>
-                    {locked && (
+                    {locked && index === firstLockedIndex && (
+                      <span className="text-[10px] font-bold uppercase tracking-wide bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full">
+                        Siguiente
+                      </span>
+                    )}
+                    {locked && index !== firstLockedIndex && (
                       <span className="text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">
                         Próximamente
                       </span>

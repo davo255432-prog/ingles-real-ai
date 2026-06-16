@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { Lesson, LessonStatus, Piece, Step } from '../types';
 import { PronounsPractice } from './PronounsPractice';
+import { ToBePractice } from './ToBePractice';
 import { SpeakPractice } from './SpeakPractice';
 import { PRONOUNS_INFO, type PronounInfo } from '../data/curriculum';
 
@@ -63,8 +64,9 @@ export const CoachLessonScreen: React.FC<CoachLessonScreenProps> = ({
   }, []);
 
   // Persiste el paso exacto cada vez que cambia (mientras no esté terminada).
+  // Las pantallas autónomas (toBe) gestionan su propia persistencia de paso.
   useEffect(() => {
-    if (!finished && step) onStepChange(step.id);
+    if (!finished && step && !step.toBe) onStepChange(step.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, finished]);
 
@@ -126,6 +128,25 @@ export const CoachLessonScreen: React.FC<CoachLessonScreenProps> = ({
         onExit={onBack}
         onUnitComplete={(score) =>
           onStatus('completed', { lastStepId: step.id, lastScore: score, oralPending })
+        }
+        onBackToMap={onFinish}
+      />
+    );
+  }
+
+  // ── Unidad 2 (Verbo to be): pantalla autónoma ──
+  // El paso `toBe` delega toda la interacción (bienvenida, cuadro am/is/are,
+  // bloques, ejercicios, práctica oral, diálogos, repaso y cierre) al componente
+  // ToBePractice, que además gestiona su propia persistencia de paso exacto.
+  if (step?.toBe) {
+    return (
+      <ToBePractice
+        userName={userName}
+        initialStepId={initialStepId}
+        onExit={onBack}
+        onStepChange={onStepChange}
+        onComplete={(score) =>
+          onStatus('completed', { lastStepId: step.id, lastScore: score })
         }
         onBackToMap={onFinish}
       />
