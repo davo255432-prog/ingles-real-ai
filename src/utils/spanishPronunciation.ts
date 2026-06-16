@@ -45,6 +45,12 @@ const WORD_MAP: Record<string, string> = {
   one: 'uán', two: 'tu', three: 'zrii', four: 'for', five: 'fáiv',
   morning: 'mórnin', today: 'tudéi', tomorrow: 'tumórou',
   david: 'déivid', okay: 'oukéi', ok: 'oukéi',
+  // saludos y cortesía (acento y diptongos afinados)
+  hello: 'jelóu', hi: 'jái', hey: 'jéi', bye: 'bái', goodbye: 'gud-bái',
+  welcome: 'uélcom', friend: 'frend', excuse: 'eks-kiús',
+  nice: 'náis', meet: 'miit', great: 'gréit', fine: 'fáin',
+  night: 'náit', afternoon: 'after-nún', evening: 'íiv-nin',
+  later: 'léiter', soon: 'suun', much: 'mach', very: 'véri',
 };
 
 const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
