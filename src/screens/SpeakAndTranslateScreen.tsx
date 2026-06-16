@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { translateSpeech } from '../services/translateSpeechApi';
 import type { TranslateResult } from '../services/translateSpeechApi';
 import { generateSpeech, stopSpeech } from '../services/speechApi';
+import { toSpanishPronunciation } from '../utils/spanishPronunciation';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -211,6 +212,19 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
   const isProcessing = recordState === 'requesting' || recordState === 'processing';
   const isTtsActive  = ttsState === 'loading' || ttsState === 'playing';
 
+  // Pronunciación aproximada en español del resultado en inglés.
+  // Solo se genera cuando existe un resultado en inglés. Si la generación
+  // fallara, se ignora y el resto del resultado sigue funcionando igual.
+  const pronunciation = useMemo(() => {
+    const english = result?.english?.trim();
+    if (!english) return '';
+    try {
+      return toSpanishPronunciation(english);
+    } catch {
+      return '';
+    }
+  }, [result?.english]);
+
   // ── Record button ─────────────────────────────────────────────────────────
 
   const recordBtnClass = [
@@ -325,6 +339,14 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
             <div className="bg-purple-500 rounded-t-2xl px-5 pt-5 pb-4">
               <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-2">En inglés</p>
               <p className="text-white font-bold text-2xl leading-snug">"{result.english}"</p>
+
+              {/* Pronunciación aproximada (debajo del texto en inglés) */}
+              {pronunciation && (
+                <div className="mt-4 pt-3 border-t border-white/20">
+                  <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-1">Cómo decirlo</p>
+                  <p className="text-purple-50 text-lg leading-snug">{pronunciation}</p>
+                </div>
+              )}
             </div>
 
             {/* Listen buttons */}
