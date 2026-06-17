@@ -420,69 +420,24 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
         {recordState === 'done' && result && (
           <div className="mt-6 flex flex-col gap-4">
 
-            {/* Español: principal en modo entender; "lo que dijiste" en modo hablar */}
-            {mode === 'understand' ? (
-              <div className="bg-purple-500 rounded-2xl px-5 py-5">
-                <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-2">En español</p>
-                <p className="text-white font-bold text-2xl leading-snug">{result.spanish}</p>
-              </div>
-            ) : (
+            {/* Modo hablar: "Lo que dijiste" (español) va arriba. */}
+            {mode !== 'understand' && (
               <div className="bg-gray-100 rounded-2xl px-5 py-4">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Lo que dijiste</p>
                 <p className="text-gray-700 text-base leading-relaxed italic">"{result.spanish}"</p>
               </div>
             )}
 
-            {/* Inglés + pronunciación: principal en modo hablar; secundario en modo entender */}
-            <div
-              className={
-                mode === 'understand'
-                  ? 'bg-white border border-gray-200 rounded-t-2xl px-5 pt-5 pb-4'
-                  : 'bg-purple-500 rounded-t-2xl px-5 pt-5 pb-4'
-              }
-            >
-              <p
-                className={
-                  mode === 'understand'
-                    ? 'text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2'
-                    : 'text-xs font-semibold text-purple-100 uppercase tracking-wide mb-2'
-                }
-              >
-                En inglés
-              </p>
-              <p
-                className={
-                  mode === 'understand'
-                    ? 'text-gray-900 font-bold text-2xl leading-snug'
-                    : 'text-white font-bold text-2xl leading-snug'
-                }
-              >
-                "{result.english}"
-              </p>
+            {/* EN INGLÉS: frase original detectada + pronunciación (siempre prominente). */}
+            <div className="bg-purple-500 rounded-t-2xl px-5 pt-5 pb-4">
+              <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-2">En inglés</p>
+              <p className="text-white font-bold text-2xl leading-snug">"{result.english}"</p>
 
               {/* Pronunciación aproximada (debajo del texto en inglés) */}
               {pronunciation && (
-                <div
-                  className={
-                    mode === 'understand' ? 'mt-4 pt-3 border-t border-gray-200' : 'mt-4 pt-3 border-t border-white/20'
-                  }
-                >
-                  <p
-                    className={
-                      mode === 'understand'
-                        ? 'text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1'
-                        : 'text-xs font-semibold text-purple-100 uppercase tracking-wide mb-1'
-                    }
-                  >
-                    Cómo decirlo
-                  </p>
-                  <p
-                    className={
-                      mode === 'understand' ? 'text-gray-700 text-lg leading-snug' : 'text-purple-50 text-lg leading-snug'
-                    }
-                  >
-                    {pronunciation}
-                  </p>
+                <div className="mt-4 pt-3 border-t border-white/20">
+                  <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-1">Cómo decirlo</p>
+                  <p className="text-purple-50 text-lg leading-snug">{pronunciation}</p>
                 </div>
               )}
             </div>
@@ -535,6 +490,14 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
                 </button>
               </div>
             </div>
+
+            {/* EN ESPAÑOL: traducción (solo en modo entender, debajo del inglés). */}
+            {mode === 'understand' && (
+              <div className="bg-gray-100 rounded-2xl px-5 py-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">En español</p>
+                <p className="text-gray-700 text-base leading-relaxed">{result.spanish}</p>
+              </div>
+            )}
 
             {/* Responder en inglés (solo en modo entender): conversación práctica */}
             {mode === 'understand' && <ReplyInEnglish />}
