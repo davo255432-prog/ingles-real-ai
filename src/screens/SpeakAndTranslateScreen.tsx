@@ -420,87 +420,50 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
         {recordState === 'done' && result && (
           <div className="mt-6 flex flex-col gap-4">
 
-            {/* Modo hablar: "Lo que dijiste" (español) va arriba. */}
-            {mode !== 'understand' && (
-              <div className="bg-gray-100 rounded-2xl px-5 py-4">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Lo que dijiste</p>
-                <p className="text-gray-700 text-base leading-relaxed italic">"{result.spanish}"</p>
-              </div>
-            )}
-
-            {/* EN INGLÉS: frase original detectada + pronunciación (siempre prominente). */}
-            <div className="bg-purple-500 rounded-t-2xl px-5 pt-5 pb-4">
-              <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-2">En inglés</p>
-              <p className="text-white font-bold text-2xl leading-snug">"{result.english}"</p>
-
-              {/* Pronunciación aproximada (debajo del texto en inglés) */}
-              {pronunciation && (
-                <div className="mt-4 pt-3 border-t border-white/20">
-                  <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-1">Cómo decirlo</p>
-                  <p className="text-purple-50 text-lg leading-snug">{pronunciation}</p>
+            {mode === 'understand' ? (
+              <>
+                {/* 1 — SIGNIFICA: traducción al español (resultado principal, grande) */}
+                <div className="bg-purple-500 rounded-2xl px-5 py-7">
+                  <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-3">Significa</p>
+                  <p className="text-white font-bold text-3xl leading-snug">{result.spanish}</p>
                 </div>
-              )}
-            </div>
 
-            {/* Listen buttons */}
-            <div className="bg-purple-50 border border-purple-100 rounded-b-2xl px-5 py-4 flex flex-col gap-3">
+                {/* 2 — Responder (conversación práctica) */}
+                <ReplyInEnglish />
 
-              {ttsError && (
-                <p className="text-amber-700 text-xs bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">{ttsError}</p>
-              )}
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => void handleListen('normal')}
-                  aria-label={isTtsActive ? 'Detener audio' : 'Escuchar traducción en velocidad normal'}
-                  className={[
-                    'flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all',
-                    isTtsActive
-                      ? 'bg-purple-500 text-white'
-                      : 'bg-white border border-purple-200 text-purple-700 hover:bg-purple-50 active:scale-95',
-                  ].join(' ')}
-                >
-                  {isTtsActive ? (
-                    <span className="flex gap-0.5 items-center">
-                      <span className="w-0.5 h-4 bg-current rounded animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-0.5 h-4 bg-current rounded animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-0.5 h-4 bg-current rounded animate-bounce" style={{ animationDelay: '300ms' }} />
-                    </span>
-                  ) : (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                    </svg>
+                {/* 4 — Inglés detectado + pronunciación (secundario, abajo) */}
+                <div className="bg-white border border-gray-200 rounded-t-2xl px-5 pt-5 pb-4">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Inglés detectado</p>
+                  <p className="text-gray-900 font-bold text-xl leading-snug">"{result.english}"</p>
+                  {pronunciation && (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Cómo decirlo</p>
+                      <p className="text-gray-700 text-base leading-snug">{pronunciation}</p>
+                    </div>
                   )}
-                  {ttsState === 'loading' ? 'Cargando...' : ttsState === 'playing' ? 'Reproduciendo...' : 'Escuchar'}
-                </button>
-
-                <button
-                  onClick={() => void handleListen('slow')}
-                  disabled={isTtsActive}
-                  aria-label="Escuchar traducción en velocidad lenta"
-                  className="flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm bg-white border border-purple-200 text-purple-700 hover:bg-purple-50 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                  Escuchar lento
-                </button>
-              </div>
-            </div>
-
-            {/* EN ESPAÑOL: traducción (solo en modo entender, debajo del inglés). */}
-            {mode === 'understand' && (
-              <div className="bg-gray-100 rounded-2xl px-5 py-4">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">En español</p>
-                <p className="text-gray-700 text-base leading-relaxed">{result.spanish}</p>
-              </div>
+                </div>
+                <ListenButtons onListen={handleListen} ttsState={ttsState} ttsError={ttsError} isTtsActive={isTtsActive} />
+              </>
+            ) : (
+              <>
+                {/* Modo hablar (sin cambios): lo que dijiste → inglés + pronunciación */}
+                <div className="bg-gray-100 rounded-2xl px-5 py-4">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Lo que dijiste</p>
+                  <p className="text-gray-700 text-base leading-relaxed italic">"{result.spanish}"</p>
+                </div>
+                <div className="bg-purple-500 rounded-t-2xl px-5 pt-5 pb-4">
+                  <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-2">En inglés</p>
+                  <p className="text-white font-bold text-2xl leading-snug">"{result.english}"</p>
+                  {pronunciation && (
+                    <div className="mt-4 pt-3 border-t border-white/20">
+                      <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-1">Cómo decirlo</p>
+                      <p className="text-purple-50 text-lg leading-snug">{pronunciation}</p>
+                    </div>
+                  )}
+                </div>
+                <ListenButtons onListen={handleListen} ttsState={ttsState} ttsError={ttsError} isTtsActive={isTtsActive} />
+              </>
             )}
-
-            {/* Responder en inglés (solo en modo entender): conversación práctica */}
-            {mode === 'understand' && <ReplyInEnglish />}
 
             {/* Record again */}
             <button
@@ -521,6 +484,60 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
     </div>
   );
 };
+
+// ── Botones de escuchar (TTS del inglés) — reutilizable en ambos modos ───────
+const ListenButtons: React.FC<{
+  onListen: (speed: 'normal' | 'slow') => void;
+  ttsState: TtsState;
+  ttsError: string | null;
+  isTtsActive: boolean;
+}> = ({ onListen, ttsState, ttsError, isTtsActive }) => (
+  <div className="bg-purple-50 border border-purple-100 rounded-b-2xl px-5 py-4 flex flex-col gap-3">
+    {ttsError && (
+      <p className="text-amber-700 text-xs bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">{ttsError}</p>
+    )}
+    <div className="grid grid-cols-2 gap-3">
+      <button
+        onClick={() => void onListen('normal')}
+        aria-label={isTtsActive ? 'Detener audio' : 'Escuchar en inglés a velocidad normal'}
+        className={[
+          'flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all',
+          isTtsActive
+            ? 'bg-purple-500 text-white'
+            : 'bg-white border border-purple-200 text-purple-700 hover:bg-purple-50 active:scale-95',
+        ].join(' ')}
+      >
+        {isTtsActive ? (
+          <span className="flex gap-0.5 items-center">
+            <span className="w-0.5 h-4 bg-current rounded animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="w-0.5 h-4 bg-current rounded animate-bounce" style={{ animationDelay: '150ms' }} />
+            <span className="w-0.5 h-4 bg-current rounded animate-bounce" style={{ animationDelay: '300ms' }} />
+          </span>
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+          </svg>
+        )}
+        {ttsState === 'loading' ? 'Cargando...' : ttsState === 'playing' ? 'Reproduciendo...' : 'Escuchar'}
+      </button>
+
+      <button
+        onClick={() => void onListen('slow')}
+        disabled={isTtsActive}
+        aria-label="Escuchar en inglés a velocidad lenta"
+        className="flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm bg-white border border-purple-200 text-purple-700 hover:bg-purple-50 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+        Escuchar lento
+      </button>
+    </div>
+  </div>
+);
 
 // ── Responder en inglés (sub-sección del modo "entender") ────────────────────
 // Conversación práctica: el usuario responde en español y obtiene su respuesta
@@ -672,7 +689,7 @@ const ReplyInEnglish: React.FC = () => {
       ? 'Solicitando permiso...'
       : state === 'processing'
         ? 'Procesando...'
-        : 'Responder en español';
+        : 'Responder';
 
   return (
     <div className="border-2 border-purple-100 rounded-2xl p-4 flex flex-col gap-3">
@@ -686,15 +703,15 @@ const ReplyInEnglish: React.FC = () => {
         onClick={handleClick}
         disabled={processing}
         className={[
-          'w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all',
+          'w-full flex items-center justify-center gap-2 py-5 rounded-2xl font-bold text-lg transition-all',
           processing
             ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
             : recording
               ? 'bg-red-500 text-white animate-pulse'
-              : 'bg-purple-500 hover:bg-purple-600 text-white active:scale-95',
+              : 'bg-purple-500 hover:bg-purple-600 text-white shadow-lg shadow-purple-200 active:scale-95',
         ].join(' ')}
       >
-        🎤 {btnLabel}
+        <span className="text-2xl">🎤</span> {btnLabel}
       </button>
 
       {state === 'error' && errorMsg && (
@@ -705,13 +722,13 @@ const ReplyInEnglish: React.FC = () => {
 
       {state === 'done' && english && (
         <>
-          <div className="bg-purple-500 rounded-2xl px-5 py-4">
-            <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-1.5">Tu respuesta en inglés</p>
-            <p className="text-white font-bold text-xl leading-snug">"{english}"</p>
+          <div className="bg-purple-500 rounded-2xl px-5 py-5">
+            <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-2">Tu respuesta en inglés</p>
+            <p className="text-white font-bold text-2xl leading-snug">"{english}"</p>
             {pronunciation && (
-              <div className="mt-3 pt-3 border-t border-white/20">
+              <div className="mt-4 pt-3 border-t border-white/20">
                 <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-1">Cómo decirlo</p>
-                <p className="text-purple-50 text-base leading-snug">{pronunciation}</p>
+                <p className="text-purple-50 text-lg leading-snug">{pronunciation}</p>
               </div>
             )}
           </div>
