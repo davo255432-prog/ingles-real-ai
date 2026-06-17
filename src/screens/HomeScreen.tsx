@@ -103,9 +103,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartFlow, onSituation
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </div>
-          <h2 className="text-white text-xl font-bold mb-1">Habla en español</h2>
+          <h2 className="text-white text-xl font-bold mb-1">Traduce con voz</h2>
           <p className="text-white/75 text-sm leading-snug">
-            Di en español lo que necesitas. Yo lo traduzco al inglés y te lo leo en voz alta.
+            Habla en español o escucha inglés. Traduce, entiende y practica con tu voz.
           </p>
         </button>
 

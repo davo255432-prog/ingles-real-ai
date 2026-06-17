@@ -39,7 +39,13 @@ interface SpeakAndTranslateScreenProps {
   onBack: () => void;
 }
 
+// Dos usos de la misma herramienta (ambos reutilizan el flujo existente):
+//  · 'speak'      → hablo en español y obtengo la frase en inglés.
+//  · 'understand' → escucho/hablo inglés y entiendo su significado.
+type Mode = 'speak' | 'understand';
+
 export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = ({ onBack }) => {
+  const [mode, setMode] = useState<Mode>('speak');
   const [recordState, setRecordState] = useState<RecordState>('idle');
   const [recordError, setRecordError]  = useState<RecordError | null>(null);
   const [result, setResult]            = useState<TranslateResult | null>(null);
@@ -240,6 +246,7 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
     recordState === 'requesting'  ? 'Solicitando permiso...' :
     recordState === 'recording'   ? 'Escuchando... toca para terminar' :
     recordState === 'processing'  ? 'Procesando...' :
+    mode === 'understand'         ? 'Toca y reproduce o habla en inglés' :
     'Toca y habla en español';
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -260,12 +267,65 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
             </svg>
           </button>
           <div>
-            <h1 className="text-lg font-bold text-gray-800">Habla en español</h1>
-            <p className="text-xs text-gray-400">Yo lo traduzco al inglés</p>
+            <h1 className="text-lg font-bold text-gray-800">Traduce con voz</h1>
+            <p className="text-xs text-gray-400">Habla en español o escucha inglés en tiempo real.</p>
           </div>
         </div>
 
-        {/* Instruction */}
+        {/* Dos opciones (mismo flujo, distinto enfoque) */}
+        {recordState !== 'done' && (
+          <div className="flex flex-col gap-3 mb-6">
+            <button
+              type="button"
+              onClick={() => setMode('speak')}
+              aria-pressed={mode === 'speak'}
+              className={[
+                'w-full text-left rounded-2xl border-2 px-4 py-3.5 transition-all active:scale-[0.99]',
+                mode === 'speak'
+                  ? 'bg-purple-50 border-purple-400'
+                  : 'bg-white border-gray-200 hover:border-purple-200',
+              ].join(' ')}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🗣️</span>
+                <div className="flex-1 min-w-0">
+                  <p className={mode === 'speak' ? 'font-bold text-purple-800' : 'font-bold text-gray-800'}>
+                    Quiero decir algo en inglés
+                  </p>
+                  <p className="text-gray-500 text-sm leading-snug">
+                    Habla en español y obtén una frase en inglés lista para usar.
+                  </p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMode('understand')}
+              aria-pressed={mode === 'understand'}
+              className={[
+                'w-full text-left rounded-2xl border-2 px-4 py-3.5 transition-all active:scale-[0.99]',
+                mode === 'understand'
+                  ? 'bg-purple-50 border-purple-400'
+                  : 'bg-white border-gray-200 hover:border-purple-200',
+              ].join(' ')}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">👂</span>
+                <div className="flex-1 min-w-0">
+                  <p className={mode === 'understand' ? 'font-bold text-purple-800' : 'font-bold text-gray-800'}>
+                    Quiero entender inglés
+                  </p>
+                  <p className="text-gray-500 text-sm leading-snug">
+                    Escucha inglés y entiende su significado al instante.
+                  </p>
+                </div>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {/* Instruction (según la opción elegida) */}
         {recordState !== 'done' && (
           <div className="bg-purple-50 border border-purple-100 rounded-2xl px-5 py-4 mb-8">
             <div className="flex items-start gap-3">
@@ -273,7 +333,9 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
               <div>
                 <p className="text-purple-800 font-semibold text-sm mb-1">¿Cómo funciona?</p>
                 <p className="text-purple-700 text-sm leading-relaxed">
-                  Presiona el botón, habla en español lo que necesitas decir, y yo te doy la traducción en inglés lista para usar.
+                  {mode === 'understand'
+                    ? 'Presiona el botón y reproduce o di algo en inglés. Te muestro qué significa, cómo se escribe y cómo se pronuncia.'
+                    : 'Presiona el botón, habla en español lo que necesitas decir, y yo te doy la traducción en inglés lista para usar.'}
                 </p>
               </div>
             </div>
@@ -329,9 +391,11 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
         {recordState === 'done' && result && (
           <div className="mt-6 flex flex-col gap-4">
 
-            {/* What you said */}
+            {/* Lo que dijiste (modo hablar) / Significado (modo entender) */}
             <div className="bg-gray-100 rounded-2xl px-5 py-4">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Lo que dijiste</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                {mode === 'understand' ? 'Significado' : 'Lo que dijiste'}
+              </p>
               <p className="text-gray-700 text-base leading-relaxed italic">"{result.spanish}"</p>
             </div>
 
