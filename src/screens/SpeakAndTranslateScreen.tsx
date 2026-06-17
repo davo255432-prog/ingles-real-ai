@@ -104,7 +104,12 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
         'audio/mp4',
       ].find((t) => MediaRecorder.isTypeSupported(t)) ?? '';
 
-      const mr = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      // 32 kbps: suficiente para voz; reduce el tamaño del audio y acelera la
+      // subida y la transcripción (sobre todo en celular con datos).
+      const mr = new MediaRecorder(stream, {
+        ...(mimeType ? { mimeType } : {}),
+        audioBitsPerSecond: 32000,
+      });
       mediaRecorderRef.current = mr;
 
       mr.ondataavailable = (e) => {

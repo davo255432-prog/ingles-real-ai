@@ -1174,7 +1174,9 @@ app.post('/api/understand-english', upload.single('audio'), async (req, res) => 
   console.log(`[understand-english] Recibido: ${req.file.size} bytes — ${mimeType} → ${ext}`);
 
   try {
-    // 1 — Transcribe con detección automática de idioma (whisper-1 + verbose_json)
+    // 1 — Transcribe con autodetección de idioma usando el modelo rápido
+    //     (gpt-4o-mini-transcribe). Sin forzar idioma: transcribe en el idioma
+    //     realmente hablado, lo que hace fiable la detección de español abajo.
     const audioFile = await toFile(
       req.file.buffer,
       `recording.${ext}`,
@@ -1183,22 +1185,19 @@ app.post('/api/understand-english', upload.single('audio'), async (req, res) => 
 
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
-      model: 'whisper-1',
-      response_format: 'verbose_json',
+      model: 'gpt-4o-mini-transcribe',
     });
 
     const english = (transcription.text ?? '').trim();
-    const detectedLang = String(transcription.language ?? '').toLowerCase();
-    console.log(`[understand-english] Idioma: ${detectedLang} — texto: "${english.slice(0, 80)}"`);
+    console.log(`[understand-english] Texto: "${english.slice(0, 80)}"`);
 
     if (!english) {
       return res.status(422).json({ error: 'No se detectó voz. Reproduce o habla una frase en inglés.' });
     }
 
-    // 2 — Si el audio NO es inglés (detectado como español o con marcas claras
-    //     de español), no traducimos: el front mostrará el aviso del modo.
-    const isSpanish = detectedLang === 'spanish' || detectedLang === 'es' || looksSpanish(english);
-    if (isSpanish) {
+    // 2 — Si el texto tiene marcas claras de español, no traducimos: el front
+    //     mostrará el aviso del modo (este modo es solo para escuchar inglés).
+    if (looksSpanish(english)) {
       return res.json({ isSpanishInput: true, english: '', spanish: '' });
     }
 
