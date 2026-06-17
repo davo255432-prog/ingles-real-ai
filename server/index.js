@@ -1150,6 +1150,84 @@ app.post('/api/translate-speech', upload.single('audio'), async (req, res) => {
   }
 });
 
+// ── Listen English → Understand in Spanish ────────────────────────────────
+// Para el modo "Quiero entender inglés": transcribe el audio con detección
+// automática de idioma. Si es inglés, lo traduce al español. Si detecta
+// español, NO traduce: devuelve isSpanishInput para que el front avise.
+
+const UNDERSTAND_PROMPT = `Eres un traductor de inglés a español para adultos hispanos en Estados Unidos.
+El usuario escuchó o dijo una frase en inglés y quiere entender su significado.
+Traduce la frase al español más natural, claro y cotidiano. Sé fiel al sentido, breve y directo.
+
+Devuelve SOLO este JSON válido (sin markdown ni texto extra):
+{
+  "spanish": "traducción al español"
+}`;
+
+app.post('/api/understand-english', upload.single('audio'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No se recibió archivo de audio.' });
+  }
+
+  const mimeType = req.file.mimetype.split(';')[0];
+  const ext = mimeToExt(mimeType);
+  console.log(`[understand-english] Recibido: ${req.file.size} bytes — ${mimeType} → ${ext}`);
+
+  try {
+    // 1 — Transcribe con detección automática de idioma (whisper-1 + verbose_json)
+    const audioFile = await toFile(
+      req.file.buffer,
+      `recording.${ext}`,
+      { type: mimeType },
+    );
+
+    const transcription = await openai.audio.transcriptions.create({
+      file: audioFile,
+      model: 'whisper-1',
+      response_format: 'verbose_json',
+    });
+
+    const english = (transcription.text ?? '').trim();
+    const detectedLang = String(transcription.language ?? '').toLowerCase();
+    console.log(`[understand-english] Idioma: ${detectedLang} — texto: "${english.slice(0, 80)}"`);
+
+    if (!english) {
+      return res.status(422).json({ error: 'No se detectó voz. Reproduce o habla una frase en inglés.' });
+    }
+
+    // 2 — Si el audio NO es inglés (detectado como español o con marcas claras
+    //     de español), no traducimos: el front mostrará el aviso del modo.
+    const isSpanish = detectedLang === 'spanish' || detectedLang === 'es' || looksSpanish(english);
+    if (isSpanish) {
+      return res.json({ isSpanishInput: true, english: '', spanish: '' });
+    }
+
+    // 3 — Traducir inglés → español
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: UNDERSTAND_PROMPT },
+        { role: 'user', content: `Traduce esto al español: "${english}"` },
+      ],
+      temperature: 0.3,
+      max_tokens: 200,
+      response_format: { type: 'json_object' },
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content);
+    console.log(`[understand-english] Traducción ES: "${String(result.spanish ?? '').slice(0, 80)}"`);
+
+    res.json({
+      isSpanishInput: false,
+      english,
+      spanish: result.spanish ?? '',
+    });
+  } catch (error) {
+    console.error('❌ Error en understand-english:', error.message);
+    res.status(500).json({ error: 'No se pudo procesar el audio. Verifica que el servidor esté activo.' });
+  }
+});
+
 
 // ── Evaluate speaking ──────────────────────────────────────────────────────
 
