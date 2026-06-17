@@ -46,6 +46,9 @@ import { KitchenProgressScreen } from './screens/KitchenProgressScreen';
 // Coach IA — módulo aislado (gestiona su propia navegación interna)
 import { CoachRoot } from './coach/CoachRoot';
 
+// Biblioteca (placeholder)
+import { BibliotecaScreen } from './screens/BibliotecaScreen';
+
 function App() {
   const [screen, setScreen] = useState<Screen>('home');
 
@@ -102,11 +105,15 @@ function App() {
       {screen === 'home' && (
         <HomeScreen
           onStartFlow={() => setScreen('how-do-i-say')}
-          onSituationsFlow={() => setScreen('situations')}
-          onUrgentFlow={() => setScreen('urgent-say')}
           onSpeakTranslate={() => setScreen('speak-translate')}
           onCoach={() => setScreen('coach')}
+          onBiblioteca={() => setScreen('biblioteca')}
         />
+      )}
+
+      {/* ── Biblioteca (placeholder) ── */}
+      {screen === 'biblioteca' && (
+        <BibliotecaScreen onBack={() => setScreen('home')} />
       )}
 
       {/* ── Coach IA — módulo aislado ── */}
