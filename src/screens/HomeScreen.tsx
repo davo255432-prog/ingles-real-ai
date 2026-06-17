@@ -46,9 +46,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartFlow, onSituation
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </div>
-          <h2 className="text-white text-xl font-bold mb-1">¿Cómo digo esto?</h2>
+          <h2 className="text-white text-xl font-bold mb-1">Aprende a decirlo</h2>
           <p className="text-white/75 text-sm leading-snug">
-            Escribe o di en español lo que necesitas comunicar. Yo te enseño cómo decirlo.
+            Escribe o di una frase en español. Te explico cómo decirla en inglés y practicas tu pronunciación.
           </p>
         </button>
 
