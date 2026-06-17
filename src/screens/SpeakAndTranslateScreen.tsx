@@ -536,6 +536,9 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
               </div>
             </div>
 
+            {/* Responder en inglés (solo en modo entender): conversación práctica */}
+            {mode === 'understand' && <ReplyInEnglish />}
+
             {/* Record again */}
             <button
               onClick={handleRecordClick}
@@ -552,6 +555,231 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
         )}
 
       </div>
+    </div>
+  );
+};
+
+// ── Responder en inglés (sub-sección del modo "entender") ────────────────────
+// Conversación práctica: el usuario responde en español y obtiene su respuesta
+// en inglés + pronunciación + audio. Reutiliza el flujo existente español→inglés
+// (translateSpeech) y la voz (generateSpeech). Aislado: no afecta el flujo
+// principal ni el modo "Quiero decir algo en inglés".
+
+type ReplyState = 'idle' | 'requesting' | 'recording' | 'processing' | 'done' | 'error';
+
+const ReplyInEnglish: React.FC = () => {
+  const [state, setState] = useState<ReplyState>('idle');
+  const [english, setEnglish] = useState('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [tts, setTts] = useState<TtsState>('idle');
+
+  const mrRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mountedRef = useRef(true);
+  const ttsIdRef = useRef(0);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      stopSpeech();
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (mrRef.current?.state === 'recording') mrRef.current.stop();
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
+
+  const pronunciation = useMemo(() => {
+    const e = english.trim();
+    if (!e) return '';
+    try {
+      return toSpanishPronunciation(e);
+    } catch {
+      return '';
+    }
+  }, [english]);
+
+  const start = async () => {
+    stopSpeech();
+    setTts('idle');
+    setErrorMsg(null);
+    setEnglish('');
+    chunksRef.current = [];
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      setErrorMsg('Tu navegador no soporta grabación. Prueba con Chrome o Edge.');
+      setState('error');
+      return;
+    }
+    setState('requesting');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const mimeType =
+        ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4'].find((t) =>
+          MediaRecorder.isTypeSupported(t),
+        ) ?? '';
+      const mr = new MediaRecorder(stream, { ...(mimeType ? { mimeType } : {}), audioBitsPerSecond: 32000 });
+      mrRef.current = mr;
+      mr.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      mr.start();
+      intervalRef.current = setInterval(() => {
+        if (mr.state === 'recording') mr.requestData();
+      }, 500);
+      setState('recording');
+    } catch {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      setErrorMsg('El micrófono está bloqueado. Permite el acceso e intenta de nuevo.');
+      setState('error');
+    }
+  };
+
+  const stop = async () => {
+    const mr = mrRef.current;
+    if (!mr || mr.state !== 'recording') return;
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    setState('processing');
+    await new Promise<void>((resolve) => {
+      mr.addEventListener('stop', () => resolve(), { once: true });
+      mr.stop();
+    });
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+
+    const chunks = chunksRef.current;
+    if (chunks.length === 0) {
+      setErrorMsg('No se grabó audio. Habla más fuerte y cerca del micrófono.');
+      setState('error');
+      return;
+    }
+    const blob = new Blob(chunks, { type: mr.mimeType || 'audio/webm' });
+    try {
+      const data = await translateSpeech(blob);
+      if (!mountedRef.current) return;
+      if (data.unclear || !data.english.trim()) {
+        setErrorMsg('No te entendí. Intenta de nuevo hablando más claro.');
+        setState('error');
+        return;
+      }
+      setEnglish(data.english);
+      setState('done');
+    } catch {
+      if (!mountedRef.current) return;
+      setErrorMsg('No se pudo procesar el audio. Verifica tu conexión.');
+      setState('error');
+    }
+  };
+
+  const handleClick = () => {
+    if (state === 'recording') void stop();
+    else if (state === 'idle' || state === 'error' || state === 'done') void start();
+  };
+
+  const handleListen = async () => {
+    if (!english) return;
+    if (tts === 'loading' || tts === 'playing') {
+      stopSpeech();
+      setTts('idle');
+      return;
+    }
+    const id = ++ttsIdRef.current;
+    setTts('loading');
+    try {
+      const p = generateSpeech(english, 'normal');
+      if (mountedRef.current && ttsIdRef.current === id) setTts('playing');
+      await p;
+      if (mountedRef.current && ttsIdRef.current === id) setTts('idle');
+    } catch {
+      if (mountedRef.current && ttsIdRef.current === id) setTts('error');
+    }
+  };
+
+  const processing = state === 'requesting' || state === 'processing';
+  const recording = state === 'recording';
+  const ttsActive = tts === 'loading' || tts === 'playing';
+
+  const btnLabel = recording
+    ? 'Detener'
+    : state === 'requesting'
+      ? 'Solicitando permiso...'
+      : state === 'processing'
+        ? 'Procesando...'
+        : 'Responder en español';
+
+  return (
+    <div className="border-2 border-purple-100 rounded-2xl p-4 flex flex-col gap-3">
+      <div>
+        <p className="font-bold text-gray-800">Responder en inglés</p>
+        <p className="text-gray-500 text-sm leading-snug">Di tu respuesta en español y te la doy en inglés.</p>
+      </div>
+
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={processing}
+        className={[
+          'w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all',
+          processing
+            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            : recording
+              ? 'bg-red-500 text-white animate-pulse'
+              : 'bg-purple-500 hover:bg-purple-600 text-white active:scale-95',
+        ].join(' ')}
+      >
+        🎤 {btnLabel}
+      </button>
+
+      {state === 'error' && errorMsg && (
+        <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+          <p className="text-red-700 text-sm leading-snug">{errorMsg}</p>
+        </div>
+      )}
+
+      {state === 'done' && english && (
+        <>
+          <div className="bg-purple-500 rounded-2xl px-5 py-4">
+            <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-1.5">Tu respuesta en inglés</p>
+            <p className="text-white font-bold text-xl leading-snug">"{english}"</p>
+            {pronunciation && (
+              <div className="mt-3 pt-3 border-t border-white/20">
+                <p className="text-xs font-semibold text-purple-100 uppercase tracking-wide mb-1">Cómo decirlo</p>
+                <p className="text-purple-50 text-base leading-snug">{pronunciation}</p>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={() => void handleListen()}
+            aria-label={ttsActive ? 'Detener audio' : 'Escuchar respuesta en inglés'}
+            className={[
+              'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all',
+              ttsActive
+                ? 'bg-purple-500 text-white'
+                : 'bg-white border border-purple-200 text-purple-700 hover:bg-purple-50 active:scale-95',
+            ].join(' ')}
+          >
+            {ttsActive ? (
+              <span className="flex gap-0.5 items-center">
+                <span className="w-0.5 h-4 bg-current rounded animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-0.5 h-4 bg-current rounded animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-0.5 h-4 bg-current rounded animate-bounce" style={{ animationDelay: '300ms' }} />
+              </span>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
+            )}
+            {tts === 'loading' ? 'Cargando...' : tts === 'playing' ? 'Reproduciendo...' : 'Escuchar'}
+          </button>
+        </>
+      )}
     </div>
   );
 };
