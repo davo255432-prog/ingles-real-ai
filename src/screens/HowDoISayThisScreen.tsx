@@ -41,6 +41,11 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
   // ── Voice recording state ─────────────────────────────────────────────────
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [voiceError, setVoiceError] = useState<string | null>(null);
+  // Coherencia voz/texto: si el usuario inició con voz, el contexto adicional
+  // también se pide por voz. Si inició con texto, se mantiene el campo escrito.
+  const [startedWithVoice, setStartedWithVoice] = useState(false);
+  // Destino de la grabación actual: entrada inicial o respuesta de contexto.
+  const recordTargetRef = useRef<'input' | 'clarify'>('input');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef        = useRef<Blob[]>([]);
@@ -135,9 +140,24 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
     await runGenerate(input.trim(), clarContext, intent, details, commIntent, intentExpl);
   };
 
+  // Contexto adicional dado POR VOZ (cuando el usuario inició con voz).
+  // Usa la transcripción como contexto y genera directamente (igual que el texto).
+  const handleClarifyWithVoice = async (transcript: string) => {
+    const clarContext = transcript.trim();
+    if (!clarContext) return;
+    const intent = pendingIntent;
+    const details = pendingDetails;
+    const commIntent = pendingCommIntent;
+    const intentExpl = pendingIntentExpl;
+    const original = input.trim();
+    resetClarification();
+    await runGenerate(original, clarContext, intent, details, commIntent, intentExpl);
+  };
+
   // ── Voice recording ────────────────────────────────────────────────────────
 
-  const handleStartRecording = async () => {
+  const handleStartRecording = async (target: 'input' | 'clarify' = 'input') => {
+    recordTargetRef.current = target;
     setVoiceError(null);
     setVoiceState('requesting');
 
@@ -223,8 +243,17 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
             return;
           }
 
-          // Populate the text input and switch to write mode so the user
-          // can see what was transcribed, then auto-trigger the analysis.
+          // Si la grabación era para dar CONTEXTO adicional, úsala como tal y
+          // genera directamente (no toca el input ni el modo).
+          if (recordTargetRef.current === 'clarify') {
+            setVoiceState('idle');
+            await handleClarifyWithVoice(transcribed);
+            return;
+          }
+
+          // Entrada inicial por voz: recordamos que inició con voz, mostramos la
+          // transcripción y lanzamos el análisis.
+          setStartedWithVoice(true);
           setInput(transcribed);
           setMode('write');
           setVoiceState('idle');
@@ -279,7 +308,11 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
 
   // ── Voice mode UI helper ───────────────────────────────────────────────────
 
-  const renderVoiceArea = () => {
+  const renderVoiceArea = (
+    target: 'input' | 'clarify' = 'input',
+    idleTitle = 'Toca para grabar tu voz',
+    idleSubtitle = 'Di en español lo que necesitas comunicar',
+  ) => {
     if (voiceState === 'recording') {
       return (
         <div className="w-full bg-white border-2 border-red-300 rounded-2xl p-6 flex flex-col items-center gap-4 min-h-[160px] justify-center">
@@ -346,7 +379,7 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
     return (
       <div className="w-full bg-white border-2 border-orange-200 rounded-2xl p-6 flex flex-col items-center gap-4 min-h-[160px] justify-center">
         <button
-          onClick={handleStartRecording}
+          onClick={() => void handleStartRecording(target)}
           disabled={isLoading}
           className="w-16 h-16 bg-orange-500 hover:bg-orange-600 active:scale-95 disabled:opacity-50 rounded-full flex items-center justify-center shadow-lg shadow-orange-200 transition-all duration-200"
         >
@@ -358,8 +391,8 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
           </svg>
         </button>
         <div className="text-center">
-          <p className="text-gray-600 text-sm font-medium">Toca para grabar tu voz</p>
-          <p className="text-gray-400 text-xs mt-0.5">Di en español lo que necesitas comunicar</p>
+          <p className="text-gray-600 text-sm font-medium">{idleTitle}</p>
+          <p className="text-gray-400 text-xs mt-0.5">{idleSubtitle}</p>
         </div>
       </div>
     );
@@ -424,37 +457,58 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
             <p className="text-gray-700 text-sm leading-relaxed mb-4">
               {clarifyingQuestion}
             </p>
-            <textarea
-              value={clarificationInput}
-              onChange={(e) => setClarificationInput(e.target.value)}
-              placeholder="Escribe tu respuesta aquí..."
-              rows={2}
-              autoFocus
-              className="w-full bg-white border-2 border-orange-200 focus:border-orange-400 rounded-xl p-3 text-gray-800 placeholder-gray-300 text-sm resize-none outline-none transition-colors mb-3"
-            />
-            <Button
-              onClick={handleContinue}
-              color="orange"
-              variant="primary"
-              size="md"
-              fullWidth
-              disabled={!clarificationInput.trim() || isLoading}
-              icon={
-                isLoading ? (
-                  <span className="flex gap-0.5 items-center">
-                    <span className="w-1 h-3.5 bg-current rounded animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1 h-3.5 bg-current rounded animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1 h-3.5 bg-current rounded animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </span>
-                ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                )
-              }
-            >
-              {isLoading ? loadingMsg! : 'Continuar →'}
-            </Button>
+
+            {startedWithVoice ? (
+              // Inició con voz → el contexto también se da por voz.
+              <>
+                {renderVoiceArea('clarify', 'Dar contexto con voz', 'Responde la pregunta con tu voz')}
+                {isLoading && (
+                  <div className="flex items-center justify-center gap-3 py-4">
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                    <p className="text-orange-600 text-sm font-medium">{loadingMsg}</p>
+                  </div>
+                )}
+              </>
+            ) : (
+              // Inició con texto → mantiene el campo escrito.
+              <>
+                <textarea
+                  value={clarificationInput}
+                  onChange={(e) => setClarificationInput(e.target.value)}
+                  placeholder="Escribe tu respuesta aquí..."
+                  rows={2}
+                  autoFocus
+                  className="w-full bg-white border-2 border-orange-200 focus:border-orange-400 rounded-xl p-3 text-gray-800 placeholder-gray-300 text-sm resize-none outline-none transition-colors mb-3"
+                />
+                <Button
+                  onClick={handleContinue}
+                  color="orange"
+                  variant="primary"
+                  size="md"
+                  fullWidth
+                  disabled={!clarificationInput.trim() || isLoading}
+                  icon={
+                    isLoading ? (
+                      <span className="flex gap-0.5 items-center">
+                        <span className="w-1 h-3.5 bg-current rounded animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-1 h-3.5 bg-current rounded animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-1 h-3.5 bg-current rounded animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </span>
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    )
+                  }
+                >
+                  {isLoading ? loadingMsg! : 'Continuar →'}
+                </Button>
+              </>
+            )}
           </div>
         )}
 
@@ -471,7 +525,7 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
         {/* ── Main button (write mode only; voice mode auto-submits after transcription) ── */}
         {mode === 'write' && !clarifyingQuestion && (
           <Button
-            onClick={() => handleCreate()}
+            onClick={() => { setStartedWithVoice(false); handleCreate(); }}
             color="orange"
             variant="primary"
             size="lg"

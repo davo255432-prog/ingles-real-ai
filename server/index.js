@@ -443,8 +443,14 @@ Devuelve SOLO la pronunciación de la frase completa, en una línea, sin comilla
 
 async function cleanAndVerify(data) {
   cleanPracticeData(data);
-  data.basicForm   = await ensureEnglish(data.basicForm,   'basicForm');
-  data.naturalForm = await ensureEnglish(data.naturalForm, 'naturalForm');
+  // Corrección de idioma en paralelo (antes era secuencial): cuando ambas
+  // frases necesitan corregirse, se resuelve en una sola espera, no dos.
+  const [basicFixed, naturalFixed] = await Promise.all([
+    ensureEnglish(data.basicForm,   'basicForm'),
+    ensureEnglish(data.naturalForm, 'naturalForm'),
+  ]);
+  data.basicForm = basicFixed;
+  data.naturalForm = naturalFixed;
   await ensureDistinctNatural(data);
 
   // ── Always regenerate BOTH pronunciations server-side as the LAST step ──
