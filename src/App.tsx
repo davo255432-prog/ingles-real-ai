@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { API_BASE } from './config/api';
 import type { Screen, PracticeData, UrgentPhraseData, CorrectionData } from './types';
 import { mockCorrectionData, mockUrgentCorrectionData } from './data/mockData';
+import { generatePracticeEnrichment } from './services/practiceApi';
 
 // Screens — Home
 import { HomeScreen } from './screens/HomeScreen';
@@ -72,6 +73,14 @@ function App() {
     setPracticeData(data);
     setLastInput(input);
     setScreen('practice');
+
+    // Enriquecimiento en 2º plano: la práctica ya se muestra con el núcleo;
+    // los desgloses/keywords se cargan después y se fusionan cuando llegan.
+    // Si falla o el usuario crea otra práctica, no afecta nada (guard por situación).
+    void generatePracticeEnrichment(input, data).then((enrichment) => {
+      if (!enrichment) return;
+      setPracticeData((cur) => (cur && cur.situation === data.situation ? { ...cur, ...enrichment } : cur));
+    });
   };
 
   const handleCreateAnother = () => {

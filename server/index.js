@@ -805,6 +805,52 @@ app.post('/api/generate-practice', async (req, res) => {
   if (intentExplanation)     console.log(`[generate] intentExplanation: "${intentExplanation}"`);
   if (requiredDetails?.length) console.log(`[generate] RequiredDetails: ${JSON.stringify(requiredDetails)}`);
 
+  // Carga progresiva: 'core' = solo lo esencial (frases + pronunciación +
+  // gramática + ejemplos) para mostrar la práctica rápido; 'enrich' = material
+  // de apoyo (desgloses, keywords, por qué/cuándo) que llega en 2º plano.
+  // 'full' (por defecto) mantiene el comportamiento anterior para otros usos.
+  const phase = req.body.phase === 'core' || req.body.phase === 'enrich' ? req.body.phase : 'full';
+
+  // ── Fase 'enrich': material de apoyo para frases ya generadas ──
+  if (phase === 'enrich') {
+    const baseSituation = String(req.body.situation ?? userInput).trim();
+    const baseBasic = String(req.body.basicForm ?? '').trim();
+    const baseNatural = String(req.body.naturalForm ?? '').trim();
+    const enrichPrompt = `Situación del usuario: "${baseSituation}"
+Estas dos frases en inglés YA están decididas (NO las cambies, solo explícalas):
+- basicForm: "${baseBasic}"
+- naturalForm: "${baseNatural}"
+
+Devuelve SOLO este JSON (sin markdown) con material de apoyo para esas dos frases:
+{
+  "basicPhraseBreakdown": [ { "part": "bloque de basicForm", "meaning": "significado exacto" } ],
+  "phraseBreakdown": [ { "part": "bloque de naturalForm", "meaning": "significado exacto" } ],
+  "whyThisPhrase": "por qué estas palabras específicas en español",
+  "whenToUse": "cuándo usarla en la vida real, 1 oración",
+  "basicVsNatural": "diferencia entre las dos frases mencionando las frases reales",
+  "basicKeywords": [ { "word": "expresión clave de basicForm", "meaning": "significado en español", "pronunciation": "pronunciación para hispanohablantes", "usage": "cómo funciona en basicForm", "exampleEnglish": "ejemplo corto en inglés", "exampleSpanish": "traducción del ejemplo" } ],
+  "keywords": [ { "word": "expresión clave de naturalForm", "meaning": "significado en español", "pronunciation": "pronunciación para hispanohablantes", "usage": "cómo funciona en esta frase", "exampleEnglish": "ejemplo corto en inglés", "exampleSpanish": "traducción del ejemplo" } ]
+}`;
+    try {
+      const enriched = await callGenerate([
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: enrichPrompt },
+      ]);
+      return res.json({
+        basicPhraseBreakdown: enriched.basicPhraseBreakdown ?? [],
+        phraseBreakdown: enriched.phraseBreakdown ?? [],
+        whyThisPhrase: enriched.whyThisPhrase ?? '',
+        whenToUse: enriched.whenToUse ?? '',
+        basicVsNatural: enriched.basicVsNatural ?? '',
+        basicKeywords: enriched.basicKeywords ?? [],
+        keywords: enriched.keywords ?? [],
+      });
+    } catch (error) {
+      console.error('❌ Error al enriquecer práctica:', error.message);
+      return res.status(500).json({ error: 'No se pudo enriquecer la práctica.' });
+    }
+  }
+
   const contextNote = clarificationContext
     ? `\nContexto adicional del usuario (úsalo solo para interpretar y elegir vocabulario, NO lo agregues a la frase original ni a "situation"): "${clarificationContext}"`
     : '';
@@ -840,12 +886,11 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
   "naturalForm": "cómo lo diría un nativo con la intención comunicativa correcta (no solo más palabras)",
   "pronunciation": "pronunciación SOLO de naturalForm en sílabas para hispanohablantes. Ejemplo: si naturalForm='Just so you know, we\\'re out of onions.' → pronunciation='yast so yu nou, wir aut ov ón-yons'",
   "grammarRule": "mini regla en español, máximo 2 oraciones",
-  "vocabulary": ["palabra clave 1", "palabra clave 2", "palabra clave 3"],
   "examples": [
     { "english": "variación útil", "spanish": "traducción" },
     { "english": "variación útil", "spanish": "traducción" },
     { "english": "variación útil", "spanish": "traducción" }
-  ],
+  ]${phase === 'core' ? '' : `,
   "basicPhraseBreakdown": [
     { "part": "bloque de basicForm", "meaning": "significado exacto" },
     { "part": "bloque de basicForm", "meaning": "significado exacto" }
@@ -863,7 +908,7 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
   ],
   "keywords": [
     { "word": "palabra o expresión clave de naturalForm", "meaning": "significado en español", "pronunciation": "pronunciación para hispanohablantes", "usage": "cómo funciona en esta frase", "exampleEnglish": "ejemplo corto en inglés", "exampleSpanish": "traducción del ejemplo" }
-  ]
+  ]`}
 }`;
 
   const messages = [
@@ -875,7 +920,7 @@ Devuelve exactamente este JSON (sin markdown, sin texto extra):
     // ── First attempt ────────────────────────────────────────────────────
     let data = await callGenerate(messages);
 
-    const required = ['situation', 'basicForm', 'basicPronunciation', 'naturalForm', 'pronunciation', 'grammarRule', 'vocabulary', 'examples'];
+    const required = ['situation', 'basicForm', 'basicPronunciation', 'naturalForm', 'pronunciation', 'grammarRule', 'examples'];
     for (const field of required) {
       if (!(field in data)) throw new Error(`Campo faltante en la respuesta de IA: ${field}`);
     }

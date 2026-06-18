@@ -140,6 +140,7 @@ export async function generatePractice(
       body: JSON.stringify({
         userInput,
         mode: 'how-do-i-say-this',
+        phase: 'core', // solo lo esencial → la práctica aparece rápido
         ...(clarificationContext ? { clarificationContext } : {}),
         ...(intent ? { intent } : {}),
         ...(requiredDetails?.length ? { requiredDetails } : {}),
@@ -152,5 +153,41 @@ export async function generatePractice(
     return { data: mapToPracticeData(json), usedFallback: false };
   } catch {
     return { data: mockPracticeData, usedFallback: true };
+  }
+}
+
+/** Campos de enriquecimiento que llegan en segundo plano (todos opcionales). */
+export type PracticeEnrichment = Pick<
+  PracticeData,
+  'basicPhraseBreakdown' | 'phraseBreakdown' | 'whyThisPhrase' | 'whenToUse' | 'basicVsNatural' | 'basicKeywords' | 'keywords'
+>;
+
+/**
+ * Step 3 (segundo plano) — Genera el material de apoyo (desgloses, keywords,
+ * por qué/cuándo) para una práctica ya mostrada. Devuelve null si falla, para
+ * que la práctica siga funcionando con solo el núcleo.
+ */
+export async function generatePracticeEnrichment(
+  userInput: string,
+  core: PracticeData,
+): Promise<PracticeEnrichment | null> {
+  try {
+    const response = await fetch(`${API_BASE}/api/generate-practice`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userInput,
+        mode: 'how-do-i-say-this',
+        phase: 'enrich',
+        situation: core.situation,
+        basicForm: core.basicForm,
+        naturalForm: core.naturalForm,
+      }),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json() as PracticeEnrichment;
+  } catch (err) {
+    console.warn('[generatePracticeEnrichment] FALLÓ — la práctica sigue con el núcleo. Error:', String(err));
+    return null;
   }
 }
