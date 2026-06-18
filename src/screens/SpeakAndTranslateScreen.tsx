@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { translateSpeech, understandEnglish } from '../services/translateSpeechApi';
+import { translateSpeech, understandEnglish, understandText } from '../services/translateSpeechApi';
 import type { TranslateResult } from '../services/translateSpeechApi';
 import { generateSpeech, stopSpeech } from '../services/speechApi';
 import { toSpanishPronunciation } from '../utils/spanishPronunciation';
@@ -49,6 +49,10 @@ type Mode = 'speak' | 'understand';
 export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = ({ onBack }) => {
   const [mode, setMode] = useState<Mode>('speak');
   const [recordState, setRecordState] = useState<RecordState>('idle');
+  // Entrada de texto manual (solo en modo entender).
+  const [textInput, setTextInput] = useState('');
+  const [translatingText, setTranslatingText] = useState(false);
+  const [textError, setTextError] = useState<string | null>(null);
   const [recordError, setRecordError]  = useState<RecordError | null>(null);
   const [result, setResult]            = useState<TranslateResult | null>(null);
   const [ttsState, setTtsState]        = useState<TtsState>('idle');
@@ -213,6 +217,28 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
   const handleRecordClick = () => {
     if (recordState === 'recording') void handleStopRecording();
     else if (recordState === 'idle' || recordState === 'error' || recordState === 'done') void handleStartRecording();
+  };
+
+  // Traducir una frase en inglés ESCRITA (modo entender). Reutiliza la
+  // traducción inglés→español del servidor; el resultado se muestra igual que
+  // el de voz (SIGNIFICA / Inglés detectado / Cómo decirlo / Escuchar).
+  const handleTranslateText = async () => {
+    const text = textInput.trim();
+    if (!text || translatingText) return;
+    stopSpeech();
+    setTextError(null);
+    setTranslatingText(true);
+    try {
+      const data = await understandText(text);
+      if (!mountedRef.current) return;
+      setResult({ spanish: data.spanish, english: data.english, unclear: false });
+      setRecordState('done');
+    } catch (err) {
+      if (!mountedRef.current) return;
+      setTextError(err instanceof Error ? err.message : 'No se pudo traducir. Verifica tu conexión.');
+    } finally {
+      if (mountedRef.current) setTranslatingText(false);
+    }
   };
 
   // ── TTS ──────────────────────────────────────────────────────────────────
@@ -399,6 +425,45 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
           </div>
           <span>{recordLabel}</span>
         </button>
+
+        {/* Escribir frase manualmente (solo modo entender, antes del resultado) */}
+        {mode === 'understand' && recordState !== 'done' && (
+          <div className="mt-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex-1 h-px bg-gray-200" />
+              <span className="text-gray-400 text-xs font-semibold">o escríbela</span>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
+
+            <textarea
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              placeholder="Escribe una frase en inglés"
+              rows={2}
+              className="w-full rounded-2xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none px-4 py-3 text-gray-800 text-base resize-none"
+            />
+
+            <button
+              type="button"
+              onClick={() => void handleTranslateText()}
+              disabled={!textInput.trim() || translatingText}
+              className={[
+                'mt-3 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-base transition-all',
+                !textInput.trim() || translatingText
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-purple-500 hover:bg-purple-600 text-white active:scale-95',
+              ].join(' ')}
+            >
+              {translatingText ? 'Traduciendo...' : 'Traducir'}
+            </button>
+
+            {textError && (
+              <div className="mt-3 bg-red-50 border border-red-200 rounded-2xl px-4 py-3">
+                <p className="text-red-700 text-sm leading-snug">{textError}</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Error */}
         {recordState === 'error' && recordError && (

@@ -66,3 +66,29 @@ export async function understandEnglish(blob: Blob): Promise<UnderstandResult> {
 
   return response.json() as Promise<UnderstandResult>;
 }
+
+export interface UnderstandTextResult {
+  /** Frase en inglés escrita por el usuario. */
+  english: string;
+  /** Traducción al español. */
+  spanish: string;
+}
+
+/**
+ * Traduce al español una frase en inglés ESCRITA por el usuario (modo entender).
+ * Reutiliza la misma traducción inglés→español del servidor. Lanza en errores.
+ */
+export async function understandText(text: string): Promise<UnderstandTextResult> {
+  const response = await fetch(`${API_BASE}/api/understand-text`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({})) as { error?: string };
+    throw new Error(err.error ?? `Error del servidor: ${response.status}`);
+  }
+
+  return response.json() as Promise<UnderstandTextResult>;
+}

@@ -1227,6 +1227,40 @@ app.post('/api/understand-english', upload.single('audio'), async (req, res) => 
   }
 });
 
+// ── Understand English (texto escrito) → Español ──────────────────────────────
+// Para el modo "entender" cuando el usuario ESCRIBE la frase en inglés en vez
+// de hablarla. Reutiliza el mismo prompt de traducción inglés→español.
+
+app.post('/api/understand-text', async (req, res) => {
+  const text = String(req.body?.text ?? '').trim();
+  if (!text) {
+    return res.status(400).json({ error: 'Escribe una frase en inglés.' });
+  }
+
+  console.log(`[understand-text] Texto: "${text.slice(0, 80)}"`);
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: UNDERSTAND_PROMPT },
+        { role: 'user', content: `Traduce esto al español: "${text}"` },
+      ],
+      temperature: 0.3,
+      max_tokens: 200,
+      response_format: { type: 'json_object' },
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content);
+    console.log(`[understand-text] Traducción ES: "${String(result.spanish ?? '').slice(0, 80)}"`);
+
+    res.json({ english: text, spanish: result.spanish ?? '' });
+  } catch (error) {
+    console.error('❌ Error en understand-text:', error.message);
+    res.status(500).json({ error: 'No se pudo traducir. Verifica que el servidor esté activo.' });
+  }
+});
+
 
 // ── Evaluate speaking ──────────────────────────────────────────────────────
 
