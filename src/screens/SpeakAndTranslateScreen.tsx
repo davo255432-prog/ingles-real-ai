@@ -286,11 +286,12 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
     }
   }, [result?.english]);
 
-  // Precarga el audio en inglés apenas hay resultado, para que "Escuchar"
-  // suene al instante (sin esperar a generar el audio al tocar el botón).
+  // Precarga el audio en inglés (normal y lento) apenas hay resultado, para que
+  // "Escuchar" y "Escuchar lento" suenen al instante, sin esperar a generarlo.
   useEffect(() => {
     if (recordState === 'done' && result?.english?.trim()) {
       void prefetchSpeech(result.english, 'normal');
+      void prefetchSpeech(result.english, 'slow');
     }
   }, [recordState, result?.english]);
 
