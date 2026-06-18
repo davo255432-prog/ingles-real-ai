@@ -1,14 +1,17 @@
 import React from 'react';
-import type { Unit } from '../types';
+import type { CoachProgress, Unit } from '../types';
+import { getLesson } from '../data/curriculum';
 
 interface CoachLevelWelcomeScreenProps {
   /** Apodo del usuario (si lo dio) para el saludo. */
   name?: string;
   /** Las 5 unidades del nivel, para mostrar el mapa. */
   units: Unit[];
+  /** Progreso (para marcar En progreso / Completada por unidad). */
+  progress: CoachProgress;
   onBack: () => void;
-  /** Empezar la Unidad 1 (abre la primera lección de Pronombres). */
-  onStart: () => void;
+  /** Abrir la primera lección de una unidad disponible. */
+  onOpenLesson: (unitId: string, lessonId: string) => void;
 }
 
 /**
@@ -18,8 +21,9 @@ interface CoachLevelWelcomeScreenProps {
 export const CoachLevelWelcomeScreen: React.FC<CoachLevelWelcomeScreenProps> = ({
   name,
   units,
+  progress,
   onBack,
-  onStart,
+  onOpenLesson,
 }) => {
   const greeting = name ? `Hola, ${name}. Empecemos desde la base.` : 'Empecemos desde la base.';
 
@@ -61,62 +65,85 @@ export const CoachLevelWelcomeScreen: React.FC<CoachLevelWelcomeScreenProps> = (
         </p>
         <div className="flex flex-col gap-3">
           {units.map((unit, index) => {
-            const demo = !unit.comingSoon && unit.lessonIds.length > 0;
+            const firstLessonId = unit.lessonIds[0];
+            const lesson = firstLessonId ? getLesson(firstLessonId) : undefined;
+            const locked = unit.comingSoon || !lesson;
+
+            const lessonProgress = firstLessonId ? progress.lessons[firstLessonId] : undefined;
+            const completed = lessonProgress?.status === 'completed';
+            const inProgress = lessonProgress?.status === 'in-progress';
+
             return (
-              <div
+              <button
                 key={unit.id}
+                type="button"
+                disabled={locked}
+                onClick={() => firstLessonId && onOpenLesson(unit.id, firstLessonId)}
                 className={
-                  demo
-                    ? 'bg-white rounded-2xl p-4 shadow-sm border border-emerald-100 flex items-center gap-3'
-                    : 'bg-white/60 rounded-2xl p-4 border border-gray-100 flex items-center gap-3'
+                  locked
+                    ? 'text-left bg-white/60 rounded-2xl p-4 border border-gray-100 flex items-center gap-3 cursor-not-allowed'
+                    : 'text-left bg-white rounded-2xl p-4 shadow-sm border border-emerald-100 flex items-center gap-3 hover:shadow-md active:scale-[0.99] transition-all'
                 }
               >
                 <div
                   className={
-                    demo
-                      ? 'w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0'
-                      : 'w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center shrink-0'
+                    locked
+                      ? 'w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center shrink-0'
+                      : 'w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0'
                   }
                 >
-                  <span className={demo ? 'text-emerald-700 font-extrabold' : 'text-gray-400 font-extrabold'}>
-                    {index + 1}
-                  </span>
+                  {completed ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  ) : (
+                    <span className={locked ? 'text-gray-400 font-extrabold' : 'text-emerald-700 font-extrabold'}>
+                      {index + 1}
+                    </span>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={demo ? 'text-gray-900 font-bold leading-snug' : 'text-gray-400 font-bold leading-snug'}>
+                  <p className={locked ? 'text-gray-400 font-bold leading-snug' : 'text-gray-900 font-bold leading-snug'}>
                     {unit.title}
                   </p>
                 </div>
-                {demo ? (
-                  <span className="text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full shrink-0">
-                    Disponible
-                  </span>
-                ) : (
+
+                {/* Estado */}
+                {locked ? (
                   <span className="text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full shrink-0">
                     Próximamente
                   </span>
+                ) : completed ? (
+                  <span className="text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full shrink-0">
+                    Completada ✓
+                  </span>
+                ) : inProgress ? (
+                  <span className="text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full shrink-0">
+                    En progreso
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full shrink-0">
+                    Disponible
+                  </span>
                 )}
-              </div>
+
+                {/* Chevron solo si se puede abrir */}
+                {!locked && (
+                  <svg className="shrink-0 text-emerald-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                )}
+              </button>
             );
           })}
         </div>
 
-        {/* Aviso: empezamos por la Unidad 1 */}
-        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 mt-4">
+        {/* Aviso: toca una unidad disponible para empezar */}
+        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 mt-4 mb-8">
           <p className="text-emerald-800 text-sm leading-relaxed">
-            Empieza por la Unidad 1 — Pronombres. Las demás unidades se irán abriendo poco a poco.
+            Toca una unidad disponible para empezar. Las demás se irán abriendo poco a poco.
           </p>
         </div>
-      </div>
-
-      {/* CTA */}
-      <div className="px-5 py-8">
-        <button
-          onClick={onStart}
-          className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
-        >
-          Empezar Unidad 1
-        </button>
       </div>
     </div>
   );

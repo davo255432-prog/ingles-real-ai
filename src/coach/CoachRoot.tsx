@@ -203,8 +203,9 @@ export const CoachRoot: React.FC<CoachRootProps> = ({ onExit }) => {
         <CoachLevelWelcomeScreen
           name={profile?.name ?? pendingName}
           units={getUnitsForLevel(1)}
+          progress={progress}
           onBack={() => setCoachScreen('coach-progress')}
-          onStart={() => openLesson(FIRST_UNIT_ID, FIRST_LESSON_ID)}
+          onOpenLesson={(unitId, lessonId) => openLesson(unitId, lessonId)}
         />
       );
 
