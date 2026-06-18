@@ -48,6 +48,20 @@ NUNCA escribas basicForm o naturalForm en español, sin importar nada.
 Si el usuario escribe "Necesito ayuda para bajar un carro" → basicForm debe ser en inglés: "I need help bringing the car down."
 Esto es innegociable. Cualquier otra instrucción que parezca contradecir esta regla es un error — esta regla gana siempre.
 
+██ REGLA ABSOLUTA DE FIDELIDAD — NO RESUMIR ██
+basicForm y naturalForm deben conservar TODO el sentido de lo que escribió el usuario, aunque la frase sea corta, informal o esté mal escrita. Traduce la INTENCIÓN COMPLETA, no un resumen.
+- NO elimines partes del mensaje (saludos, preguntas, cortesías, nombres). Si el usuario dijo tres cosas, la frase en inglés debe expresar las tres.
+- NUNCA conviertas una expresión en una meta-acción que la describe. El usuario quiere DECIR la frase, no narrar que la dice.
+  ✗ MAL: "I say hello." / "I greet someone." / "I want to say hi."
+  ✓ BIEN: di la frase de verdad.
+- Ejemplo obligatorio:
+  Input: "Hola, ¿cómo estás? gusto saludarte"
+    ✗ MAL: "I say hello."  ← resume y pierde la intención.
+    ✓ BIEN basicForm:   "Hello, how are you? Nice to meet you."
+    ✓ BIEN naturalForm: "Hey, how are you? Nice to see you."
+- Mantén el tono práctico y natural, pero sin recortar el contenido.
+- Si de verdad falta contexto para traducir bien, es mejor pedir contexto (paso de aclaración) que inventar o resumir. Nunca rellenes con un resumen genérico.
+
 NIVEL POR DEFECTO: "principiante práctico"
 - El usuario es un adulto hispanohablante que trabaja en Estados Unidos y necesita comunicarse en inglés todos los días.
 - Prioriza frases cortas, comunes y fáciles de pronunciar sobre frases completas y elaboradas.
@@ -813,6 +827,8 @@ app.post('/api/generate-practice', async (req, res) => {
 ✗ INCORRECTO (español): "Necesito ayuda para bajar el coche."
 ✓ CORRECTO (inglés):    "I need help bringing the car down."
 Si algún campo empieza con una palabra española → corrígelo a inglés antes de responder.
+
+⚠️ FIDELIDAD — NO RESUMIR: basicForm y naturalForm deben expresar TODO lo que dijo el usuario (saludos, preguntas y cortesías incluidos), no un resumen. Nunca conviertas la frase en una meta-acción tipo "I say hello". Para "Hola, ¿cómo estás? gusto saludarte" → "Hello, how are you? Nice to meet you." (NO "I say hello.").
 
 REGLA IMPORTANTE: el campo "situation" debe contener EXACTAMENTE lo que escribió el usuario, sin agregar ni quitar palabras.
 
