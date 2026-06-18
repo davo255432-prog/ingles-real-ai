@@ -52,9 +52,14 @@ import { BibliotecaScreen } from './screens/BibliotecaScreen';
 function App() {
   const [screen, setScreen] = useState<Screen>('home');
 
-  // Wake up Render server on app load so first real request doesn't hit a cold start
+  // Mantiene el servidor despierto: ping al abrir y cada 4 min mientras la app
+  // esté abierta, para evitar el arranque en frío de Railway (que hace muy lenta
+  // la primera reproducción de voz / traducción tras un rato de inactividad).
   useEffect(() => {
-    fetch(`${API_BASE}/api/ping`).catch(() => {});
+    const ping = () => { fetch(`${API_BASE}/api/ping`).catch(() => {}); };
+    ping();
+    const id = setInterval(ping, 4 * 60 * 1000);
+    return () => clearInterval(id);
   }, []);
 
   // ── Flow 1 state ──
