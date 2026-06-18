@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { translateSpeech, understandEnglish, understandText } from '../services/translateSpeechApi';
 import type { TranslateResult } from '../services/translateSpeechApi';
-import { generateSpeech, stopSpeech } from '../services/speechApi';
+import { generateSpeech, stopSpeech, prefetchSpeech } from '../services/speechApi';
 import { toSpanishPronunciation } from '../utils/spanishPronunciation';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -285,6 +285,14 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
       return '';
     }
   }, [result?.english]);
+
+  // Precarga el audio en inglés apenas hay resultado, para que "Escuchar"
+  // suene al instante (sin esperar a generar el audio al tocar el botón).
+  useEffect(() => {
+    if (recordState === 'done' && result?.english?.trim()) {
+      void prefetchSpeech(result.english, 'normal');
+    }
+  }, [recordState, result?.english]);
 
   // ── Record button ─────────────────────────────────────────────────────────
 
@@ -644,6 +652,11 @@ const ReplyInEnglish: React.FC = () => {
     } catch {
       return '';
     }
+  }, [english]);
+
+  // Precarga el audio de la respuesta para que "Escuchar" suene al instante.
+  useEffect(() => {
+    if (english.trim()) void prefetchSpeech(english, 'normal');
   }, [english]);
 
   const start = async () => {
