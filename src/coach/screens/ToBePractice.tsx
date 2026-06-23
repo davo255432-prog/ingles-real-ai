@@ -13,6 +13,11 @@ import {
 import { generateSpeech, stopSpeech } from '../../services/speechApi';
 import { transcribeAudio } from '../../services/voiceApi';
 import { ToBeFinalPractice } from './ToBeFinalPractice';
+import {
+  TO_BE_FINAL_PRACTICE_STEP_SLUG,
+  TO_BE_FINAL_VOCAB_STEP_SLUG,
+  TO_BE_FINAL_VOCABULARY,
+} from '../data/toBeFinalPractice';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Unidad 2 — Verbo "to be" (am / is / are). Pantalla autónoma, al estilo de
@@ -109,6 +114,7 @@ type ToBeStep =
   | { id: string; kind: 'speak'; phrase: BePhrase; label: string }
   | { id: string; kind: 'dialogue'; dlg: BeDialogue }
   | { id: string; kind: 'summary' }
+  | { id: string; kind: 'final-vocab' }
   | { id: string; kind: 'final-practice' };
 
 // Genera la frase con un hueco "___" para los ejercicios de elegir verbo.
@@ -274,7 +280,8 @@ function buildSteps(): ToBeStep[] {
     coach: 'they → are. La cosa/personas van primero.',
   });
 
-  steps.push({ id: sid('final-practice'), kind: 'final-practice' });
+  steps.push({ id: sid(TO_BE_FINAL_VOCAB_STEP_SLUG), kind: 'final-vocab' });
+  steps.push({ id: sid(TO_BE_FINAL_PRACTICE_STEP_SLUG), kind: 'final-practice' });
 
   return steps;
 }
@@ -438,6 +445,7 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
       )}
       {step.kind === 'dialogue' && <DialogueCard key={step.id} dlg={step.dlg} onNext={() => advance()} />}
       {step.kind === 'summary' && <Summary onNext={() => advance()} />}
+      {step.kind === 'final-vocab' && <FinalVocab onNext={() => advance()} />}
     </Shell>
   );
 };
@@ -929,6 +937,33 @@ const Summary: React.FC<{ onNext: () => void }> = ({ onNext }) => (
 );
 
 // ── Repetición con voz (reutiliza transcribeAudio + MediaRecorder) ───────────
+const FinalVocab: React.FC<{ onNext: () => void }> = ({ onNext }) => (
+  <>
+    <div className="pt-2 pb-4 flex-1">
+      <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-2">
+        Preparacion
+      </p>
+      <h1 className="text-2xl font-extrabold text-gray-900 mb-2">
+        Palabras que veras en la practica final
+      </h1>
+      <p className="text-gray-500 text-sm leading-relaxed mb-5">
+        Repasa estas palabras antes de responder hablando.
+      </p>
+      <div className="grid grid-cols-2 gap-2.5">
+        {TO_BE_FINAL_VOCABULARY.map((item) => (
+          <div key={item.id} className="bg-white rounded-2xl border border-gray-100 p-3 shadow-sm">
+            <p className="text-gray-900 font-extrabold leading-snug">{item.en}</p>
+            <p className="text-gray-500 text-sm leading-snug">{item.es}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div className="mt-auto">
+      <PrimaryButton onClick={onNext}>Ir a la practica final</PrimaryButton>
+    </div>
+  </>
+);
+
 type MicState = 'idle' | 'requesting' | 'recording' | 'transcribing';
 
 const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => void }> = ({ phrase, label, onNext }) => {

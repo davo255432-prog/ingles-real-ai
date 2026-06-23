@@ -132,7 +132,12 @@ export const CoachRoot: React.FC<CoachRootProps> = ({ onExit }) => {
     setCoachScreen('coach-lesson');
   };
 
-  const openLessonFromMap = (unitId: string, lessonId: string) => {
+  const openLessonFromMap = (unitId: string, lessonId: string, stepId?: string, asReview?: boolean) => {
+    if (stepId !== undefined || asReview !== undefined) {
+      openLesson(unitId, lessonId, stepId, !!asReview);
+      return;
+    }
+
     const lessonProgress = progress.lessons[lessonId];
     if (lessonProgress?.status === 'in-progress') {
       openLesson(unitId, lessonId, lessonProgress.lastStepId);
