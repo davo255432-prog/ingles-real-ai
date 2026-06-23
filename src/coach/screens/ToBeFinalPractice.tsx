@@ -224,6 +224,14 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
               Version sugerida
             </p>
             <p className="text-gray-900 font-bold leading-relaxed">{practice.suggestedEn}</p>
+            <div className="mt-3 pt-3 border-t border-emerald-100">
+              <p className="text-emerald-700 text-xs font-bold uppercase tracking-wide mb-1">
+                Como decirlo
+              </p>
+              <p className="text-gray-700 text-sm font-semibold leading-relaxed">
+                {practice.suggestedPronunciation}
+              </p>
+            </div>
           </div>
         )}
 

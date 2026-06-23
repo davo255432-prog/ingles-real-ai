@@ -5,12 +5,14 @@ export interface ToBeFinalPracticeItem {
   id: string;
   situationEs: string;
   suggestedEn: string;
+  suggestedPronunciation: string;
 }
 
 export interface ToBeFinalVocabularyItem {
   id: string;
   en: string;
   es: string;
+  pronunciation: string;
 }
 
 export const TO_BE_FINAL_VOCAB_STEP_SLUG = 'final-vocab';
@@ -21,20 +23,20 @@ export function toBeStepId(lessonId: string, slug: string): string {
 }
 
 const VOCAB = {
-  david: { id: 'david', en: 'David', es: 'David' },
-  maria: { id: 'maria', en: 'Maria', es: 'Maria' },
-  carlos: { id: 'carlos', en: 'Carlos', es: 'Carlos' },
-  ana: { id: 'ana', en: 'Ana', es: 'Ana' },
-  driver: { id: 'driver', en: 'driver', es: 'conductor' },
-  friends: { id: 'friends', en: 'friends', es: 'amigos' },
-  happy: { id: 'happy', en: 'happy', es: 'feliz / felices' },
-  tired: { id: 'tired', en: 'tired', es: 'cansado / cansados' },
-  ready: { id: 'ready', en: 'ready', es: 'listo / lista' },
-  here: { id: 'here', en: 'here', es: 'aqui' },
-  home: { id: 'home', en: 'home', es: 'casa' },
-  work: { id: 'work', en: 'work', es: 'trabajo' },
-  school: { id: 'school', en: 'school', es: 'escuela' },
-  california: { id: 'california', en: 'California', es: 'California' },
+  david: { id: 'david', en: 'David', es: 'David', pronunciation: 'dei-vid' },
+  maria: { id: 'maria', en: 'Maria', es: 'Maria', pronunciation: 'ma-ri-a' },
+  carlos: { id: 'carlos', en: 'Carlos', es: 'Carlos', pronunciation: 'car-los' },
+  ana: { id: 'ana', en: 'Ana', es: 'Ana', pronunciation: 'a-na' },
+  driver: { id: 'driver', en: 'driver', es: 'conductor', pronunciation: 'drai-ver' },
+  friends: { id: 'friends', en: 'friends', es: 'amigos', pronunciation: 'frends' },
+  happy: { id: 'happy', en: 'happy', es: 'feliz / felices', pronunciation: 'ja-pi' },
+  tired: { id: 'tired', en: 'tired', es: 'cansado / cansados', pronunciation: 'tai-erd' },
+  ready: { id: 'ready', en: 'ready', es: 'listo / lista', pronunciation: 're-di' },
+  here: { id: 'here', en: 'here', es: 'aqui', pronunciation: 'jir' },
+  home: { id: 'home', en: 'home', es: 'casa', pronunciation: 'joum' },
+  work: { id: 'work', en: 'work', es: 'trabajo', pronunciation: 'werk' },
+  school: { id: 'school', en: 'school', es: 'escuela', pronunciation: 'skul' },
+  california: { id: 'california', en: 'California', es: 'California', pronunciation: 'ca-li-for-nia' },
 } satisfies Record<string, ToBeFinalVocabularyItem>;
 
 export const TO_BE_FINAL_VOCABULARY: ToBeFinalVocabularyItem[] = [
@@ -59,41 +61,49 @@ export const TO_BE_FINAL_PRACTICES: ToBeFinalPracticeItem[] = [
     id: 'intro-david-california',
     situationEs: `Hola. Mi nombre es ${VOCAB.david.es}. Soy ${VOCAB.driver.es}. Estoy en ${VOCAB.california.es}.`,
     suggestedEn: `Hello. My name is ${VOCAB.david.en}. I am a ${VOCAB.driver.en}. I am in ${VOCAB.california.en}.`,
+    suggestedPronunciation: `je-lou. mai neim is ${VOCAB.david.pronunciation}. ai am a ${VOCAB.driver.pronunciation}. ai am in ${VOCAB.california.pronunciation}.`,
   },
   {
     id: 'she-maria-home-happy',
     situationEs: `Ella es ${VOCAB.maria.es}. Ella esta en ${VOCAB.home.es}. Ella esta feliz.`,
     suggestedEn: `She is ${VOCAB.maria.en}. She is at ${VOCAB.home.en}. She is ${VOCAB.happy.en}.`,
+    suggestedPronunciation: `shi is ${VOCAB.maria.pronunciation}. shi is at ${VOCAB.home.pronunciation}. shi is ${VOCAB.happy.pronunciation}.`,
   },
   {
     id: 'we-friends-work',
     situationEs: `Nosotros somos ${VOCAB.friends.es}. Estamos en el ${VOCAB.work.es}.`,
     suggestedEn: `We are ${VOCAB.friends.en}. We are at ${VOCAB.work.en}.`,
+    suggestedPronunciation: `wi ar ${VOCAB.friends.pronunciation}. wi ar at ${VOCAB.work.pronunciation}.`,
   },
   {
     id: 'they-tired-home',
     situationEs: `Ellos estan cansados. Ellos estan en ${VOCAB.home.es}.`,
     suggestedEn: `They are ${VOCAB.tired.en}. They are at ${VOCAB.home.en}.`,
+    suggestedPronunciation: `dei ar ${VOCAB.tired.pronunciation}. dei ar at ${VOCAB.home.pronunciation}.`,
   },
   {
     id: 'he-carlos-school-ready',
     situationEs: `El es ${VOCAB.carlos.es}. El esta en la ${VOCAB.school.es}. El esta listo.`,
     suggestedEn: `He is ${VOCAB.carlos.en}. He is at ${VOCAB.school.en}. He is ${VOCAB.ready.en}.`,
+    suggestedPronunciation: `ji is ${VOCAB.carlos.pronunciation}. ji is at ${VOCAB.school.pronunciation}. ji is ${VOCAB.ready.pronunciation}.`,
   },
   {
     id: 'i-ana-work-ready',
     situationEs: `Hola. Mi nombre es ${VOCAB.ana.es}. Estoy en el ${VOCAB.work.es}. Estoy lista.`,
     suggestedEn: `Hello. My name is ${VOCAB.ana.en}. I am at ${VOCAB.work.en}. I am ${VOCAB.ready.en}.`,
+    suggestedPronunciation: `je-lou. mai neim is ${VOCAB.ana.pronunciation}. ai am at ${VOCAB.work.pronunciation}. ai am ${VOCAB.ready.pronunciation}.`,
   },
   {
     id: 'you-here-ready',
     situationEs: `Tu estas ${VOCAB.here.es}. Tu estas listo.`,
     suggestedEn: `You are ${VOCAB.here.en}. You are ${VOCAB.ready.en}.`,
+    suggestedPronunciation: `iu ar ${VOCAB.here.pronunciation}. iu ar ${VOCAB.ready.pronunciation}.`,
   },
   {
     id: 'we-school-happy',
     situationEs: `Nosotros estamos en la ${VOCAB.school.es}. Nosotros estamos felices.`,
     suggestedEn: `We are at ${VOCAB.school.en}. We are ${VOCAB.happy.en}.`,
+    suggestedPronunciation: `wi ar at ${VOCAB.school.pronunciation}. wi ar ${VOCAB.happy.pronunciation}.`,
   },
 ];
 

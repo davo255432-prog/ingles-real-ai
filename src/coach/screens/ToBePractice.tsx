@@ -954,6 +954,9 @@ const FinalVocab: React.FC<{ onNext: () => void }> = ({ onNext }) => (
           <div key={item.id} className="bg-white rounded-2xl border border-gray-100 p-3 shadow-sm">
             <p className="text-gray-900 font-extrabold leading-snug">{item.en}</p>
             <p className="text-gray-500 text-sm leading-snug">{item.es}</p>
+            <p className="text-emerald-700 text-xs font-semibold leading-snug mt-1">
+              Se dice: {item.pronunciation}
+            </p>
           </div>
         ))}
       </div>

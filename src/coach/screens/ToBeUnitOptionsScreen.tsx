@@ -17,6 +17,7 @@ export const ToBeUnitOptionsScreen: React.FC<ToBeUnitOptionsScreenProps> = ({
   onReviewFromStart,
   onFinalPractice,
 }) => {
+  const continueTitle = completed ? 'Continuar leccion' : inProgress ? 'Continuar leccion' : 'Empezar leccion';
   const continueText = completed
     ? 'Abre el ultimo punto guardado sin cambiar tu progreso.'
     : inProgress
@@ -49,21 +50,31 @@ export const ToBeUnitOptionsScreen: React.FC<ToBeUnitOptionsScreenProps> = ({
 
       <div className="px-5 flex flex-col gap-3 flex-1 pb-8">
         <OptionButton
-          title="Continuar leccion"
+          title={continueTitle}
           description={continueText}
           badge={inProgress ? 'En progreso' : completed ? 'Guardado' : 'Inicio'}
           onClick={onContinue}
         />
         <OptionButton
           title="Repasar desde el inicio"
-          description="Vuelve a hacer toda la unidad sin borrar lo que ya completaste."
+          description={
+            inProgress || completed
+              ? 'Vuelve a hacer toda la unidad sin borrar lo que ya completaste.'
+              : 'Disponible despues de empezar la leccion.'
+          }
           badge="Repaso"
+          disabled={!inProgress && !completed}
           onClick={onReviewFromStart}
         />
         <OptionButton
           title="Practica final hablada"
-          description="Repasa el vocabulario previo y entra directo a hablar."
-          badge="Voz"
+          description={
+            completed
+              ? 'Repasa el vocabulario previo y entra directo a hablar.'
+              : 'Termina la leccion para desbloquear esta practica.'
+          }
+          badge={completed ? 'Voz' : 'Bloqueada'}
+          disabled={!completed}
           onClick={onFinalPractice}
         />
       </div>
@@ -75,26 +86,51 @@ const OptionButton: React.FC<{
   title: string;
   description: string;
   badge: string;
+  disabled?: boolean;
   onClick: () => void;
-}> = ({ title, description, badge, onClick }) => (
+}> = ({ title, description, badge, disabled, onClick }) => (
   <button
     onClick={onClick}
-    className="w-full text-left bg-white border border-gray-100 rounded-3xl p-5 shadow-md hover:shadow-lg active:scale-[0.99] transition-all"
+    disabled={disabled}
+    className={
+      disabled
+        ? 'w-full text-left bg-white/70 border border-gray-100 rounded-3xl p-5 cursor-not-allowed'
+        : 'w-full text-left bg-white border border-gray-100 rounded-3xl p-5 shadow-md hover:shadow-lg active:scale-[0.99] transition-all'
+    }
   >
     <div className="flex items-center gap-4">
-      <div className="w-11 h-11 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0">
-        <svg className="text-emerald-600" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
+      <div
+        className={
+          disabled
+            ? 'w-11 h-11 rounded-2xl bg-gray-100 flex items-center justify-center shrink-0'
+            : 'w-11 h-11 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0'
+        }
+      >
+        {disabled ? (
+          <svg className="text-gray-400" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+        ) : (
+          <svg className="text-emerald-600" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <p className="text-gray-900 font-bold leading-snug">{title}</p>
-          <span className="text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full shrink-0">
+          <p className={disabled ? 'text-gray-400 font-bold leading-snug' : 'text-gray-900 font-bold leading-snug'}>{title}</p>
+          <span
+            className={
+              disabled
+                ? 'text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full shrink-0'
+                : 'text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full shrink-0'
+            }
+          >
             {badge}
           </span>
         </div>
-        <p className="text-gray-500 text-sm leading-snug">{description}</p>
+        <p className={disabled ? 'text-gray-400 text-sm leading-snug' : 'text-gray-500 text-sm leading-snug'}>{description}</p>
       </div>
     </div>
   </button>
