@@ -43,6 +43,7 @@ export const CoachRoot: React.FC<CoachRootProps> = ({ onExit }) => {
   // Lección actualmente abierta en el motor (y el paso por el que reanudar).
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [resumeStepId, setResumeStepId] = useState<string | undefined>(undefined);
+  const [reviewMode, setReviewMode] = useState(false);
 
   // ¿Falta capturar el apodo? (perfil existente, sin nombre y nunca preguntado)
   const needsName = !!profile && !profile.name && !profile.namePrompted;
@@ -113,13 +114,15 @@ export const CoachRoot: React.FC<CoachRootProps> = ({ onExit }) => {
     setPendingName('');
     setActiveLessonId(null);
     setResumeStepId(undefined);
+    setReviewMode(false);
     setCoachScreen('coach-name');
   };
 
   // Abre una lección concreta en el motor, reanudando en el paso indicado.
-  const openLesson = (unitId: string, lessonId: string, stepId?: string) => {
+  const openLesson = (unitId: string, lessonId: string, stepId?: string, asReview = false) => {
     setActiveLessonId(lessonId);
     setResumeStepId(stepId);
+    setReviewMode(asReview);
     savePosition({
       currentLevelId: FIRST_LEVEL_ID,
       currentUnitId: unitId,
@@ -129,13 +132,34 @@ export const CoachRoot: React.FC<CoachRootProps> = ({ onExit }) => {
     setCoachScreen('coach-lesson');
   };
 
+  const openLessonFromMap = (unitId: string, lessonId: string) => {
+    const lessonProgress = progress.lessons[lessonId];
+    if (lessonProgress?.status === 'in-progress') {
+      openLesson(unitId, lessonId, lessonProgress.lastStepId);
+      return;
+    }
+    openLesson(unitId, lessonId, undefined, lessonProgress?.status === 'completed');
+  };
+
   // Botón "Comenzar" / "Continuar" del panel.
   //  · Sin lección en curso → muestra la estructura de unidades.
   //  · Con lección guardada → reanuda en el paso exacto.
   const handleContinue = () => {
     const { currentUnitId, currentLessonId, currentStepId } = progress.position;
-    if (currentLessonId && getLesson(currentLessonId)) {
-      openLesson(currentUnitId ?? FIRST_UNIT_ID, currentLessonId, currentStepId ?? undefined);
+    const currentLesson = currentLessonId ? getLesson(currentLessonId) : undefined;
+    const currentLessonProgress = currentLessonId ? progress.lessons[currentLessonId] : undefined;
+
+    if (currentLessonId && currentLesson && currentLessonProgress?.status !== 'completed') {
+      openLesson(currentUnitId ?? currentLesson.unitId ?? FIRST_UNIT_ID, currentLessonId, currentStepId ?? undefined);
+      return;
+    }
+
+    const inProgress = Object.values(progress.lessons).find(
+      (lessonProgress) => lessonProgress.status === 'in-progress' && getLesson(lessonProgress.lessonId),
+    );
+    if (inProgress) {
+      const lesson = getLesson(inProgress.lessonId);
+      openLesson(lesson?.unitId ?? FIRST_UNIT_ID, inProgress.lessonId, inProgress.lastStepId);
     } else {
       setCoachScreen('coach-units');
     }
@@ -205,7 +229,7 @@ export const CoachRoot: React.FC<CoachRootProps> = ({ onExit }) => {
           units={getUnitsForLevel(1)}
           progress={progress}
           onBack={() => setCoachScreen('coach-progress')}
-          onOpenLesson={(unitId, lessonId) => openLesson(unitId, lessonId)}
+          onOpenLesson={openLessonFromMap}
         />
       );
 
@@ -230,7 +254,7 @@ export const CoachRoot: React.FC<CoachRootProps> = ({ onExit }) => {
           units={getUnitsForLevel(1)}
           progress={progress}
           onBack={() => setCoachScreen('coach-progress')}
-          onOpenLesson={(unitId, lessonId) => openLesson(unitId, lessonId)}
+          onOpenLesson={openLessonFromMap}
         />
       );
 
@@ -246,6 +270,7 @@ export const CoachRoot: React.FC<CoachRootProps> = ({ onExit }) => {
           onStepChange={handleStepChange}
           onStatus={handleLessonStatus}
           onFinish={() => setCoachScreen('coach-units')}
+          isReview={reviewMode}
         />
       );
     }

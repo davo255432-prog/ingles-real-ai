@@ -21,6 +21,7 @@ interface CoachLessonScreenProps {
   ) => void;
   /** Terminar la lección y volver (al panel / unidades). */
   onFinish: () => void;
+  isReview?: boolean;
 }
 
 /**
@@ -36,6 +37,7 @@ export const CoachLessonScreen: React.FC<CoachLessonScreenProps> = ({
   onStepChange,
   onStatus,
   onFinish,
+  isReview = false,
 }) => {
   const steps = lesson.steps;
 
@@ -59,6 +61,7 @@ export const CoachLessonScreen: React.FC<CoachLessonScreenProps> = ({
 
   // Al montar: marca la lección como en progreso.
   useEffect(() => {
+    if (isReview) return;
     onStatus('in-progress', { lastStepId: steps[initialIndex]?.id });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
