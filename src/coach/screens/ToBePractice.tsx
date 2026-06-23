@@ -12,6 +12,7 @@ import {
 } from '../data/curriculum';
 import { generateSpeech, stopSpeech } from '../../services/speechApi';
 import { transcribeAudio } from '../../services/voiceApi';
+import { ToBeFinalPractice } from './ToBeFinalPractice';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Unidad 2 — Verbo "to be" (am / is / are). Pantalla autónoma, al estilo de
@@ -107,7 +108,8 @@ type ToBeStep =
   | { id: string; kind: 'order'; prompt: string; words: string[]; answer: string; coach: string }
   | { id: string; kind: 'speak'; phrase: BePhrase; label: string }
   | { id: string; kind: 'dialogue'; dlg: BeDialogue }
-  | { id: string; kind: 'summary' };
+  | { id: string; kind: 'summary' }
+  | { id: string; kind: 'final-practice' };
 
 // Genera la frase con un hueco "___" para los ejercicios de elegir verbo.
 function gap(phrase: BePhrase): string {
@@ -272,6 +274,8 @@ function buildSteps(): ToBeStep[] {
     coach: 'they → are. La cosa/personas van primero.',
   });
 
+  steps.push({ id: sid('final-practice'), kind: 'final-practice' });
+
   return steps;
 }
 
@@ -402,6 +406,10 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
   }
 
   const progressPct = Math.round((index / total) * 100);
+
+  if (step.kind === 'final-practice') {
+    return <ToBeFinalPractice onExit={onExit} onComplete={() => advance()} />;
+  }
 
   return (
     <Shell onExit={onExit} progressPct={progressPct} counter={`${index + 1}/${total}`}>
