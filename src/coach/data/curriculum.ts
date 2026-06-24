@@ -94,7 +94,7 @@ const LESSON_PRONOUNS: Lesson = {
   unitId: U_PRONOUNS,
   title: 'Pronombres: quién hace la acción',
   goalPhrase: 'I, you, he, she, we, they, it',
-  goalSpanish: 'yo, tú, él, ella, nosotros, ellos, eso',
+  goalSpanish: 'yo, tú/usted, él, ella, nosotros, ellos/ellas, eso/ello',
   steps: [
     // Bienvenida del Coach IA (saludo personalizado; el texto lo arma la pantalla)
     {
@@ -135,7 +135,7 @@ const LESSON_PRONOUNS: Lesson = {
       icon: '👉',
       english: 'you',
       spanish: 'Tú / usted (también: ustedes)',
-      pronunciation: 'yu',
+      pronunciation: 'iu',
       note: 'Sirve para una persona o varias. El inglés no separa "tú" de "usted".',
     },
     {
@@ -147,7 +147,7 @@ const LESSON_PRONOUNS: Lesson = {
         prompt: '¿Qué significa "you"?',
         options: ['Nosotros', 'Tú / usted', 'Ellos', 'Eso'],
         answer: 'Tú / usted',
-        hint: 'Apunta a la persona con la que hablas.',
+        hint: 'Apunta a la persona o personas con las que hablas.',
       },
     },
 
@@ -159,7 +159,7 @@ const LESSON_PRONOUNS: Lesson = {
       icon: '👨',
       english: 'he',
       spanish: 'Él',
-      pronunciation: 'hí',
+      pronunciation: 'ji',
       note: 'Se usa para un hombre o un niño (una sola persona).',
     },
     {
@@ -171,7 +171,7 @@ const LESSON_PRONOUNS: Lesson = {
         prompt: '¿Cuál pronombre usas para un hombre (él)?',
         options: ['she', 'he', 'it', 'we'],
         answer: 'he',
-        hint: 'Suena como "hí".',
+        hint: 'Suena parecido a "ji".',
       },
     },
 
@@ -183,7 +183,7 @@ const LESSON_PRONOUNS: Lesson = {
       icon: '👩',
       english: 'she',
       spanish: 'Ella',
-      pronunciation: 'shí',
+      pronunciation: 'shi',
       note: 'Se usa para una mujer o una niña (una sola persona).',
     },
     {
@@ -195,7 +195,7 @@ const LESSON_PRONOUNS: Lesson = {
         prompt: '¿Qué significa "she"?',
         options: ['Él', 'Ella', 'Eso', 'Nosotros'],
         answer: 'Ella',
-        hint: 'Suena como "shí".',
+        hint: 'Suena parecido a "shi".',
       },
     },
 
@@ -207,7 +207,7 @@ const LESSON_PRONOUNS: Lesson = {
       icon: '👥',
       english: 'we',
       spanish: 'Nosotros / nosotras',
-      pronunciation: 'uí',
+      pronunciation: 'wi',
       note: 'Te incluye a ti y a otras personas: tú + alguien más.',
     },
     {
@@ -231,7 +231,7 @@ const LESSON_PRONOUNS: Lesson = {
       icon: '🧑‍🤝‍🧑',
       english: 'they',
       spanish: 'Ellos / ellas',
-      pronunciation: 'théi',
+      pronunciation: 'dei',
       note: 'Un grupo de personas (o cosas), sin incluirte a ti.',
     },
     {
@@ -285,7 +285,7 @@ const LESSON_PRONOUNS: Lesson = {
 };
 
 // ── Datos de pronombres (cuadro resumen y generador de práctica) ──────────────
-// pron: pronunciación aproximada del cuadro resumen (ai, yu, hí, shí, uí, théi, it).
+// pron: pronunciación aproximada del cuadro resumen (ai, iu, ji, shi, wi, dei, it).
 // tip/example: se usan en la lógica de error (explicación + ejemplo distinto).
 export interface PronounInfo {
   id: string;        // clave estable interna: 'i','you','he','she','we','they','it'
@@ -302,37 +302,37 @@ export const PRONOUNS_INFO: PronounInfo[] = [
   {
     id: 'i', en: 'I', meaning: 'yo', pron: 'ai', icon: '🙋',
     tip: '"I" se usa para hablar de ti mismo. Siempre va en mayúscula.',
-    example: 'I work. → Yo trabajo.',
+    example: 'I → yo.',
   },
   {
-    id: 'you', en: 'you', meaning: 'tú / usted / ustedes', pron: 'yu', icon: '👉',
+    id: 'you', en: 'you', meaning: 'tú / usted / ustedes', pron: 'iu', icon: '👉',
     tip: '"you" sirve para una o varias personas con las que hablas.',
-    example: 'You help. → Tú ayudas.',
+    example: 'you → tú / usted / ustedes.',
   },
   {
-    id: 'he', en: 'he', meaning: 'él', pron: 'hí', icon: '👨',
+    id: 'he', en: 'he', meaning: 'él', pron: 'ji', icon: '👨',
     tip: '"he" es para un hombre o un niño (una sola persona).',
-    example: 'He eats. → Él come.',
+    example: 'he → él.',
   },
   {
-    id: 'she', en: 'she', meaning: 'ella', pron: 'shí', icon: '👩',
+    id: 'she', en: 'she', meaning: 'ella', pron: 'shi', icon: '👩',
     tip: '"she" es para una mujer o una niña (una sola persona).',
-    example: 'She works. → Ella trabaja.',
+    example: 'she → ella.',
   },
   {
-    id: 'we', en: 'we', meaning: 'nosotros / nosotras', pron: 'uí', icon: '👥',
+    id: 'we', en: 'we', meaning: 'nosotros / nosotras', pron: 'wi', icon: '👥',
     tip: '"we" te incluye a ti dentro del grupo (tú + otros).',
-    example: 'We go. → Nosotros vamos.',
+    example: 'we → nosotros / nosotras.',
   },
   {
-    id: 'they', en: 'they', meaning: 'ellos / ellas', pron: 'théi', icon: '🧑‍🤝‍🧑',
+    id: 'they', en: 'they', meaning: 'ellos / ellas', pron: 'dei', icon: '🧑‍🤝‍🧑',
     tip: '"they" es un grupo de personas que no te incluye a ti.',
-    example: 'They help. → Ellos ayudan.',
+    example: 'they → ellos / ellas.',
   },
   {
     id: 'it', en: 'it', meaning: 'cosa, objeto o animal', translation: 'eso / ello', pron: 'it', icon: '📦',
     tip: '"it" se usa para una cosa, un objeto o un animal, no para personas.',
-    example: 'It works. → Eso funciona.',
+    example: 'it → eso / ello.',
   },
 ];
 
@@ -384,11 +384,11 @@ export const TO_BE_BLOCKS: BeBlock[] = [
     intro: 'Con "I" (yo) siempre usamos am. Sirve para decir quién eres o cómo estás.',
     phrases: [
       {
-        id: 'am-david', en: 'I am David.', es: 'Yo soy David.', pron: 'ai am déivid',
+        id: 'am-david', en: 'I am David.', es: 'Yo soy David.', pron: 'ai am dei-vid',
         form: 'am', icon: '🙋‍♂️', coach: 'Para presentarte: "I am" + tu nombre.',
       },
       {
-        id: 'am-ready', en: 'I am ready.', es: 'Estoy listo.', pron: 'ai am rédi',
+        id: 'am-ready', en: 'I am ready.', es: 'Estoy listo.', pron: 'ai am re-di',
         form: 'am', icon: '✅', coach: '"I am" también dice cómo estás en este momento.',
       },
     ],
@@ -402,15 +402,15 @@ export const TO_BE_BLOCKS: BeBlock[] = [
     intro: 'Con he (él), she (ella) e it (una cosa) usamos is.',
     phrases: [
       {
-        id: 'is-tired', en: 'He is tired.', es: 'Él está cansado.', pron: 'hi is táierd',
+        id: 'is-tired', en: 'He is tired.', es: 'Él está cansado.', pron: 'ji is tai-erd',
         form: 'is', icon: '😴', coach: 'he (un hombre) → is.',
       },
       {
-        id: 'is-happy', en: 'She is happy.', es: 'Ella está feliz.', pron: 'shi is jápi',
+        id: 'is-happy', en: 'She is happy.', es: 'Ella está feliz.', pron: 'shi is ja-pi',
         form: 'is', icon: '😊', coach: 'she (una mujer) → is.',
       },
       {
-        id: 'is-open', en: 'It is open.', es: 'Está abierto.', pron: 'it is óupen',
+        id: 'is-open', en: 'It is open.', es: 'Está abierto.', pron: 'it is ou-pen',
         form: 'is', icon: '🚪', coach: 'it (una cosa) → is.',
       },
     ],
@@ -424,15 +424,15 @@ export const TO_BE_BLOCKS: BeBlock[] = [
     intro: 'Con you (tú/ustedes), we (nosotros) y they (ellos) usamos are.',
     phrases: [
       {
-        id: 'are-here', en: 'You are here.', es: 'Tú estás aquí.', pron: 'yu ar jíer',
+        id: 'are-here', en: 'You are here.', es: 'Tú estás aquí.', pron: 'iu ar jir',
         form: 'are', icon: '📍', coach: 'you → are.',
       },
       {
-        id: 'are-ready', en: 'We are ready.', es: 'Estamos listos.', pron: 'uí ar rédi',
+        id: 'are-ready', en: 'We are ready.', es: 'Estamos listos.', pron: 'wi ar re-di',
         form: 'are', icon: '👥', coach: 'we (nosotros) → are.',
       },
       {
-        id: 'are-outside', en: 'They are outside.', es: 'Ellos están afuera.', pron: 'déi ar autsáid',
+        id: 'are-outside', en: 'They are outside.', es: 'Ellos están afuera.', pron: 'dei ar aut-said',
         form: 'are', icon: '🌳', coach: 'they (ellos) → are.',
       },
     ],
@@ -443,18 +443,18 @@ export const TO_BE_BLOCKS: BeBlock[] = [
 export const TO_BE_DIALOGUES: BeDialogue[] = [
   {
     id: 'dlg-ready',
-    aEn: 'Are you ready?', aEs: '¿Estás listo?', aPron: 'ar yu rédi',
-    bEn: 'Yes, I am.', bEs: 'Sí, lo estoy.', bPron: 'yes, ai am',
+    aEn: 'Are you ready?', aEs: '¿Estás listo?', aPron: 'ar iu re-di',
+    bEn: 'Yes, I am.', bEs: 'Sí, lo estoy.', bPron: 'ies, ai am',
   },
   {
     id: 'dlg-here',
-    aEn: 'Is she here?', aEs: '¿Ella está aquí?', aPron: 'is shi jíer',
-    bEn: 'Yes, she is.', bEs: 'Sí, lo está.', bPron: 'yes, shi is',
+    aEn: 'Is she here?', aEs: '¿Ella está aquí?', aPron: 'is shi jir',
+    bEn: 'Yes, she is.', bEs: 'Sí, lo está.', bPron: 'ies, shi is',
   },
   {
     id: 'dlg-outside',
-    aEn: 'Are they outside?', aEs: '¿Ellos están afuera?', aPron: 'ar déi autsáid',
-    bEn: 'Yes, they are.', bEs: 'Sí, lo están.', bPron: 'yes, déi ar',
+    aEn: 'Are they outside?', aEs: '¿Ellos están afuera?', aPron: 'ar dei aut-said',
+    bEn: 'Yes, they are.', bEs: 'Sí, lo están.', bPron: 'ies, dei ar',
   },
 ];
 

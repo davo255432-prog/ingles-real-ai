@@ -50,11 +50,11 @@ const VOCAB = {
   maria: { id: 'maria', en: 'Maria', es: 'Maria', pronunciation: 'ma-ri-a' },
   carlos: { id: 'carlos', en: 'Carlos', es: 'Carlos', pronunciation: 'car-los' },
   ana: { id: 'ana', en: 'Ana', es: 'Ana', pronunciation: 'a-na' },
-  driver: { id: 'driver', en: 'driver', es: 'conductor', pronunciation: 'drai-ver' },
+  driver: { id: 'driver', en: 'driver', es: 'conductor / conductora', pronunciation: 'drai-ver' },
   friends: { id: 'friends', en: 'friends', es: 'amigos', pronunciation: 'frends' },
   happy: { id: 'happy', en: 'happy', es: 'feliz / felices', pronunciation: 'ja-pi' },
   tired: { id: 'tired', en: 'tired', es: 'cansado / cansados', pronunciation: 'tai-erd' },
-  ready: { id: 'ready', en: 'ready', es: 'listo / lista', pronunciation: 're-di' },
+  ready: { id: 'ready', en: 'ready', es: 'listo / lista / listos', pronunciation: 're-di' },
   here: { id: 'here', en: 'here', es: 'aqui', pronunciation: 'jir' },
   home: { id: 'home', en: 'home', es: 'casa', pronunciation: 'joum' },
   work: { id: 'work', en: 'work', es: 'trabajo', pronunciation: 'werk' },
@@ -82,6 +82,13 @@ export const TO_BE_FINAL_VOCABULARY: ToBeFinalVocabularyItem[] = [
 ];
 
 export const TO_BE_CONNECTOR_CHUNKS: ToBeConnectorChunk[] = [
+  {
+    id: 'a-driver',
+    en: `a ${VOCAB.driver.en}`,
+    es: 'un conductor / una conductora',
+    pronunciation: `a ${VOCAB.driver.pronunciation}`,
+    note: 'Usa a para decir un / una antes de una profesion.',
+  },
   {
     id: 'at-home',
     en: `at ${VOCAB.home.en}`,
@@ -113,6 +120,13 @@ export const TO_BE_CONNECTOR_CHUNKS: ToBeConnectorChunk[] = [
 ];
 
 export const TO_BE_USEFUL_CHUNKS: ToBeConnectorChunk[] = [
+  {
+    id: 'i-am-a-driver',
+    en: `I am a ${VOCAB.driver.en}.`,
+    es: 'Soy conductor / conductora.',
+    pronunciation: `ai am a ${VOCAB.driver.pronunciation}`,
+    note: 'I + am + a driver.',
+  },
   {
     id: 'i-at-work',
     en: `I am at ${VOCAB.work.en}.`,
@@ -146,7 +160,7 @@ export const TO_BE_USEFUL_CHUNKS: ToBeConnectorChunk[] = [
 export const TO_BE_FINAL_PRACTICES: ToBeFinalPracticeItem[] = [
   {
     id: 'intro-david-california',
-    situationEs: `Hola. Mi nombre es ${VOCAB.david.es}. Soy ${VOCAB.driver.es}. Estoy en ${VOCAB.california.es}.`,
+    situationEs: `Hola. Mi nombre es ${VOCAB.david.es}. Soy conductor. Estoy en ${VOCAB.california.es}.`,
     suggestedEn: `${VOCAB.hello.en}. ${VOCAB.myNameIs.en} ${VOCAB.david.en}. I am a ${VOCAB.driver.en}. I am in ${VOCAB.california.en}.`,
     suggestedPronunciation: `${VOCAB.hello.pronunciation}. ${VOCAB.myNameIs.pronunciation} ${VOCAB.david.pronunciation}. ai am a ${VOCAB.driver.pronunciation}. ai am in ${VOCAB.california.pronunciation}.`,
   },
@@ -195,7 +209,7 @@ export const TO_BE_FINAL_PRACTICES: ToBeFinalPracticeItem[] = [
 ];
 
 export const TO_BE_FINAL_MISSION: ToBeFinalMissionStory = {
-  id: 'mission-friends-ready',
+    id: 'mission-friends-ready',
   title: 'Mision Final',
   situationEs: [
     `Hola. Mi nombre es ${VOCAB.david.es}.`,
@@ -203,7 +217,7 @@ export const TO_BE_FINAL_MISSION: ToBeFinalMissionStory = {
     `${VOCAB.ana.es} esta en ${VOCAB.home.es}.`,
     `${VOCAB.carlos.es} esta en la ${VOCAB.school.es}.`,
     `Nosotros somos ${VOCAB.friends.es}.`,
-    `Ellos estan ${VOCAB.ready.es}.`,
+    `Ellos estan listos.`,
   ].join(' '),
   expectedEn: [
     `${VOCAB.hello.en}. ${VOCAB.myNameIs.en} ${VOCAB.david.en}.`,

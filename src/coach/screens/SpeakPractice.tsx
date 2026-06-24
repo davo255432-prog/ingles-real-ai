@@ -30,11 +30,11 @@ type Verdict = 'none' | 'got-it' | 'almost' | 'not-heard';
 // No es puntuación fonética: solo evita falsos negativos en la comparación.
 const ACCEPTED: Record<string, string[]> = {
   i: ['i', 'eye', 'ay', 'aye', 'hi'],
-  you: ['you', 'u', 'yu', 'ya'],
-  he: ['he', 'hee', 'hey'],
+  you: ['you', 'u', 'yu', 'iu', 'ya'],
+  he: ['he', 'hee', 'hey', 'ji'],
   she: ['she', 'shi', 'shee'],
-  we: ['we', 'wee', 'oui'],
-  they: ['they', 'thay', 'dey', 'day'],
+  we: ['we', 'wee', 'wi', 'oui'],
+  they: ['they', 'thay', 'dey', 'dei', 'day'],
   it: ['it', 'eat', 'id'],
 };
 
