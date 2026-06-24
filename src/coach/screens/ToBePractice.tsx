@@ -19,6 +19,8 @@ import {
   TO_BE_FINAL_PRACTICE_STEP_SLUG,
   TO_BE_FINAL_VOCAB_STEP_SLUG,
   TO_BE_FINAL_VOCABULARY,
+  TO_BE_CONNECTOR_CHUNKS,
+  TO_BE_USEFUL_CHUNKS,
 } from '../data/toBeFinalPractice';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -890,7 +892,16 @@ const DialogueCard: React.FC<{ dlg: BeDialogue; onNext: () => void }> = ({ dlg, 
           <p className="text-gray-400 text-xs font-bold mb-1">A</p>
           <p className="text-xl font-extrabold text-gray-900">{dlg.aEn}</p>
           <p className="text-gray-500">{dlg.aEs}</p>
-          <p className="text-emerald-700 text-sm font-semibold mt-1">🗣️ {dlg.aPron}</p>
+          <div className="flex items-center justify-between gap-3 mt-2">
+            <p className="text-emerald-700 text-sm font-semibold">🗣️ {dlg.aPron}</p>
+            <button
+              onClick={() => void audio.play(dlg.aEn)}
+              disabled={audio.state === 'loading'}
+              className="shrink-0 bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold px-3 py-2 rounded-xl active:scale-95 disabled:opacity-60"
+            >
+              Escuchar A
+            </button>
+          </div>
         </div>
 
         {/* Línea B */}
@@ -898,10 +909,20 @@ const DialogueCard: React.FC<{ dlg: BeDialogue; onNext: () => void }> = ({ dlg, 
           <p className="text-emerald-600 text-xs font-bold mb-1">B</p>
           <p className="text-xl font-extrabold text-gray-900">{dlg.bEn}</p>
           <p className="text-gray-500">{dlg.bEs}</p>
-          <p className="text-emerald-700 text-sm font-semibold mt-1">🗣️ {dlg.bPron}</p>
+          <div className="flex items-center justify-between gap-3 mt-2">
+            <p className="text-emerald-700 text-sm font-semibold">🗣️ {dlg.bPron}</p>
+            <button
+              onClick={() => void audio.play(dlg.bEn)}
+              disabled={audio.state === 'loading'}
+              className="shrink-0 bg-white border border-emerald-100 text-emerald-700 text-xs font-bold px-3 py-2 rounded-xl active:scale-95 disabled:opacity-60"
+            >
+              Escuchar B
+            </button>
+          </div>
         </div>
 
-        <div className="flex justify-center mt-5">
+        <div className="flex flex-col items-center mt-5">
+          <p className="text-gray-400 text-xs font-semibold mb-2">Escucha el dialogo completo</p>
           <AudioButton
             state={audio.state}
             onPlay={async () => {
@@ -949,14 +970,21 @@ const FinalVocab: React.FC<{ onNext: () => void }> = ({ onNext }) => (
   <>
     <div className="pt-2 pb-4 flex-1">
       <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-2">
-        Preparacion
+        Antes de practicar
       </p>
       <h1 className="text-2xl font-extrabold text-gray-900 mb-2">
-        Palabras que veras en la practica final
+        Revisa estas piezas
       </h1>
-      <p className="text-gray-500 text-sm leading-relaxed mb-5">
-        Repasa estas palabras antes de responder hablando.
-      </p>
+      <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 mb-5">
+        <p className="text-emerald-900 text-sm font-semibold leading-relaxed">
+          Te van a ayudar a unir la frase cuando hables.
+        </p>
+        <p className="text-emerald-700 text-sm leading-relaxed mt-1">
+          No tienes que memorizar todo: reconoce las piezas y unelas paso a paso.
+        </p>
+      </div>
+
+      <h2 className="text-gray-900 font-extrabold mb-3">Palabras que veras</h2>
       <div className="grid grid-cols-2 gap-2.5">
         {TO_BE_FINAL_VOCABULARY.map((item) => (
           <div key={item.id} className="bg-white rounded-2xl border border-gray-100 p-3 shadow-sm">
@@ -968,9 +996,43 @@ const FinalVocab: React.FC<{ onNext: () => void }> = ({ onNext }) => (
           </div>
         ))}
       </div>
+
+      <h2 className="text-gray-900 font-extrabold mt-6 mb-3">Conectores que usaras</h2>
+      <div className="flex flex-col gap-2.5">
+        {TO_BE_CONNECTOR_CHUNKS.map((item) => (
+          <div key={item.id} className="bg-white rounded-2xl border border-emerald-100 p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-gray-900 font-extrabold leading-snug">{item.en}</p>
+                <p className="text-gray-500 text-sm leading-snug">{item.es}</p>
+                <p className="text-emerald-700 text-xs font-semibold leading-snug mt-1">
+                  Se dice: {item.pronunciation}
+                </p>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full shrink-0">
+                {item.en.startsWith('at') ? 'at' : 'in'}
+              </span>
+            </div>
+            <p className="text-gray-400 text-xs font-medium mt-2">{item.note}</p>
+          </div>
+        ))}
+      </div>
+
+      <h2 className="text-gray-900 font-extrabold mt-6 mb-3">Piezas utiles</h2>
+      <div className="flex flex-col gap-2.5">
+        {TO_BE_USEFUL_CHUNKS.map((item) => (
+          <div key={item.id} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+            <p className="text-gray-900 font-extrabold leading-snug">{item.en}</p>
+            <p className="text-gray-500 text-sm leading-snug">{item.es}</p>
+            <p className="text-emerald-700 text-xs font-semibold leading-snug mt-1">
+              Se dice: {item.pronunciation}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
     <div className="mt-auto">
-      <PrimaryButton onClick={onNext}>Ir a la practica final</PrimaryButton>
+      <PrimaryButton onClick={onNext}>Estoy listo para practicar</PrimaryButton>
     </div>
   </>
 );

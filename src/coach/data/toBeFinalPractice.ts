@@ -27,6 +27,14 @@ export interface ToBeFinalVocabularyItem {
   pronunciation: string;
 }
 
+export interface ToBeConnectorChunk {
+  id: string;
+  en: string;
+  es: string;
+  pronunciation: string;
+  note: string;
+}
+
 export const TO_BE_FINAL_VOCAB_STEP_SLUG = 'final-vocab';
 export const TO_BE_FINAL_PRACTICE_STEP_SLUG = 'final-practice';
 export const TO_BE_FINAL_MISSION_STEP_SLUG = 'final-mission';
@@ -71,6 +79,68 @@ export const TO_BE_FINAL_VOCABULARY: ToBeFinalVocabularyItem[] = [
   VOCAB.work,
   VOCAB.school,
   VOCAB.california,
+];
+
+export const TO_BE_CONNECTOR_CHUNKS: ToBeConnectorChunk[] = [
+  {
+    id: 'at-home',
+    en: `at ${VOCAB.home.en}`,
+    es: 'en casa',
+    pronunciation: `at ${VOCAB.home.pronunciation}`,
+    note: 'Usa at con lugares puntuales.',
+  },
+  {
+    id: 'at-work',
+    en: `at ${VOCAB.work.en}`,
+    es: 'en el trabajo',
+    pronunciation: `at ${VOCAB.work.pronunciation}`,
+    note: 'Usa at con lugares puntuales.',
+  },
+  {
+    id: 'at-school',
+    en: `at ${VOCAB.school.en}`,
+    es: 'en la escuela',
+    pronunciation: `at ${VOCAB.school.pronunciation}`,
+    note: 'Usa at con lugares puntuales.',
+  },
+  {
+    id: 'in-california',
+    en: `in ${VOCAB.california.en}`,
+    es: 'en California',
+    pronunciation: `in ${VOCAB.california.pronunciation}`,
+    note: 'Usa in con lugares grandes.',
+  },
+];
+
+export const TO_BE_USEFUL_CHUNKS: ToBeConnectorChunk[] = [
+  {
+    id: 'i-at-work',
+    en: `I am at ${VOCAB.work.en}.`,
+    es: 'Estoy en el trabajo.',
+    pronunciation: `ai am at ${VOCAB.work.pronunciation}`,
+    note: 'I + am + at work.',
+  },
+  {
+    id: 'she-at-home',
+    en: `She is at ${VOCAB.home.en}.`,
+    es: 'Ella esta en casa.',
+    pronunciation: `shi is at ${VOCAB.home.pronunciation}`,
+    note: 'She + is + at home.',
+  },
+  {
+    id: 'he-at-school',
+    en: `He is at ${VOCAB.school.en}.`,
+    es: 'El esta en la escuela.',
+    pronunciation: `ji is at ${VOCAB.school.pronunciation}`,
+    note: 'He + is + at school.',
+  },
+  {
+    id: 'i-in-california',
+    en: `I am in ${VOCAB.california.en}.`,
+    es: 'Estoy en California.',
+    pronunciation: `ai am in ${VOCAB.california.pronunciation}`,
+    note: 'I + am + in California.',
+  },
 ];
 
 export const TO_BE_FINAL_PRACTICES: ToBeFinalPracticeItem[] = [

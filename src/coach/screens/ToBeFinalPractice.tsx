@@ -165,7 +165,13 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
   const isRecording = micState === 'recording';
   const isBusy = micState === 'requesting' || micState === 'transcribing';
   const hasResult = !!transcript || !!audioUrl || !!error;
-  const micLabel = isRecording ? 'Detener grabacion' : isBusy ? 'Procesando...' : 'Responder hablando';
+  const micLabel = isRecording
+    ? 'Detener grabacion'
+    : isBusy
+      ? 'Procesando...'
+      : hasResult
+        ? 'Grabar otra vez'
+        : 'Responder hablando';
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
@@ -264,20 +270,6 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
           >
             {micLabel}
           </button>
-
-          {hasResult && (
-            <button
-              onClick={resetAttempt}
-              disabled={isBusy || isRecording}
-              className={
-                isBusy || isRecording
-                  ? 'w-full bg-gray-100 border border-gray-200 text-gray-400 text-sm font-bold rounded-2xl py-3 cursor-not-allowed'
-                  : 'w-full bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-2xl py-3 hover:bg-gray-50 transition-all'
-              }
-            >
-              Volver a intentar
-            </button>
-          )}
 
           <button
             onClick={newPractice}
