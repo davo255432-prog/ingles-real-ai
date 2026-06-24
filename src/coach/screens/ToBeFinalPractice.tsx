@@ -54,6 +54,7 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
       mediaRecorderRef.current.stop();
     }
     streamRef.current?.getTracks().forEach((track) => track.stop());
+    mediaRecorderRef.current = null;
     streamRef.current = null;
   };
 
@@ -79,12 +80,19 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
 
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
       setMicBlocked(true);
+      setError('Tu navegador no soporta grabacion. Prueba con Chrome o Edge.');
       return;
     }
 
     setMicState('requesting');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
       streamRef.current = stream;
       const mimeType =
         ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4'].find((type) =>
@@ -104,10 +112,18 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
         if (recorder.state === 'recording') recorder.requestData();
       }, 500);
       setMicState('recording');
-    } catch {
+    } catch (err) {
       streamRef.current?.getTracks().forEach((track) => track.stop());
       setMicBlocked(true);
       setMicState('idle');
+      const name = err instanceof Error ? err.name : '';
+      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        setError('El microfono esta bloqueado. Permite el acceso y recarga la pagina.');
+      } else if (name === 'NotFoundError') {
+        setError('No encontre un microfono disponible. Revisa el microfono seleccionado.');
+      } else {
+        setError('No pude iniciar la grabacion. Cierra otras apps que usen el microfono e intenta de nuevo.');
+      }
     }
   };
 
@@ -123,15 +139,22 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
 
     await new Promise<void>((resolve) => {
       recorder.addEventListener('stop', () => resolve(), { once: true });
+      try {
+        recorder.requestData();
+      } catch {
+        // Algunos navegadores no permiten requestData justo antes de stop.
+      }
       recorder.stop();
     });
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
+    mediaRecorderRef.current = null;
 
     const chunks = chunksRef.current;
-    if (chunks.length === 0) {
+    const totalBytes = chunks.reduce((sum, chunk) => sum + chunk.size, 0);
+    if (chunks.length === 0 || totalBytes < 800) {
       if (mountedRef.current) {
-        setError('No pude escuchar tu voz. Intenta grabar otra vez.');
+        setError('No se grabo audio suficiente. Habla un poco mas fuerte y manten presionado hasta terminar.');
         setMicState('idle');
       }
       return;

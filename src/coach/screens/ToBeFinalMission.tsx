@@ -51,6 +51,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
       mediaRecorderRef.current.stop();
     }
     streamRef.current?.getTracks().forEach((track) => track.stop());
+    mediaRecorderRef.current = null;
     streamRef.current = null;
   };
 
@@ -82,7 +83,13 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
 
     setMicState('requesting');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
       streamRef.current = stream;
       const mimeType =
         ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4'].find((type) =>
@@ -101,10 +108,19 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
         if (recorder.state === 'recording') recorder.requestData();
       }, 500);
       setMicState('recording');
-    } catch {
+    } catch (error) {
       streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+      mediaRecorderRef.current = null;
       setMicState('idle');
-      setVoiceError('No pudimos usar el microfono. Revisa el permiso del navegador.');
+      const errorName = error instanceof DOMException ? error.name : '';
+      if (errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError') {
+        setVoiceError('El microfono esta bloqueado. Permite el acceso y recarga la pagina.');
+      } else if (errorName === 'NotFoundError') {
+        setVoiceError('No encontre un microfono disponible. Revisa el microfono seleccionado.');
+      } else {
+        setVoiceError('No pude iniciar la grabacion. Cierra otras apps que usen el microfono e intenta de nuevo.');
+      }
     }
   };
 
@@ -120,15 +136,22 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
     setMicState('transcribing');
     await new Promise<void>((resolve) => {
       recorder.addEventListener('stop', () => resolve(), { once: true });
+      try {
+        recorder.requestData();
+      } catch {
+        // Algunos navegadores no permiten requestData justo antes de stop.
+      }
       recorder.stop();
     });
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
+    mediaRecorderRef.current = null;
 
     const chunks = chunksRef.current;
-    if (chunks.length === 0) {
+    const totalBytes = chunks.reduce((sum, chunk) => sum + chunk.size, 0);
+    if (chunks.length === 0 || totalBytes < 800) {
       setMicState('idle');
-      setVoiceError('No se grabo audio. Intenta hablar mas fuerte.');
+      setVoiceError('No se grabo audio suficiente. Habla un poco mas fuerte y termina la historia antes de detener.');
       return;
     }
 
