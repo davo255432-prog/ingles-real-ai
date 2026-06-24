@@ -7,6 +7,35 @@ import {
 
 type MicState = 'idle' | 'requesting' | 'recording' | 'transcribing';
 
+interface BrowserSpeechRecognitionEvent {
+  resultIndex: number;
+  results: {
+    length: number;
+    [index: number]: {
+      isFinal: boolean;
+      [index: number]: { transcript: string };
+    };
+  };
+}
+
+interface BrowserSpeechRecognition {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  maxAlternatives: number;
+  onresult: ((event: BrowserSpeechRecognitionEvent) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+}
+
+type BrowserSpeechRecognitionWindow = Window & {
+  SpeechRecognition?: new () => BrowserSpeechRecognition;
+  webkitSpeechRecognition?: new () => BrowserSpeechRecognition;
+};
+
 interface ToBeFinalPracticeProps {
   onExit: () => void;
   onComplete: () => void;
@@ -26,6 +55,8 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
   const chunksRef = useRef<Blob[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioUrlRef = useRef<string | null>(null);
+  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
+  const browserTranscriptRef = useRef('');
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -53,8 +84,10 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
     if (mediaRecorderRef.current?.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
+    recognitionRef.current?.abort();
     streamRef.current?.getTracks().forEach((track) => track.stop());
     mediaRecorderRef.current = null;
+    recognitionRef.current = null;
     streamRef.current = null;
   };
 
@@ -62,6 +95,7 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
     cleanupRecorder();
     revokeAudioUrl();
     chunksRef.current = [];
+    browserTranscriptRef.current = '';
     setMicState('idle');
     setTranscript('');
     setAudioUrl(null);
@@ -111,6 +145,7 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
       intervalRef.current = setInterval(() => {
         if (recorder.state === 'recording') recorder.requestData();
       }, 500);
+      startBrowserRecognition();
       setMicState('recording');
     } catch (err) {
       streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -127,6 +162,44 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
     }
   };
 
+  const startBrowserRecognition = () => {
+    const SpeechRecognition =
+      (window as BrowserSpeechRecognitionWindow).SpeechRecognition ??
+      (window as BrowserSpeechRecognitionWindow).webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = true;
+      recognition.continuous = true;
+      recognition.maxAlternatives = 1;
+      recognition.onresult = (event) => {
+        let text = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          text += event.results[i][0].transcript;
+        }
+        if (text.trim()) browserTranscriptRef.current = text.trim();
+      };
+      recognition.onerror = () => undefined;
+      recognition.onend = () => undefined;
+      recognition.start();
+      recognitionRef.current = recognition;
+    } catch {
+      recognitionRef.current = null;
+    }
+  };
+
+  const stopBrowserRecognition = () => {
+    try {
+      recognitionRef.current?.stop();
+    } catch {
+      recognitionRef.current?.abort();
+    } finally {
+      recognitionRef.current = null;
+    }
+  };
+
   const stopRecording = async () => {
     const recorder = mediaRecorderRef.current;
     if (!recorder || recorder.state !== 'recording') return;
@@ -135,6 +208,7 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    stopBrowserRecognition();
     setMicState('transcribing');
 
     await new Promise<void>((resolve) => {
@@ -152,9 +226,18 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
 
     const chunks = chunksRef.current;
     const totalBytes = chunks.reduce((sum, chunk) => sum + chunk.size, 0);
+    const browserTranscript = browserTranscriptRef.current.trim();
     if (chunks.length === 0 || totalBytes < 800) {
+      if (browserTranscript) {
+        if (mountedRef.current) {
+          setTranscript(browserTranscript);
+          setError(null);
+          setMicState('idle');
+        }
+        return;
+      }
       if (mountedRef.current) {
-        setError('No se grabo audio suficiente. Habla un poco mas fuerte y manten presionado hasta terminar.');
+        setError('La grabacion salio muy corta. Habla la frase completa antes de detener.');
         setMicState('idle');
       }
       return;
@@ -167,13 +250,19 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
     setAudioUrl(url);
 
     try {
-      const text = await transcribeAudio(blob);
+      let text = await transcribeAudio(blob);
+      if (!text.trim() && browserTranscript) text = browserTranscript;
       if (!mountedRef.current) return;
       setTranscript(text.trim());
       if (!text.trim()) setError('No pude transcribir tu voz. Intenta hablar mas claro y cerca del microfono.');
     } catch {
       if (mountedRef.current) {
-        setError('No se pudo transcribir esta grabacion. Puedes repetir la practica.');
+        if (browserTranscript) {
+          setTranscript(browserTranscript);
+          setError(null);
+        } else {
+          setError('No se pudo transcribir esta grabacion. Puedes repetir la practica.');
+        }
       }
     } finally {
       if (mountedRef.current) setMicState('idle');
