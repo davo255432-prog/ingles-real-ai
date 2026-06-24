@@ -15,6 +15,8 @@ export interface ToBeFinalMissionStory {
   expectedEn: string;
   pronunciation: string;
   listenPrompt: string;
+  listenExpectedEn: string;
+  listenPronunciation: string;
   listenKeywords: string[];
 }
 
@@ -149,27 +151,43 @@ export const TO_BE_FINAL_MISSION: ToBeFinalMissionStory = {
     `wi ar ${VOCAB.friends.pronunciation}.`,
     `dei ar ${VOCAB.ready.pronunciation}.`,
   ].join(' '),
-  listenPrompt: 'Escucha la historia y escribe en ingles lo que entendiste.',
+  listenPrompt: 'Escucha una historia diferente y escribe en ingles lo que entendiste.',
+  listenExpectedEn: [
+    `${VOCAB.hello.en}. ${VOCAB.myNameIs.en} ${VOCAB.maria.en}.`,
+    `I am at ${VOCAB.home.en}.`,
+    `${VOCAB.david.en} is in ${VOCAB.california.en}.`,
+    `${VOCAB.carlos.en} is at ${VOCAB.work.en}.`,
+    `We are ${VOCAB.friends.en}.`,
+    `They are ${VOCAB.happy.en}.`,
+  ].join(' '),
+  listenPronunciation: [
+    `${VOCAB.hello.pronunciation}. ${VOCAB.myNameIs.pronunciation} ${VOCAB.maria.pronunciation}.`,
+    `ai am at ${VOCAB.home.pronunciation}.`,
+    `${VOCAB.david.pronunciation} is in ${VOCAB.california.pronunciation}.`,
+    `${VOCAB.carlos.pronunciation} is at ${VOCAB.work.pronunciation}.`,
+    `wi ar ${VOCAB.friends.pronunciation}.`,
+    `dei ar ${VOCAB.happy.pronunciation}.`,
+  ].join(' '),
   listenKeywords: [
     'hello',
     'my',
     'name',
     'is',
-    'david',
+    'maria',
     'i',
     'am',
-    'in',
-    'california',
-    'ana',
     'at',
     'home',
+    'david',
+    'in',
+    'california',
     'carlos',
-    'school',
+    'work',
     'we',
     'are',
     'friends',
     'they',
-    'ready',
+    'happy',
   ],
 };
 

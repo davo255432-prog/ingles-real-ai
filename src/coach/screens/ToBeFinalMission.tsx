@@ -158,7 +158,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
     setListenState('loading');
     try {
       setListenState('playing');
-      await generateSpeech(TO_BE_FINAL_MISSION.expectedEn, 'slow');
+      await generateSpeech(TO_BE_FINAL_MISSION.listenExpectedEn, 'slow');
       if (mountedRef.current) setListenState('idle');
     } catch {
       if (mountedRef.current) setListenState('error');
@@ -345,7 +345,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
           {listenScore !== null && (
             <div className="bg-sky-50 border border-sky-100 rounded-2xl p-4 mt-4">
               <p className="text-sky-700 text-xs font-bold uppercase tracking-wide mb-1">Texto correcto</p>
-              <p className="text-gray-900 font-bold leading-relaxed">{TO_BE_FINAL_MISSION.expectedEn}</p>
+              <p className="text-gray-900 font-bold leading-relaxed">{TO_BE_FINAL_MISSION.listenExpectedEn}</p>
               <p className="text-gray-500 text-sm leading-relaxed mt-3">
                 Comprension auditiva: <span className="font-bold text-sky-700">{listenScore}/100</span>
               </p>
