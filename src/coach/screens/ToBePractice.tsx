@@ -1064,9 +1064,14 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
     return () => {
       mountedRef.current = false;
       stopSpeech();
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop();
       streamRef.current?.getTracks().forEach((t) => t.stop());
+      mediaRecorderRef.current = null;
+      streamRef.current = null;
     };
   }, []);
 
@@ -1074,6 +1079,13 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
     stopSpeech();
     setVerdict(null);
     chunksRef.current = [];
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    mediaRecorderRef.current = null;
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
       setMicBlocked(true);
       return;
@@ -1098,6 +1110,8 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
       setMic('recording');
     } catch {
       streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      mediaRecorderRef.current = null;
       setMicBlocked(true);
       setMic('idle');
     }
@@ -1116,6 +1130,8 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
       mr.stop();
     });
     streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    mediaRecorderRef.current = null;
 
     const chunks = chunksRef.current;
     if (chunks.length === 0) {
