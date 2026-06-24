@@ -19,6 +19,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
   const [micState, setMicState] = useState<MicState>('idle');
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const [evaluation, setEvaluation] = useState<MissionEvaluation | null>(null);
+  const [voiceAudioUrl, setVoiceAudioUrl] = useState<string | null>(null);
   const [listenState, setListenState] = useState<ListenState>('idle');
   const [listenAnswer, setListenAnswer] = useState('');
   const [listenScore, setListenScore] = useState<number | null>(null);
@@ -27,6 +28,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const voiceAudioUrlRef = useRef<string | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -35,6 +37,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
       mountedRef.current = false;
       stopSpeech();
       cleanupRecorder();
+      revokeVoiceAudioUrl();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -51,12 +54,21 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
     streamRef.current = null;
   };
 
+  const revokeVoiceAudioUrl = () => {
+    if (voiceAudioUrlRef.current) {
+      URL.revokeObjectURL(voiceAudioUrlRef.current);
+      voiceAudioUrlRef.current = null;
+    }
+  };
+
   const resetVoice = () => {
     cleanupRecorder();
+    revokeVoiceAudioUrl();
     chunksRef.current = [];
     setMicState('idle');
     setVoiceError(null);
     setEvaluation(null);
+    setVoiceAudioUrl(null);
   };
 
   const startRecording = async () => {
@@ -121,6 +133,10 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
     }
 
     const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+    const url = URL.createObjectURL(blob);
+    revokeVoiceAudioUrl();
+    voiceAudioUrlRef.current = url;
+    setVoiceAudioUrl(url);
 
     try {
       const transcript = await transcribeAudio(blob);
@@ -249,6 +265,13 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
           {voiceError && (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mt-4">
               <p className="text-amber-800 text-sm font-semibold">{voiceError}</p>
+            </div>
+          )}
+
+          {voiceAudioUrl && (
+            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mt-4">
+              <p className="text-gray-700 text-sm font-bold mb-2">Escucha tu historia</p>
+              <audio controls src={voiceAudioUrl} className="w-full" />
             </div>
           )}
 
