@@ -8,6 +8,16 @@ export interface ToBeFinalPracticeItem {
   suggestedPronunciation: string;
 }
 
+export interface ToBeFinalMissionStory {
+  id: string;
+  title: string;
+  situationEs: string;
+  expectedEn: string;
+  pronunciation: string;
+  listenPrompt: string;
+  listenKeywords: string[];
+}
+
 export interface ToBeFinalVocabularyItem {
   id: string;
   en: string;
@@ -17,12 +27,15 @@ export interface ToBeFinalVocabularyItem {
 
 export const TO_BE_FINAL_VOCAB_STEP_SLUG = 'final-vocab';
 export const TO_BE_FINAL_PRACTICE_STEP_SLUG = 'final-practice';
+export const TO_BE_FINAL_MISSION_STEP_SLUG = 'final-mission';
 
 export function toBeStepId(lessonId: string, slug: string): string {
   return `${lessonId}.s-${slug}`;
 }
 
 const VOCAB = {
+  hello: { id: 'hello', en: 'Hello', es: 'Hola', pronunciation: 'je-lou' },
+  myNameIs: { id: 'my-name-is', en: 'My name is', es: 'Mi nombre es', pronunciation: 'mai neim is' },
   david: { id: 'david', en: 'David', es: 'David', pronunciation: 'dei-vid' },
   maria: { id: 'maria', en: 'Maria', es: 'Maria', pronunciation: 'ma-ri-a' },
   carlos: { id: 'carlos', en: 'Carlos', es: 'Carlos', pronunciation: 'car-los' },
@@ -40,6 +53,8 @@ const VOCAB = {
 } satisfies Record<string, ToBeFinalVocabularyItem>;
 
 export const TO_BE_FINAL_VOCABULARY: ToBeFinalVocabularyItem[] = [
+  VOCAB.hello,
+  VOCAB.myNameIs,
   VOCAB.david,
   VOCAB.maria,
   VOCAB.carlos,
@@ -60,8 +75,8 @@ export const TO_BE_FINAL_PRACTICES: ToBeFinalPracticeItem[] = [
   {
     id: 'intro-david-california',
     situationEs: `Hola. Mi nombre es ${VOCAB.david.es}. Soy ${VOCAB.driver.es}. Estoy en ${VOCAB.california.es}.`,
-    suggestedEn: `Hello. My name is ${VOCAB.david.en}. I am a ${VOCAB.driver.en}. I am in ${VOCAB.california.en}.`,
-    suggestedPronunciation: `je-lou. mai neim is ${VOCAB.david.pronunciation}. ai am a ${VOCAB.driver.pronunciation}. ai am in ${VOCAB.california.pronunciation}.`,
+    suggestedEn: `${VOCAB.hello.en}. ${VOCAB.myNameIs.en} ${VOCAB.david.en}. I am a ${VOCAB.driver.en}. I am in ${VOCAB.california.en}.`,
+    suggestedPronunciation: `${VOCAB.hello.pronunciation}. ${VOCAB.myNameIs.pronunciation} ${VOCAB.david.pronunciation}. ai am a ${VOCAB.driver.pronunciation}. ai am in ${VOCAB.california.pronunciation}.`,
   },
   {
     id: 'she-maria-home-happy',
@@ -90,8 +105,8 @@ export const TO_BE_FINAL_PRACTICES: ToBeFinalPracticeItem[] = [
   {
     id: 'i-ana-work-ready',
     situationEs: `Hola. Mi nombre es ${VOCAB.ana.es}. Estoy en el ${VOCAB.work.es}. Estoy lista.`,
-    suggestedEn: `Hello. My name is ${VOCAB.ana.en}. I am at ${VOCAB.work.en}. I am ${VOCAB.ready.en}.`,
-    suggestedPronunciation: `je-lou. mai neim is ${VOCAB.ana.pronunciation}. ai am at ${VOCAB.work.pronunciation}. ai am ${VOCAB.ready.pronunciation}.`,
+    suggestedEn: `${VOCAB.hello.en}. ${VOCAB.myNameIs.en} ${VOCAB.ana.en}. I am at ${VOCAB.work.en}. I am ${VOCAB.ready.en}.`,
+    suggestedPronunciation: `${VOCAB.hello.pronunciation}. ${VOCAB.myNameIs.pronunciation} ${VOCAB.ana.pronunciation}. ai am at ${VOCAB.work.pronunciation}. ai am ${VOCAB.ready.pronunciation}.`,
   },
   {
     id: 'you-here-ready',
@@ -106,6 +121,57 @@ export const TO_BE_FINAL_PRACTICES: ToBeFinalPracticeItem[] = [
     suggestedPronunciation: `wi ar at ${VOCAB.school.pronunciation}. wi ar ${VOCAB.happy.pronunciation}.`,
   },
 ];
+
+export const TO_BE_FINAL_MISSION: ToBeFinalMissionStory = {
+  id: 'mission-friends-ready',
+  title: 'Mision Final',
+  situationEs: [
+    `Hola. Mi nombre es ${VOCAB.david.es}.`,
+    `Estoy en ${VOCAB.california.es}.`,
+    `${VOCAB.ana.es} esta en ${VOCAB.home.es}.`,
+    `${VOCAB.carlos.es} esta en la ${VOCAB.school.es}.`,
+    `Nosotros somos ${VOCAB.friends.es}.`,
+    `Ellos estan ${VOCAB.ready.es}.`,
+  ].join(' '),
+  expectedEn: [
+    `${VOCAB.hello.en}. ${VOCAB.myNameIs.en} ${VOCAB.david.en}.`,
+    `I am in ${VOCAB.california.en}.`,
+    `${VOCAB.ana.en} is at ${VOCAB.home.en}.`,
+    `${VOCAB.carlos.en} is at ${VOCAB.school.en}.`,
+    `We are ${VOCAB.friends.en}.`,
+    `They are ${VOCAB.ready.en}.`,
+  ].join(' '),
+  pronunciation: [
+    `${VOCAB.hello.pronunciation}. ${VOCAB.myNameIs.pronunciation} ${VOCAB.david.pronunciation}.`,
+    `ai am in ${VOCAB.california.pronunciation}.`,
+    `${VOCAB.ana.pronunciation} is at ${VOCAB.home.pronunciation}.`,
+    `${VOCAB.carlos.pronunciation} is at ${VOCAB.school.pronunciation}.`,
+    `wi ar ${VOCAB.friends.pronunciation}.`,
+    `dei ar ${VOCAB.ready.pronunciation}.`,
+  ].join(' '),
+  listenPrompt: 'Escucha la historia y escribe en ingles lo que entendiste.',
+  listenKeywords: [
+    'hello',
+    'my',
+    'name',
+    'is',
+    'david',
+    'i',
+    'am',
+    'in',
+    'california',
+    'ana',
+    'at',
+    'home',
+    'carlos',
+    'school',
+    'we',
+    'are',
+    'friends',
+    'they',
+    'ready',
+  ],
+};
 
 export function getNextToBeFinalPractice(previousId?: string): ToBeFinalPracticeItem {
   const pool = previousId

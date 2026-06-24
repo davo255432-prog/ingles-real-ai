@@ -10,9 +10,10 @@ type MicState = 'idle' | 'requesting' | 'recording' | 'transcribing';
 interface ToBeFinalPracticeProps {
   onExit: () => void;
   onComplete: () => void;
+  completeLabel?: string;
 }
 
-export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, onComplete }) => {
+export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, onComplete, completeLabel = 'Terminar unidad' }) => {
   const [practice, setPractice] = useState<ToBeFinalPracticeItem>(() => getNextToBeFinalPractice());
   const [micState, setMicState] = useState<MicState>('idle');
   const [transcript, setTranscript] = useState('');
@@ -295,7 +296,7 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
               onClick={onComplete}
               className="w-full bg-gray-900 hover:bg-black active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
             >
-              Terminar unidad
+              {completeLabel}
             </button>
           )}
         </div>

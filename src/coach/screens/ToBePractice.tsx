@@ -13,7 +13,9 @@ import {
 import { generateSpeech, stopSpeech } from '../../services/speechApi';
 import { transcribeAudio } from '../../services/voiceApi';
 import { ToBeFinalPractice } from './ToBeFinalPractice';
+import { ToBeFinalMission } from './ToBeFinalMission';
 import {
+  TO_BE_FINAL_MISSION_STEP_SLUG,
   TO_BE_FINAL_PRACTICE_STEP_SLUG,
   TO_BE_FINAL_VOCAB_STEP_SLUG,
   TO_BE_FINAL_VOCABULARY,
@@ -115,7 +117,8 @@ type ToBeStep =
   | { id: string; kind: 'dialogue'; dlg: BeDialogue }
   | { id: string; kind: 'summary' }
   | { id: string; kind: 'final-vocab' }
-  | { id: string; kind: 'final-practice' };
+  | { id: string; kind: 'final-practice' }
+  | { id: string; kind: 'final-mission' };
 
 // Genera la frase con un hueco "___" para los ejercicios de elegir verbo.
 function gap(phrase: BePhrase): string {
@@ -282,6 +285,7 @@ function buildSteps(): ToBeStep[] {
 
   steps.push({ id: sid(TO_BE_FINAL_VOCAB_STEP_SLUG), kind: 'final-vocab' });
   steps.push({ id: sid(TO_BE_FINAL_PRACTICE_STEP_SLUG), kind: 'final-practice' });
+  steps.push({ id: sid(TO_BE_FINAL_MISSION_STEP_SLUG), kind: 'final-mission' });
 
   return steps;
 }
@@ -415,7 +419,11 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
   const progressPct = Math.round((index / total) * 100);
 
   if (step.kind === 'final-practice') {
-    return <ToBeFinalPractice onExit={onExit} onComplete={() => advance()} />;
+    return <ToBeFinalPractice onExit={onExit} onComplete={() => advance()} completeLabel="Ir a la Mision Final" />;
+  }
+
+  if (step.kind === 'final-mission') {
+    return <ToBeFinalMission onExit={onExit} onComplete={() => advance()} />;
   }
 
   return (
