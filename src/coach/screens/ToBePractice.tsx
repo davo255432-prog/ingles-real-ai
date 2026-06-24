@@ -52,6 +52,10 @@ type BrowserSpeechRecognitionWindow = Window & {
   webkitSpeechRecognition?: new () => BrowserSpeechRecognition;
 };
 
+function shouldUseBrowserSpeechFallback(): boolean {
+  return !/Android/i.test(navigator.userAgent);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Unidad 2 — Verbo "to be" (am / is / are). Pantalla autónoma, al estilo de
 // PronounsPractice: maneja TODO el flujo internamente (bienvenida, cuadro visual,
@@ -1110,6 +1114,7 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
   }, []);
 
   const startBrowserRecognition = () => {
+    if (!shouldUseBrowserSpeechFallback()) return;
     const SpeechRecognition =
       (window as BrowserSpeechRecognitionWindow).SpeechRecognition ??
       (window as BrowserSpeechRecognitionWindow).webkitSpeechRecognition;

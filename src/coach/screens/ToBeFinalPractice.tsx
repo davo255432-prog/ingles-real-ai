@@ -36,6 +36,10 @@ type BrowserSpeechRecognitionWindow = Window & {
   webkitSpeechRecognition?: new () => BrowserSpeechRecognition;
 };
 
+function shouldUseBrowserSpeechFallback(): boolean {
+  return !/Android/i.test(navigator.userAgent);
+}
+
 interface ToBeFinalPracticeProps {
   onExit: () => void;
   onComplete: () => void;
@@ -163,6 +167,7 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
   };
 
   const startBrowserRecognition = () => {
+    if (!shouldUseBrowserSpeechFallback()) return;
     const SpeechRecognition =
       (window as BrowserSpeechRecognitionWindow).SpeechRecognition ??
       (window as BrowserSpeechRecognitionWindow).webkitSpeechRecognition;
