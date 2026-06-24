@@ -23,6 +23,35 @@ import {
   TO_BE_USEFUL_CHUNKS,
 } from '../data/toBeFinalPractice';
 
+interface BrowserSpeechRecognitionEvent {
+  resultIndex: number;
+  results: {
+    length: number;
+    [index: number]: {
+      isFinal: boolean;
+      [index: number]: { transcript: string };
+    };
+  };
+}
+
+interface BrowserSpeechRecognition {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  maxAlternatives: number;
+  onresult: ((event: BrowserSpeechRecognitionEvent) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+}
+
+type BrowserSpeechRecognitionWindow = Window & {
+  SpeechRecognition?: new () => BrowserSpeechRecognition;
+  webkitSpeechRecognition?: new () => BrowserSpeechRecognition;
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Unidad 2 — Verbo "to be" (am / is / are). Pantalla autónoma, al estilo de
 // PronounsPractice: maneja TODO el flujo internamente (bienvenida, cuadro visual,
@@ -1044,11 +1073,14 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
   const [mic, setMic] = useState<MicState>('idle');
   const [verdict, setVerdict] = useState<VoiceVerdict | null>(null);
   const [micBlocked, setMicBlocked] = useState(false);
+  const [heardText, setHeardText] = useState('');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
+  const browserTranscriptRef = useRef('');
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -1069,16 +1101,59 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
         intervalRef.current = null;
       }
       if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop();
+      recognitionRef.current?.abort();
       streamRef.current?.getTracks().forEach((t) => t.stop());
       mediaRecorderRef.current = null;
+      recognitionRef.current = null;
       streamRef.current = null;
     };
   }, []);
 
+  const startBrowserRecognition = () => {
+    const SpeechRecognition =
+      (window as BrowserSpeechRecognitionWindow).SpeechRecognition ??
+      (window as BrowserSpeechRecognitionWindow).webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = true;
+      recognition.continuous = true;
+      recognition.maxAlternatives = 1;
+      recognition.onresult = (event) => {
+        let text = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          text += event.results[i][0].transcript;
+        }
+        if (text.trim()) browserTranscriptRef.current = text.trim();
+      };
+      recognition.onerror = () => undefined;
+      recognition.onend = () => undefined;
+      recognition.start();
+      recognitionRef.current = recognition;
+    } catch {
+      recognitionRef.current = null;
+    }
+  };
+
+  const stopBrowserRecognition = () => {
+    try {
+      recognitionRef.current?.stop();
+    } catch {
+      recognitionRef.current?.abort();
+    } finally {
+      recognitionRef.current = null;
+    }
+  };
+
   const startRecording = async () => {
     stopSpeech();
     setVerdict(null);
+    setHeardText('');
     chunksRef.current = [];
+    browserTranscriptRef.current = '';
+    stopBrowserRecognition();
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -1107,6 +1182,7 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
       intervalRef.current = setInterval(() => {
         if (mr.state === 'recording') mr.requestData();
       }, 500);
+      startBrowserRecognition();
       setMic('recording');
     } catch {
       streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -1124,6 +1200,7 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    stopBrowserRecognition();
     setMic('transcribing');
     await new Promise<void>((resolve) => {
       mr.addEventListener('stop', () => resolve(), { once: true });
@@ -1143,11 +1220,20 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
     }
     const blob = new Blob(chunks, { type: mr.mimeType || 'audio/webm' });
     try {
-      const transcript = await transcribeAudio(blob);
+      let transcript = await transcribeAudio(blob);
+      if (!transcript.trim() && browserTranscriptRef.current.trim()) {
+        transcript = browserTranscriptRef.current;
+      }
       if (!mountedRef.current) return;
+      setHeardText(transcript.trim());
       setVerdict(evaluatePhrase(transcript, phrase.en));
     } catch {
-      if (mountedRef.current) setVerdict({ kind: 'none' });
+      if (mountedRef.current && browserTranscriptRef.current.trim()) {
+        setHeardText(browserTranscriptRef.current.trim());
+        setVerdict(evaluatePhrase(browserTranscriptRef.current, phrase.en));
+      } else if (mountedRef.current) {
+        setVerdict({ kind: 'none' });
+      }
     } finally {
       if (mountedRef.current) setMic('idle');
     }
@@ -1195,6 +1281,12 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
         {verdict?.kind === 'none' && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
             <p className="text-red-600 font-bold">No pude escucharte. Inténtalo de nuevo.</p>
+          </div>
+        )}
+        {heardText && (
+          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-4">
+            <p className="text-blue-400 text-xs font-bold uppercase tracking-wide mb-1">Escuche</p>
+            <p className="text-gray-700 text-sm font-semibold leading-snug">"{heardText}"</p>
           </div>
         )}
 
