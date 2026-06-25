@@ -230,7 +230,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
     const totalBytes = chunks.reduce((sum, chunk) => sum + chunk.size, 0);
     const browserTranscript = browserTranscriptRef.current.trim();
     if (chunks.length === 0 || totalBytes < 800) {
-      if (browserTranscript) {
+      if (isCompleteEnoughForMission(browserTranscript)) {
         if (!mountedRef.current) return;
         setEvaluation(buildFallbackEvaluation(browserTranscript));
         setMicState('idle');
@@ -249,8 +249,14 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
 
     try {
       let transcript = await transcribeAudio(blob);
-      if (!transcript.trim() && browserTranscript) transcript = browserTranscript;
+      if (!transcript.trim() && isCompleteEnoughForMission(browserTranscript)) transcript = browserTranscript;
       if (!mountedRef.current) return;
+
+      if (!transcript.trim()) {
+        setMicState('idle');
+        setVoiceError('No se grabo la historia completa. Repite despacio hasta terminar todas las frases.');
+        return;
+      }
 
       setMicState('evaluating');
       const aiEvaluation = await evaluateSpeaking({
@@ -266,10 +272,10 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
     } catch {
       if (!mountedRef.current) return;
       setMicState('idle');
-      if (browserTranscript) {
+      if (isCompleteEnoughForMission(browserTranscript)) {
         setEvaluation(buildFallbackEvaluation(browserTranscript));
       } else {
-        setVoiceError('No se pudo analizar tu voz. Intenta repetir la mision.');
+        setVoiceError('No se grabo la historia completa. Repite despacio hasta terminar todas las frases.');
       }
     }
   };
@@ -571,6 +577,17 @@ function scoreText(actual: string, expected: string): number {
   if (expectedTokens.length === 0) return 100;
   const matched = expectedTokens.filter((word) => actualSet.has(word)).length;
   return Math.round((matched / expectedTokens.length) * 100);
+}
+
+function isCompleteEnoughForMission(transcript: string): boolean {
+  const said = tokens(transcript);
+  if (said.length < 8) return false;
+
+  const expected = tokens(TO_BE_FINAL_MISSION.expectedEn);
+  const saidSet = new Set(said);
+  const matched = expected.filter((word) => saidSet.has(word)).length;
+
+  return matched / expected.length >= 0.45;
 }
 
 function tokens(text: string): string[] {
