@@ -1025,15 +1025,24 @@ const FinalVocab: React.FC<{ onNext: () => void }> = ({ onNext }) => (
         </p>
       </div>
 
-      <h2 className="text-gray-900 font-extrabold mb-3">Palabras que veras</h2>
-      <div className="grid grid-cols-2 gap-2.5">
+      <h2 className="text-gray-900 text-xl font-extrabold mb-3">Palabras que veras</h2>
+      <div className="flex flex-col gap-3">
         {TO_BE_FINAL_VOCABULARY.map((item) => (
-          <div key={item.id} className="bg-white rounded-2xl border border-gray-100 p-3 shadow-sm">
-            <p className="text-gray-900 font-extrabold leading-snug">{item.en}</p>
-            <p className="text-gray-500 text-sm leading-snug">{item.es}</p>
-            <p className="text-emerald-700 text-xs font-semibold leading-snug mt-1">
-              Se dice: {item.pronunciation}
-            </p>
+          <div key={item.id} className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-gray-950 text-2xl font-extrabold leading-tight break-words">{item.en}</p>
+                <p className="text-gray-700 text-base font-bold leading-snug mt-1">{item.es}</p>
+              </div>
+              <span className="shrink-0 bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-extrabold uppercase tracking-wide px-2.5 py-1 rounded-full">
+                vocab
+              </span>
+            </div>
+            <div className="mt-3 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+              <p className="text-emerald-900 text-sm font-extrabold leading-snug">
+                Se dice: <span className="text-base">{item.pronunciation}</span>
+              </p>
+            </div>
           </div>
         ))}
       </div>
