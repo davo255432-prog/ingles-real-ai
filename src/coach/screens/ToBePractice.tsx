@@ -1047,36 +1047,40 @@ const FinalVocab: React.FC<{ onNext: () => void }> = ({ onNext }) => (
         ))}
       </div>
 
-      <h2 className="text-gray-900 font-extrabold mt-6 mb-3">Conectores que usaras</h2>
-      <div className="flex flex-col gap-2.5">
+      <h2 className="text-gray-900 text-xl font-extrabold mt-6 mb-3">Conectores que usaras</h2>
+      <div className="flex flex-col gap-3">
         {TO_BE_CONNECTOR_CHUNKS.map((item) => (
-          <div key={item.id} className="bg-white rounded-2xl border border-emerald-100 p-4 shadow-sm">
+          <div key={item.id} className="bg-white rounded-2xl border border-emerald-200 p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-gray-900 font-extrabold leading-snug">{item.en}</p>
-                <p className="text-gray-500 text-sm leading-snug">{item.es}</p>
-                <p className="text-emerald-700 text-xs font-semibold leading-snug mt-1">
-                  Se dice: {item.pronunciation}
-                </p>
+              <div className="min-w-0">
+                <p className="text-gray-950 text-2xl font-extrabold leading-tight break-words">{item.en}</p>
+                <p className="text-gray-700 text-base font-bold leading-snug mt-1">{item.es}</p>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full shrink-0">
+              <span className="text-xs font-extrabold uppercase tracking-wide bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full shrink-0">
                 {item.en.startsWith('at') ? 'at' : item.en.startsWith('in') ? 'in' : item.en.startsWith('a ') ? 'a' : 'chunk'}
               </span>
             </div>
-            <p className="text-gray-400 text-xs font-medium mt-2">{item.note}</p>
+            <div className="mt-3 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+              <p className="text-emerald-900 text-sm font-extrabold leading-snug">
+                Se dice: <span className="text-base">{item.pronunciation}</span>
+              </p>
+            </div>
+            <p className="text-gray-600 text-sm font-semibold leading-snug mt-2">{item.note}</p>
           </div>
         ))}
       </div>
 
-      <h2 className="text-gray-900 font-extrabold mt-6 mb-3">Piezas utiles</h2>
-      <div className="flex flex-col gap-2.5">
+      <h2 className="text-gray-900 text-xl font-extrabold mt-6 mb-3">Piezas utiles</h2>
+      <div className="flex flex-col gap-3">
         {TO_BE_USEFUL_CHUNKS.map((item) => (
-          <div key={item.id} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-            <p className="text-gray-900 font-extrabold leading-snug">{item.en}</p>
-            <p className="text-gray-500 text-sm leading-snug">{item.es}</p>
-            <p className="text-emerald-700 text-xs font-semibold leading-snug mt-1">
-              Se dice: {item.pronunciation}
-            </p>
+          <div key={item.id} className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+            <p className="text-gray-950 text-xl font-extrabold leading-tight break-words">{item.en}</p>
+            <p className="text-gray-700 text-base font-bold leading-snug mt-1">{item.es}</p>
+            <div className="mt-3 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+              <p className="text-emerald-900 text-sm font-extrabold leading-snug">
+                Se dice: <span className="text-base">{item.pronunciation}</span>
+              </p>
+            </div>
           </div>
         ))}
       </div>
