@@ -1003,17 +1003,25 @@ const FinalVocab: React.FC<{ onNext: () => void }> = ({ onNext }) => (
   <>
     <div className="pt-2 pb-4 flex-1">
       <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-2">
-        Antes de practicar
+        Alto: antes de practicar
       </p>
-      <h1 className="text-2xl font-extrabold text-gray-900 mb-2">
-        Revisa estas piezas
+      <h1 className="text-3xl font-extrabold text-gray-900 leading-tight mb-3">
+        Primero revisa esto
       </h1>
-      <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 mb-5">
-        <p className="text-emerald-900 text-sm font-semibold leading-relaxed">
-          Te van a ayudar a unir la frase cuando hables.
+      <div className="bg-emerald-600 rounded-3xl p-5 mb-5 shadow-md">
+        <p className="text-white text-xl font-extrabold leading-snug">
+          Estas piezas son tu mapa para hablar sin bloquearte.
         </p>
-        <p className="text-emerald-700 text-sm leading-relaxed mt-1">
-          No tienes que memorizar todo: reconoce las piezas y unelas paso a paso.
+        <p className="text-emerald-50 text-base font-semibold leading-relaxed mt-3">
+          Lee en voz baja, escucha mentalmente y luego habla frase por frase. No estas adivinando: estas construyendo tu historia real.
+        </p>
+      </div>
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5">
+        <p className="text-amber-900 text-lg font-extrabold leading-snug">
+          Recomendacion del Coach
+        </p>
+        <p className="text-amber-800 text-sm font-bold leading-relaxed mt-2">
+          No saltes esta parte. Aqui aparecen las palabras que usaras en la practica y en la Mision Final.
         </p>
       </div>
 
@@ -1043,7 +1051,7 @@ const FinalVocab: React.FC<{ onNext: () => void }> = ({ onNext }) => (
                 </p>
               </div>
               <span className="text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full shrink-0">
-                {item.en.startsWith('at') ? 'at' : 'in'}
+                {item.en.startsWith('at') ? 'at' : item.en.startsWith('in') ? 'in' : item.en.startsWith('a ') ? 'a' : 'chunk'}
               </span>
             </div>
             <p className="text-gray-400 text-xs font-medium mt-2">{item.note}</p>
