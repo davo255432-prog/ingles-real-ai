@@ -6,6 +6,39 @@ import { TO_BE_FINAL_MISSION } from '../data/toBeFinalPractice';
 type MicState = 'idle' | 'requesting' | 'recording' | 'transcribing' | 'evaluating';
 type ListenState = 'idle' | 'loading' | 'playing' | 'error';
 
+interface BrowserSpeechRecognitionEvent {
+  resultIndex: number;
+  results: {
+    length: number;
+    [index: number]: {
+      isFinal: boolean;
+      [index: number]: { transcript: string };
+    };
+  };
+}
+
+interface BrowserSpeechRecognition {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  maxAlternatives: number;
+  onresult: ((event: BrowserSpeechRecognitionEvent) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+}
+
+type BrowserSpeechRecognitionWindow = Window & {
+  SpeechRecognition?: new () => BrowserSpeechRecognition;
+  webkitSpeechRecognition?: new () => BrowserSpeechRecognition;
+};
+
+function shouldUseBrowserSpeechFallback(): boolean {
+  return !/Android/i.test(navigator.userAgent);
+}
+
 interface MissionEvaluation extends SpeakingEvaluation {
   usedFallback?: boolean;
 }
@@ -29,6 +62,8 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
   const chunksRef = useRef<Blob[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const voiceAudioUrlRef = useRef<string | null>(null);
+  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
+  const browserTranscriptRef = useRef('');
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -50,8 +85,10 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
     if (mediaRecorderRef.current?.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
+    recognitionRef.current?.abort();
     streamRef.current?.getTracks().forEach((track) => track.stop());
     mediaRecorderRef.current = null;
+    recognitionRef.current = null;
     streamRef.current = null;
   };
 
@@ -66,6 +103,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
     cleanupRecorder();
     revokeVoiceAudioUrl();
     chunksRef.current = [];
+    browserTranscriptRef.current = '';
     setMicState('idle');
     setVoiceError(null);
     setEvaluation(null);
@@ -107,6 +145,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
       intervalRef.current = setInterval(() => {
         if (recorder.state === 'recording') recorder.requestData();
       }, 500);
+      startBrowserRecognition();
       setMicState('recording');
     } catch (error) {
       streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -124,6 +163,45 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
     }
   };
 
+  const startBrowserRecognition = () => {
+    if (!shouldUseBrowserSpeechFallback()) return;
+    const SpeechRecognition =
+      (window as BrowserSpeechRecognitionWindow).SpeechRecognition ??
+      (window as BrowserSpeechRecognitionWindow).webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = true;
+      recognition.continuous = true;
+      recognition.maxAlternatives = 1;
+      recognition.onresult = (event) => {
+        let text = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          text += event.results[i][0].transcript;
+        }
+        if (text.trim()) browserTranscriptRef.current = text.trim();
+      };
+      recognition.onerror = () => undefined;
+      recognition.onend = () => undefined;
+      recognition.start();
+      recognitionRef.current = recognition;
+    } catch {
+      recognitionRef.current = null;
+    }
+  };
+
+  const stopBrowserRecognition = () => {
+    try {
+      recognitionRef.current?.stop();
+    } catch {
+      recognitionRef.current?.abort();
+    } finally {
+      recognitionRef.current = null;
+    }
+  };
+
   const stopRecording = async () => {
     const recorder = mediaRecorderRef.current;
     if (!recorder || recorder.state !== 'recording') return;
@@ -132,6 +210,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    stopBrowserRecognition();
 
     setMicState('transcribing');
     await new Promise<void>((resolve) => {
@@ -149,9 +228,16 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
 
     const chunks = chunksRef.current;
     const totalBytes = chunks.reduce((sum, chunk) => sum + chunk.size, 0);
+    const browserTranscript = browserTranscriptRef.current.trim();
     if (chunks.length === 0 || totalBytes < 800) {
+      if (browserTranscript) {
+        if (!mountedRef.current) return;
+        setEvaluation(buildFallbackEvaluation(browserTranscript));
+        setMicState('idle');
+        return;
+      }
       setMicState('idle');
-      setVoiceError('No se grabo audio suficiente. Habla un poco mas fuerte y termina la historia antes de detener.');
+      setVoiceError('La grabacion salio muy corta. Habla la historia completa antes de detener.');
       return;
     }
 
@@ -162,7 +248,8 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
     setVoiceAudioUrl(url);
 
     try {
-      const transcript = await transcribeAudio(blob);
+      let transcript = await transcribeAudio(blob);
+      if (!transcript.trim() && browserTranscript) transcript = browserTranscript;
       if (!mountedRef.current) return;
 
       setMicState('evaluating');
@@ -179,7 +266,11 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
     } catch {
       if (!mountedRef.current) return;
       setMicState('idle');
-      setVoiceError('No se pudo analizar tu voz. Intenta repetir la mision.');
+      if (browserTranscript) {
+        setEvaluation(buildFallbackEvaluation(browserTranscript));
+      } else {
+        setVoiceError('No se pudo analizar tu voz. Intenta repetir la mision.');
+      }
     }
   };
 
