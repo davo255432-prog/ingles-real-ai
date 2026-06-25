@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { generateSpeech, stopSpeech } from '../../services/speechApi';
+import { generateSpeech, stopSpeech, type SpeechSpeed } from '../../services/speechApi';
 import { evaluateSpeaking, transcribeAudio, type SpeakingEvaluation } from '../../services/voiceApi';
 import { TO_BE_FINAL_MISSION } from '../data/toBeFinalPractice';
 
@@ -54,6 +54,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
   const [evaluation, setEvaluation] = useState<MissionEvaluation | null>(null);
   const [voiceAudioUrl, setVoiceAudioUrl] = useState<string | null>(null);
   const [listenState, setListenState] = useState<ListenState>('idle');
+  const [listenSpeed, setListenSpeed] = useState<SpeechSpeed>('slow');
   const [listenAnswer, setListenAnswer] = useState('');
   const [listenScore, setListenScore] = useState<number | null>(null);
 
@@ -294,7 +295,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
     setListenState('loading');
     try {
       setListenState('playing');
-      await generateSpeech(TO_BE_FINAL_MISSION.listenExpectedEn, 'slow');
+      await generateSpeech(TO_BE_FINAL_MISSION.listenExpectedEn, listenSpeed);
       if (mountedRef.current) setListenState('idle');
     } catch {
       if (mountedRef.current) setListenState('error');
@@ -445,6 +446,33 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
           </div>
 
           <p className="text-gray-500 text-sm leading-relaxed mb-4">{TO_BE_FINAL_MISSION.listenPrompt}</p>
+
+          <div className="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-3">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div>
+                <p className="text-sky-700 text-xs font-bold uppercase tracking-wide">Velocidad</p>
+                <p className="text-gray-900 text-sm font-extrabold">Empieza lento. Luego escucha normal.</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 bg-white rounded-2xl p-1 border border-sky-100">
+              {(['slow', 'normal'] as SpeechSpeed[]).map((speed) => (
+                <button
+                  key={speed}
+                  type="button"
+                  onClick={() => setListenSpeed(speed)}
+                  disabled={listenState === 'loading' || listenState === 'playing'}
+                  className={
+                    listenSpeed === speed
+                      ? 'rounded-xl bg-sky-500 text-white text-sm font-extrabold py-3 shadow-sm'
+                      : 'rounded-xl text-gray-600 text-sm font-extrabold py-3 hover:bg-sky-50 transition-colors'
+                  }
+                >
+                  {speed === 'slow' ? 'Lento' : 'Normal'}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <button
             onClick={playStory}
             disabled={listenState === 'loading'}
