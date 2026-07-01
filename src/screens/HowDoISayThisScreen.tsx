@@ -274,11 +274,18 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
         }
       };
 
-      // iOS Safari fix: start() without timeslice, use interval to request data
-      mr.start();
-      dataIntervalRef.current = setInterval(() => {
-        if (mr.state === 'recording') mr.requestData();
-      }, 500);
+      const isIOS =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+      if (isIOS) {
+        mr.start();
+        dataIntervalRef.current = setInterval(() => {
+          if (mr.state === 'recording') mr.requestData();
+        }, 500);
+      } else {
+        mr.start(250);
+      }
 
       setVoiceState('recording');
     } catch (err: unknown) {

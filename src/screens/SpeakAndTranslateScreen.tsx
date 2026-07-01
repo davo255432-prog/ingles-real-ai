@@ -120,13 +120,18 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
 
-      // iOS Safari ignores the timeslice in mr.start(N) and never fires
-      // ondataavailable during recording. Fix: start without timeslice and
-      // poll requestData() every 500 ms so chunks accumulate on all platforms.
-      mr.start();
-      dataIntervalRef.current = setInterval(() => {
-        if (mr.state === 'recording') mr.requestData();
-      }, 500);
+      const isIOS =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+      if (isIOS) {
+        mr.start();
+        dataIntervalRef.current = setInterval(() => {
+          if (mr.state === 'recording') mr.requestData();
+        }, 500);
+      } else {
+        mr.start(250);
+      }
 
       setRecordState('recording');
     } catch (err) {
@@ -684,10 +689,18 @@ const ReplyInEnglish: React.FC = () => {
       mr.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
-      mr.start();
-      intervalRef.current = setInterval(() => {
-        if (mr.state === 'recording') mr.requestData();
-      }, 500);
+      const isIOS =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+      if (isIOS) {
+        mr.start();
+        intervalRef.current = setInterval(() => {
+          if (mr.state === 'recording') mr.requestData();
+        }, 500);
+      } else {
+        mr.start(250);
+      }
       setState('recording');
     } catch {
       streamRef.current?.getTracks().forEach((t) => t.stop());

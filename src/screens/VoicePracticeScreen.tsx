@@ -179,12 +179,18 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
 
-      // iOS Safari ignores the timeslice in mr.start(N).
-      // Fix: start without timeslice + poll requestData() every 500 ms.
-      mr.start();
-      dataIntervalRef.current = setInterval(() => {
-        if (mr.state === 'recording') mr.requestData();
-      }, 500);
+      const isIOS =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+      if (isIOS) {
+        mr.start();
+        dataIntervalRef.current = setInterval(() => {
+          if (mr.state === 'recording') mr.requestData();
+        }, 500);
+      } else {
+        mr.start(250);
+      }
 
       setVoiceState('recording');
     } catch (err) {
