@@ -43,9 +43,12 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
   const [revealedPieces, setRevealedPieces] = useState(1);
 
   useEffect(() => {
-    UNIT_3_REPETITION_PHRASES.forEach((phrase) => {
-      void prefetchSpeech(phrase.english, 'normal');
-    });
+    const teachingPhrases = [
+      ...ESSENTIAL_VERBS.flatMap((verb) => verb.examples.map((example) => example.english)),
+      ...UNIT_3_CONNECTORS.map((connector) => connector.combined),
+      ...UNIT_3_REPETITION_PHRASES.map((phrase) => phrase.english),
+    ];
+    teachingPhrases.forEach((phrase) => void prefetchSpeech(phrase, 'normal'));
   }, []);
 
   const step = steps[index];
@@ -100,6 +103,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
         {step.kind === 'activation' && <ActivationStep onContinue={next} />}
         {step.kind === 'verb' && (
           <TeachingCard
+            key={step.item.id}
             eyebrow="Verbo esencial"
             title={step.item.label}
             meaning={step.item.spanish}
@@ -111,17 +115,26 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
             checked={checked}
             onSelect={setSelected}
             onCheck={() => setChecked(true)}
+            onRetry={() => {
+              setSelected(null);
+              setChecked(false);
+            }}
             onContinue={next}
           />
         )}
         {step.kind === 'connectors-intro' && <ConnectorIntro onContinue={next} />}
         {step.kind === 'connector' && (
           <ConnectorStep
+            key={step.item.id}
             connector={step.item}
             selected={selected}
             checked={checked}
             onSelect={setSelected}
             onCheck={() => setChecked(true)}
+            onRetry={() => {
+              setSelected(null);
+              setChecked(false);
+            }}
             onContinue={next}
           />
         )}
@@ -179,11 +192,28 @@ interface TeachingCardProps {
   checked: boolean;
   onSelect: (value: string) => void;
   onCheck: () => void;
+  onRetry: () => void;
   onContinue: () => void;
 }
 
 function TeachingCard(props: TeachingCardProps) {
+  const [practiceReady, setPracticeReady] = useState(false);
   const correct = props.selected === props.exercise.answer;
+  if (practiceReady) {
+    return (
+      <ThinkAndAnswer
+        exercise={props.exercise}
+        selected={props.selected}
+        checked={props.checked}
+        correct={correct}
+        onSelect={props.onSelect}
+        onCheck={props.onCheck}
+        onRetry={props.onRetry}
+        onContinue={props.onContinue}
+      />
+    );
+  }
+
   return (
     <section className="pt-4">
       <p className="text-sm font-extrabold uppercase text-emerald-700 mb-2">{props.eyebrow}</p>
@@ -207,22 +237,12 @@ function TeachingCard(props: TeachingCardProps) {
               <p className="text-gray-950 text-lg font-extrabold">{example.english}</p>
               <p className="text-gray-600 font-medium">{example.spanish}</p>
               <p className="text-emerald-700 font-bold text-sm mt-1">{example.pronunciation}</p>
+              <AudioButton phrase={example.english} />
             </div>
           ))}
         </div>
       </div>
-      <ExercisePanel
-        prompt={props.exercise.prompt}
-        options={props.exercise.options}
-        answer={props.exercise.answer}
-        explanation={props.exercise.explanation}
-        selected={props.selected}
-        checked={props.checked}
-        onSelect={props.onSelect}
-        onCheck={props.onCheck}
-        onContinue={props.onContinue}
-        correct={correct}
-      />
+      <PrimaryButton onClick={() => setPracticeReady(true)}>Ahora piensa tú</PrimaryButton>
     </section>
   );
 }
@@ -249,11 +269,28 @@ interface ConnectorStepProps {
   checked: boolean;
   onSelect: (value: string) => void;
   onCheck: () => void;
+  onRetry: () => void;
   onContinue: () => void;
 }
 
 function ConnectorStep(props: ConnectorStepProps) {
+  const [practiceReady, setPracticeReady] = useState(false);
   const { connector } = props;
+  if (practiceReady) {
+    return (
+      <ThinkAndAnswer
+        exercise={connector.exercise}
+        selected={props.selected}
+        checked={props.checked}
+        correct={props.selected === connector.exercise.answer}
+        onSelect={props.onSelect}
+        onCheck={props.onCheck}
+        onRetry={props.onRetry}
+        onContinue={props.onContinue}
+      />
+    );
+  }
+
   return (
     <section className="pt-4">
       <p className="text-sm font-extrabold uppercase text-amber-700 mb-2">Conector visual</p>
@@ -283,19 +320,50 @@ function ConnectorStep(props: ConnectorStepProps) {
         <div className="bg-amber-100 border border-amber-200 rounded-2xl p-5">
           <p className="text-gray-950 text-xl font-black">{connector.combined}</p>
           <p className="text-gray-700 font-medium mt-1">{connector.combinedSpanish}</p>
+          <AudioButton phrase={connector.combined} />
         </div>
       </div>
+      <PrimaryButton onClick={() => setPracticeReady(true)}>Ahora piensa tú</PrimaryButton>
+    </section>
+  );
+}
+
+function ThinkAndAnswer(props: {
+  exercise: EssentialVerbCard['exercise'];
+  selected: string | null;
+  checked: boolean;
+  correct: boolean;
+  onSelect: (value: string) => void;
+  onCheck: () => void;
+  onRetry: () => void;
+  onContinue: () => void;
+}) {
+  return (
+    <section className="pt-8">
+      <div className="bg-violet-50 border-2 border-violet-200 rounded-3xl p-6 mb-5 text-center">
+        <p className="text-violet-800 text-sm font-extrabold uppercase mb-2">Ahora piensa tú</p>
+        <h1 className="text-gray-950 text-2xl font-black leading-tight mb-2">
+          Haz una pausa y recuerda lo aprendido
+        </h1>
+        <p className="text-gray-700 font-semibold leading-relaxed">
+          La respuesta ya no está frente a ti. Responde sin mirar atrás.
+        </p>
+        <p className="text-violet-800 font-extrabold mt-3">
+          Si fallas, inténtalo de nuevo. Vamos, tú puedes.
+        </p>
+      </div>
       <ExercisePanel
-        prompt={connector.exercise.prompt}
-        options={connector.exercise.options}
-        answer={connector.exercise.answer}
-        explanation={connector.exercise.explanation}
-        selected={props.selected}
+        prompt={props.exercise.prompt}
+        options={props.exercise.options}
+        answer={props.exercise.answer}
+        explanation={props.exercise.explanation}
+        selected={props.selected || null}
         checked={props.checked}
         onSelect={props.onSelect}
         onCheck={props.onCheck}
+        onRetry={props.onRetry}
         onContinue={props.onContinue}
-        correct={props.selected === connector.exercise.answer}
+        correct={props.correct}
       />
     </section>
   );
@@ -311,6 +379,7 @@ interface ExercisePanelProps {
   correct: boolean;
   onSelect: (value: string) => void;
   onCheck: () => void;
+  onRetry: () => void;
   onContinue: () => void;
 }
 
@@ -356,10 +425,42 @@ function ExercisePanel(props: ExercisePanelProps) {
       )}
       {!props.checked ? (
         <PrimaryButton onClick={props.onCheck} disabled={!props.selected}>Comprobar</PrimaryButton>
+      ) : !props.correct ? (
+        <PrimaryButton onClick={props.onRetry}>Intentar de nuevo</PrimaryButton>
       ) : (
         <PrimaryButton onClick={props.onContinue}>Continuar</PrimaryButton>
       )}
     </div>
+  );
+}
+
+function AudioButton({ phrase }: { phrase: string }) {
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => () => stopSpeech(), []);
+
+  const handlePlay = async () => {
+    if (playing) {
+      stopSpeech();
+      setPlaying(false);
+      return;
+    }
+    setPlaying(true);
+    try {
+      await generateSpeech(phrase, 'normal');
+    } finally {
+      setPlaying(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={() => void handlePlay()}
+      className="mt-3 min-h-11 rounded-xl bg-white border border-gray-200 px-4 py-2 text-gray-800 text-sm font-extrabold"
+    >
+      {playing ? 'Detener audio' : 'Escuchar pronunciación'}
+    </button>
   );
 }
 
