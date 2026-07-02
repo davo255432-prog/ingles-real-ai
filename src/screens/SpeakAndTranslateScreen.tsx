@@ -403,11 +403,21 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
             <div className="flex items-start gap-3">
               <span className="text-2xl">💡</span>
               <div>
-                <p className="text-purple-800 font-semibold text-sm mb-1">¿Qué puedes hacer aquí?</p>
+                <p className="text-purple-800 font-semibold text-sm mb-1">¿Cuándo usar esta opción?</p>
                 <p className="text-purple-700 text-sm leading-relaxed">
-                  {mode === 'understand'
-                    ? 'Habla, escribe o reproduce cualquier frase en inglés. Yo te explico qué significa y te ayudo a responder para seguir la conversación.'
-                    : 'Habla con total naturalidad. Puedes decir una palabra, una frase o una conversación completa. Yo la traduzco al inglés lista para usar.'}
+                  {mode === 'understand' ? (
+                    <>
+                      ✔ Cuando alguien te hable en inglés.<br />
+                      ✔ Para entender conversaciones, anuncios, audios o videos.<br />
+                      ✔ Para responder y continuar la conversación con confianza.
+                    </>
+                  ) : (
+                    <>
+                      ✔ Cuando necesites hablar con alguien en inglés.<br />
+                      ✔ En el trabajo, tiendas, restaurantes o cualquier situación.<br />
+                      ✔ Di lo que quieras y obtén la frase lista para usar.
+                    </>
+                  )}
                 </p>
               </div>
             </div>
