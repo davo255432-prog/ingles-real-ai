@@ -128,3 +128,11 @@ export async function generateSpeech(text: string, speed: SpeechSpeed = 'normal'
 export function stopSpeech(): void {
   cleanup();
 }
+
+export function pauseSpeech(): void {
+  _audio?.pause();
+}
+
+export async function resumeSpeech(): Promise<void> {
+  if (_audio?.paused) await _audio.play();
+}

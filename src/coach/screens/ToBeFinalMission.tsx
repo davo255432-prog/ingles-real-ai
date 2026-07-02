@@ -1,10 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { generateSpeech, stopSpeech, type SpeechSpeed } from '../../services/speechApi';
+import {
+  generateSpeech,
+  pauseSpeech,
+  resumeSpeech,
+  stopSpeech,
+  type SpeechSpeed,
+} from '../../services/speechApi';
 import { evaluateSpeaking, transcribeAudio, type SpeakingEvaluation } from '../../services/voiceApi';
 import { TO_BE_FINAL_MISSION } from '../data/toBeFinalPractice';
 
 type MicState = 'idle' | 'requesting' | 'recording' | 'transcribing' | 'evaluating';
-type ListenState = 'idle' | 'loading' | 'playing' | 'error';
+type ListenState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 
 interface BrowserSpeechRecognitionEvent {
   resultIndex: number;
@@ -113,6 +119,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
 
   const startRecording = async () => {
     stopSpeech();
+    setListenState('idle');
     resetVoice();
 
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
@@ -287,9 +294,19 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
   };
 
   const playStory = async () => {
-    if (listenState === 'loading' || listenState === 'playing') {
-      stopSpeech();
-      setListenState('idle');
+    if (listenState === 'loading') return;
+    if (listenState === 'playing') {
+      pauseSpeech();
+      setListenState('paused');
+      return;
+    }
+    if (listenState === 'paused') {
+      try {
+        await resumeSpeech();
+        setListenState('playing');
+      } catch {
+        setListenState('error');
+      }
       return;
     }
     setListenState('loading');
@@ -319,8 +336,10 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
   const listenLabel = listenState === 'loading'
     ? 'Preparando...'
     : listenState === 'playing'
-      ? 'Detener audio'
-      : 'Escuchar historia';
+      ? 'Pausar para escribir'
+      : listenState === 'paused'
+        ? 'Continuar escuchando'
+        : 'Escuchar historia';
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
@@ -390,11 +409,11 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
           )}
 
           {voiceAudioUrl && (
-            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 mt-4">
-              <p className="text-gray-900 text-lg font-extrabold leading-snug mb-4">
+            <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-6 mt-4 shadow-sm">
+              <p className="text-gray-900 text-xl font-extrabold leading-snug mb-4">
                 Escúchate y mejora. ¡Vamos, que sí puedes!
               </p>
-              <audio controls src={voiceAudioUrl} className="w-full h-16" />
+              <audio controls src={voiceAudioUrl} className="w-full h-20" />
             </div>
           )}
 
@@ -449,6 +468,12 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
 
           <p className="text-gray-500 text-sm leading-relaxed mb-4">{TO_BE_FINAL_MISSION.listenPrompt}</p>
 
+          <div className="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 mb-3">
+            <p className="text-sky-900 text-base font-extrabold leading-relaxed">
+              Pausa, escribe y continúa cuando estés listo.
+            </p>
+          </div>
+
           <div className="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-3">
             <div className="flex items-center justify-between gap-3 mb-3">
               <div>
@@ -462,7 +487,11 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
                   key={speed}
                   type="button"
                   onClick={() => setListenSpeed(speed)}
-                  disabled={listenState === 'loading' || listenState === 'playing'}
+                  disabled={
+                    listenState === 'loading' ||
+                    listenState === 'playing' ||
+                    listenState === 'paused'
+                  }
                   className={
                     listenSpeed === speed
                       ? 'rounded-xl bg-sky-500 text-white text-sm font-extrabold py-3 shadow-sm'
