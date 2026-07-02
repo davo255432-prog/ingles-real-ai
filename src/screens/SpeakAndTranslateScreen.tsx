@@ -386,10 +386,10 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
                 <span className="text-2xl">👂</span>
                 <div className="flex-1 min-w-0">
                   <p className={mode === 'understand' ? 'font-bold text-purple-800' : 'font-bold text-gray-800'}>
-                    Quiero entender inglés
+                    Escucha inglés sin miedo.
                   </p>
                   <p className="text-gray-500 text-sm leading-snug">
-                    Escucha inglés y entiende su significado al instante.
+                    Entiende, traduce y continúa la conversación al instante.
                   </p>
                 </div>
               </div>
