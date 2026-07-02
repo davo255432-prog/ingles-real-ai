@@ -250,6 +250,15 @@ function TeachingCard(props: TeachingCardProps) {
 function ConnectorIntro({ onContinue }: { onContinue: () => void }) {
   return (
     <section className="pt-12 text-center">
+      <div className="flex items-end justify-center gap-5 mb-4" aria-hidden="true">
+        <span className="text-4xl animate-bounce" style={{ animationDelay: '0ms' }}>🎈</span>
+        <span className="text-5xl animate-bounce" style={{ animationDelay: '160ms' }}>🎈</span>
+        <span className="text-4xl animate-bounce" style={{ animationDelay: '320ms' }}>🎈</span>
+      </div>
+      <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 mb-6">
+        <p className="text-emerald-800 text-lg font-black">¡Dominaste los verbos esenciales!</p>
+        <p className="text-gray-700 font-semibold mt-1">Ahora vas a aprender a unir tus ideas.</p>
+      </div>
       <div className="w-20 h-20 mx-auto rounded-3xl bg-amber-100 flex items-center justify-center text-4xl mb-5">
         +
       </div>
@@ -416,12 +425,33 @@ function ExercisePanel(props: ExercisePanelProps) {
         })}
       </div>
       {props.checked && (
-        <div className={props.correct ? 'bg-emerald-50 rounded-2xl p-4 mb-4' : 'bg-amber-50 rounded-2xl p-4 mb-4'}>
-          <p className="font-extrabold text-gray-900">
-            {props.correct ? 'Muy bien.' : `La respuesta correcta es ${props.answer}.`}
-          </p>
-          <p className="text-gray-700 font-medium mt-1">{props.explanation}</p>
-        </div>
+        props.correct ? (
+          <div className="relative overflow-hidden bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-5 mb-4 text-center">
+            <div className="flex justify-center gap-4 mb-2" aria-hidden="true">
+              <span className="text-2xl animate-pulse">⭐</span>
+              <span className="text-4xl animate-bounce">⭐</span>
+              <span className="text-2xl animate-pulse">⭐</span>
+            </div>
+            <p className="text-emerald-800 text-xl font-black">¡Muy bien!</p>
+            <p className="text-gray-950 font-extrabold mt-1">Habilidad desbloqueada</p>
+            <p className="text-gray-700 font-medium mt-2">{props.explanation}</p>
+          </div>
+        ) : (
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 mb-4">
+            <div className="flex items-start gap-3">
+              <span className="text-3xl shrink-0" aria-hidden="true">😌</span>
+              <div>
+                <p className="text-amber-900 text-lg font-black">Casi. No pasa nada.</p>
+                <p className="text-gray-800 font-bold mt-1">
+                  Respira, recuerda y prueba otra vez.
+                </p>
+                <p className="text-gray-700 font-medium mt-2">
+                  Pista: {props.explanation}
+                </p>
+              </div>
+            </div>
+          </div>
+        )
       )}
       {!props.checked ? (
         <PrimaryButton onClick={props.onCheck} disabled={!props.selected}>Comprobar</PrimaryButton>
@@ -509,6 +539,11 @@ function BuilderStep(props: { revealedPieces: number; onReveal: () => void; onCo
 function PreviewComplete({ onExit }: { onExit: () => void }) {
   return (
     <section className="pt-16 text-center">
+      <div className="flex justify-center gap-5 mb-5" aria-hidden="true">
+        <span className="text-4xl animate-bounce">🎈</span>
+        <span className="text-4xl animate-bounce" style={{ animationDelay: '180ms' }}>⭐</span>
+        <span className="text-4xl animate-bounce" style={{ animationDelay: '360ms' }}>🎈</span>
+      </div>
       <div className="w-20 h-20 mx-auto rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-4xl font-black mb-5">
         ✓
       </div>
