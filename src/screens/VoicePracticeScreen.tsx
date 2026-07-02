@@ -179,12 +179,11 @@ export const VoicePracticeScreen: React.FC<VoicePracticeScreenProps> = ({
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
 
-      const usesMobileRecording =
-        /Android/i.test(navigator.userAgent) ||
+      const usesIOSRecording =
         /iPad|iPhone|iPod/.test(navigator.userAgent) ||
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-      if (usesMobileRecording) {
+      if (usesIOSRecording) {
         mr.start();
         dataIntervalRef.current = setInterval(() => {
           if (mr.state === 'recording') mr.requestData();
