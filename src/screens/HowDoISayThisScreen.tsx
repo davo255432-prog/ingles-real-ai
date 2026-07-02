@@ -274,11 +274,12 @@ export const HowDoISayThisScreen: React.FC<HowDoISayThisScreenProps> = ({
         }
       };
 
-      const isIOS =
+      const usesMobileRecording =
+        /Android/i.test(navigator.userAgent) ||
         /iPad|iPhone|iPod/.test(navigator.userAgent) ||
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-      if (isIOS) {
+      if (usesMobileRecording) {
         mr.start();
         dataIntervalRef.current = setInterval(() => {
           if (mr.state === 'recording') mr.requestData();

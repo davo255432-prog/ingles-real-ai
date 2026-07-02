@@ -120,11 +120,12 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
 
-      const isIOS =
+      const usesMobileRecording =
+        /Android/i.test(navigator.userAgent) ||
         /iPad|iPhone|iPod/.test(navigator.userAgent) ||
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-      if (isIOS) {
+      if (usesMobileRecording) {
         mr.start();
         dataIntervalRef.current = setInterval(() => {
           if (mr.state === 'recording') mr.requestData();
@@ -689,11 +690,12 @@ const ReplyInEnglish: React.FC = () => {
       mr.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
-      const isIOS =
+      const usesMobileRecording =
+        /Android/i.test(navigator.userAgent) ||
         /iPad|iPhone|iPod/.test(navigator.userAgent) ||
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-      if (isIOS) {
+      if (usesMobileRecording) {
         mr.start();
         intervalRef.current = setInterval(() => {
           if (mr.state === 'recording') mr.requestData();
