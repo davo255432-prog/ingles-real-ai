@@ -451,23 +451,18 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
             )}
           </div>
           <span>{recordLabel}</span>
+          {mode === 'understand' && <span className="text-sm font-semibold text-white/80">o escribe</span>}
         </button>
 
         {/* Escribir frase manualmente (solo modo entender, antes del resultado) */}
         {mode === 'understand' && recordState !== 'done' && (
           <div className="mt-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-gray-400 text-xs font-semibold">o escríbela</span>
-              <div className="flex-1 h-px bg-gray-200" />
-            </div>
-
             <textarea
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
               placeholder="Escribe una frase en inglés"
               rows={2}
-              className="w-full rounded-2xl border-2 border-gray-300 bg-white shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-100 px-4 py-3 text-gray-900 text-base placeholder:text-gray-500 resize-none"
+              className="w-full rounded-2xl border-2 border-gray-400 bg-white shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-100 px-4 py-3 text-gray-900 text-base placeholder:text-gray-600 resize-none"
             />
 
             <button
@@ -481,7 +476,7 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
                   : 'bg-purple-500 hover:bg-purple-600 text-white active:scale-95',
               ].join(' ')}
             >
-              {translatingText ? 'Traduciendo...' : 'Traducir'}
+              {translatingText ? 'Traduciendo...' : 'Traducir →'}
             </button>
 
             {textError && (
