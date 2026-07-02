@@ -362,10 +362,10 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
                 <span className="text-2xl">🗣️</span>
                 <div className="flex-1 min-w-0">
                   <p className={mode === 'speak' ? 'font-bold text-purple-800' : 'font-bold text-gray-800'}>
-                    Quiero decir algo en inglés
+                    Di lo que quieras en español.
                   </p>
                   <p className="text-gray-500 text-sm leading-snug">
-                    Habla en español y obtén una frase en inglés lista para usar.
+                    Lo traduzco al inglés al instante.
                   </p>
                 </div>
               </div>
