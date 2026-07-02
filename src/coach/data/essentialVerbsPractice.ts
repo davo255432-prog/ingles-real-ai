@@ -15,6 +15,11 @@ export interface Unit3Example {
   pronunciation: string;
 }
 
+export interface Unit3RepetitionPhrase extends Unit3Example {
+  id: string;
+  motivation: string;
+}
+
 export interface EssentialVerbCard {
   id: EssentialVerbId;
   label: string;
@@ -218,6 +223,30 @@ export const UNIT_3_GUIDED_BUILD = {
   spanish: 'Necesito ayuda porque estoy cansado.',
   pronunciation: 'ai nid jelp bi-kos ai am tai-erd',
 };
+
+export const UNIT_3_REPETITION_PHRASES: Unit3RepetitionPhrase[] = [
+  {
+    id: 'need-help',
+    english: 'I need help.',
+    spanish: 'Necesito ayuda.',
+    pronunciation: 'ai nid jelp',
+    motivation: 'Muy bien. Estás empezando a unir ideas.',
+  },
+  {
+    id: 'water-and-food',
+    english: 'I need water and food.',
+    spanish: 'Necesito agua y comida.',
+    pronunciation: 'ai nid uo-ter and fud',
+    motivation: 'Buen trabajo. Tu inglés ya suena más completo.',
+  },
+  {
+    id: 'help-because-tired',
+    english: 'I need help because I am tired.',
+    spanish: 'Necesito ayuda porque estoy cansado.',
+    pronunciation: 'ai nid jelp bi-kos ai am tai-erd',
+    motivation: 'Excelente. Ya no estás diciendo palabras sueltas.',
+  },
+];
 
 export const UNIT_3_BASE_DIALOGUE = {
   title: 'Necesito ayuda en el trabajo',

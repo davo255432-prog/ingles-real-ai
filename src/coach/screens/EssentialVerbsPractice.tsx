@@ -1,11 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { generateSpeech, stopSpeech } from '../../services/speechApi';
 import {
   ESSENTIAL_VERBS,
   UNIT_3_ACTIVATION,
   UNIT_3_CONNECTORS,
   UNIT_3_GUIDED_BUILD,
+  UNIT_3_REPETITION_PHRASES,
   type ConnectorCard,
   type EssentialVerbCard,
+  type Unit3RepetitionPhrase,
 } from '../data/essentialVerbsPractice';
 
 type ReviewStep =
@@ -14,6 +17,7 @@ type ReviewStep =
   | { kind: 'connectors-intro' }
   | { kind: 'connector'; item: ConnectorCard }
   | { kind: 'builder' }
+  | { kind: 'repetition'; item: Unit3RepetitionPhrase }
   | { kind: 'complete' };
 
 interface EssentialVerbsPracticeProps {
@@ -28,6 +32,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
       { kind: 'connectors-intro' },
       ...UNIT_3_CONNECTORS.map((item): ReviewStep => ({ kind: 'connector', item })),
       { kind: 'builder' },
+      ...UNIT_3_REPETITION_PHRASES.map((item): ReviewStep => ({ kind: 'repetition', item })),
       { kind: 'complete' },
     ],
     [],
@@ -124,6 +129,9 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
             }
             onContinue={next}
           />
+        )}
+        {step.kind === 'repetition' && (
+          <RepetitionStep key={step.item.id} phrase={step.item} onContinue={next} />
         )}
         {step.kind === 'complete' && <PreviewComplete onExit={onExit} />}
       </main>
@@ -403,6 +411,195 @@ function PreviewComplete({ onExit }: { onExit: () => void }) {
         La práctica hablada y la Misión Final se agregarán en la siguiente fase.
       </p>
       <PrimaryButton onClick={onExit}>Cerrar vista previa</PrimaryButton>
+    </section>
+  );
+}
+
+function RepetitionStep(props: {
+  phrase: Unit3RepetitionPhrase;
+  onContinue: () => void;
+}) {
+  const [isPlayingModel, setIsPlayingModel] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+  const learnerAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    return () => {
+      stopSpeech();
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+    };
+  }, []);
+
+  const playModel = async () => {
+    if (isPlayingModel) {
+      stopSpeech();
+      setIsPlayingModel(false);
+      return;
+    }
+    setError(null);
+    setIsPlayingModel(true);
+    try {
+      await generateSpeech(props.phrase.english, 'slow');
+    } catch {
+      setError('No se pudo reproducir el audio modelo. Intenta otra vez.');
+    } finally {
+      setIsPlayingModel(false);
+    }
+  };
+
+  const startRecording = async () => {
+    stopSpeech();
+    setIsPlayingModel(false);
+    setError(null);
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      setError('Este navegador no permite grabar audio.');
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+      streamRef.current = stream;
+      chunksRef.current = [];
+      const mimeType =
+        ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find((type) =>
+          MediaRecorder.isTypeSupported(type),
+        ) ?? '';
+      const recorder = new MediaRecorder(stream, {
+        ...(mimeType ? { mimeType } : {}),
+        audioBitsPerSecond: 64000,
+      });
+      recorderRef.current = recorder;
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+
+      const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (mobile) {
+        recorder.start();
+        intervalRef.current = setInterval(() => {
+          if (recorder.state === 'recording') recorder.requestData();
+        }, 500);
+      } else {
+        recorder.start(250);
+      }
+      setIsRecording(true);
+    } catch {
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+      recorderRef.current = null;
+      setError('No pude usar el micrófono. Revisa el permiso e intenta otra vez.');
+    }
+  };
+
+  const stopRecording = async () => {
+    const recorder = recorderRef.current;
+    if (!recorder || recorder.state !== 'recording') return;
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    await new Promise<void>((resolve) => {
+      recorder.addEventListener('stop', () => resolve(), { once: true });
+      recorder.stop();
+    });
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    recorderRef.current = null;
+    setIsRecording(false);
+
+    const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
+    if (blob.size < 300) {
+      setError('La grabación quedó muy corta. Intenta decir la frase completa.');
+      return;
+    }
+    if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+    const nextUrl = URL.createObjectURL(blob);
+    audioUrlRef.current = nextUrl;
+    setAudioUrl(nextUrl);
+  };
+
+  const playLearnerAudio = async () => {
+    if (!learnerAudioRef.current) return;
+    learnerAudioRef.current.currentTime = 0;
+    await learnerAudioRef.current.play();
+  };
+
+  return (
+    <section className="pt-4">
+      <p className="text-sm font-extrabold uppercase text-violet-700 mb-2">Práctica de repetición</p>
+      <h1 className="text-3xl font-black text-gray-950 mb-3">Escucha, repite y escúchate</h1>
+      <p className="text-gray-700 font-medium leading-relaxed mb-5">
+        Primero escucha el modelo. Después repite la frase con tu voz.
+      </p>
+
+      <div className="bg-white border-2 border-violet-200 rounded-3xl p-6 shadow-sm mb-4">
+        <p className="text-gray-950 text-2xl font-black leading-tight">{props.phrase.english}</p>
+        <p className="text-gray-600 font-semibold mt-2">{props.phrase.spanish}</p>
+        <p className="text-violet-700 font-extrabold mt-3">{props.phrase.pronunciation}</p>
+      </div>
+
+      <div className="grid gap-3 mb-4">
+        <button
+          type="button"
+          onClick={() => void playModel()}
+          disabled={isRecording}
+          className="w-full min-h-14 rounded-2xl bg-sky-500 text-white text-base font-extrabold disabled:bg-gray-300"
+        >
+          {isPlayingModel ? 'Detener audio modelo' : 'Escuchar audio modelo'}
+        </button>
+        <button
+          type="button"
+          onClick={() => void (isRecording ? stopRecording() : startRecording())}
+          className={
+            isRecording
+              ? 'w-full min-h-14 rounded-2xl bg-red-500 text-white text-base font-extrabold animate-pulse'
+              : 'w-full min-h-14 rounded-2xl bg-emerald-500 text-white text-base font-extrabold'
+          }
+        >
+          {isRecording ? 'Detener grabación' : audioUrl ? 'Grabar otra vez' : 'Grabar mi voz'}
+        </button>
+      </div>
+
+      {error && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
+          <p className="text-amber-900 font-bold">{error}</p>
+        </div>
+      )}
+
+      {audioUrl && (
+        <div className="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-5 mb-4">
+          <p className="text-gray-950 text-lg font-black mb-3">{props.phrase.motivation}</p>
+          <audio ref={learnerAudioRef} src={audioUrl} className="hidden" />
+          <button
+            type="button"
+            onClick={() => void playLearnerAudio()}
+            className="w-full min-h-14 rounded-2xl bg-gray-900 text-white text-base font-extrabold"
+          >
+            Escuchar mi grabación
+          </button>
+        </div>
+      )}
+
+      <PrimaryButton onClick={props.onContinue} disabled={!audioUrl}>
+        Continuar
+      </PrimaryButton>
     </section>
   );
 }
