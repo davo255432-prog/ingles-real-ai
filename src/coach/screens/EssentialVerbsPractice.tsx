@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { generateSpeech, stopSpeech } from '../../services/speechApi';
+import { generateSpeech, prefetchSpeech, stopSpeech } from '../../services/speechApi';
 import {
   ESSENTIAL_VERBS,
   UNIT_3_ACTIVATION,
@@ -41,6 +41,12 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
   const [selected, setSelected] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [revealedPieces, setRevealedPieces] = useState(1);
+
+  useEffect(() => {
+    UNIT_3_REPETITION_PHRASES.forEach((phrase) => {
+      void prefetchSpeech(phrase.english, 'normal');
+    });
+  }, []);
 
   const step = steps[index];
   const progress = Math.round(((index + 1) / steps.length) * 100);
