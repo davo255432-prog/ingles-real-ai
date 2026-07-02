@@ -329,9 +329,9 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
         )}
 
         {audioUrl && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4">
-            <p className="text-gray-700 text-sm font-bold mb-2">Escucha tu grabacion</p>
-            <audio controls src={audioUrl} className="w-full" />
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
+            <p className="text-gray-800 text-base font-bold mb-3">Escucha como pronuncias y mejora</p>
+            <audio controls src={audioUrl} className="w-full h-14" />
           </div>
         )}
 

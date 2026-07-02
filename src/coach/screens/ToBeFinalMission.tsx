@@ -390,9 +390,9 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
           )}
 
           {voiceAudioUrl && (
-            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mt-4">
-              <p className="text-gray-700 text-sm font-bold mb-2">Escucha tu historia</p>
-              <audio controls src={voiceAudioUrl} className="w-full" />
+            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 mt-4">
+              <p className="text-gray-800 text-base font-bold mb-3">Escucha como pronuncias y mejora</p>
+              <audio controls src={voiceAudioUrl} className="w-full h-14" />
             </div>
           )}
 

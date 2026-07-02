@@ -69,10 +69,6 @@ const VOCAB = {
 export const TO_BE_FINAL_VOCABULARY: ToBeFinalVocabularyItem[] = [
   VOCAB.hello,
   VOCAB.myNameIs,
-  VOCAB.david,
-  VOCAB.maria,
-  VOCAB.carlos,
-  VOCAB.ana,
   VOCAB.driver,
   VOCAB.restaurant,
   VOCAB.job,
