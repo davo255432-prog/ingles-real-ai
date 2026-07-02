@@ -449,7 +449,7 @@ function RepetitionStep(props: {
     setError(null);
     setIsPlayingModel(true);
     try {
-      await generateSpeech(props.phrase.english, 'slow');
+      await generateSpeech(props.phrase.english, 'normal');
     } catch {
       setError('No se pudo reproducir el audio modelo. Intenta otra vez.');
     } finally {
@@ -538,6 +538,7 @@ function RepetitionStep(props: {
   const playLearnerAudio = async () => {
     if (!learnerAudioRef.current) return;
     learnerAudioRef.current.currentTime = 0;
+    learnerAudioRef.current.playbackRate = 1;
     await learnerAudioRef.current.play();
   };
 
