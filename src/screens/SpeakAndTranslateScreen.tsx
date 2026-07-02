@@ -401,13 +401,13 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
         {recordState !== 'done' && (
           <div className="bg-purple-50 border border-purple-100 rounded-2xl px-5 py-4 mb-8">
             <div className="flex items-start gap-3">
-              <span className="text-2xl">🎙️</span>
+              <span className="text-2xl">💡</span>
               <div>
-                <p className="text-purple-800 font-semibold text-sm mb-1">¿Cómo funciona?</p>
+                <p className="text-purple-800 font-semibold text-sm mb-1">¿Qué puedes hacer aquí?</p>
                 <p className="text-purple-700 text-sm leading-relaxed">
                   {mode === 'understand'
-                    ? 'Presiona el botón y reproduce o di algo en inglés. Te muestro qué significa, cómo se escribe y cómo se pronuncia.'
-                    : 'Presiona el botón, habla en español lo que necesitas decir, y yo te doy la traducción en inglés lista para usar.'}
+                    ? 'Habla, escribe o reproduce cualquier frase en inglés. Yo te explico qué significa y te ayudo a responder para seguir la conversación.'
+                    : 'Habla con total naturalidad. Puedes decir una palabra, una frase o una conversación completa. Yo la traduzco al inglés lista para usar.'}
                 </p>
               </div>
             </div>
