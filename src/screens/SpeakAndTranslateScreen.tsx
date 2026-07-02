@@ -337,8 +337,10 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
             </svg>
           </button>
           <div>
-            <h1 className="text-lg font-bold text-gray-800">Traductor de voz</h1>
-            <p className="text-xs text-gray-400">Habla en español o escucha inglés en tiempo real.</p>
+            <h1 className="text-2xl font-extrabold text-gray-900 leading-tight">Traductor de voz</h1>
+            <p className="text-sm text-gray-500 leading-relaxed mt-1">
+              Habla o escribe en español o inglés y obtén la traducción al instante.
+            </p>
           </div>
         </div>
 
