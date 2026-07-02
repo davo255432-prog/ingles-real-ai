@@ -304,7 +304,7 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
   // ── Record button ─────────────────────────────────────────────────────────
 
   const recordBtnClass = [
-    'w-full flex flex-col items-center justify-center gap-2 py-8 rounded-3xl font-semibold text-lg transition-all duration-200',
+    'w-full flex flex-col items-center justify-center gap-2 py-8 rounded-3xl font-bold text-xl transition-all duration-200',
     isProcessing
       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
       : recordState === 'recording'
@@ -337,8 +337,8 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
             </svg>
           </button>
           <div>
-            <h1 className="text-2xl font-extrabold text-gray-900 leading-tight">Traductor de voz</h1>
-            <p className="text-base font-medium text-gray-700 leading-relaxed mt-2">
+            <h1 className="text-3xl font-extrabold text-gray-900 leading-tight">Traductor de voz</h1>
+            <p className="text-base font-semibold text-gray-800 leading-relaxed mt-2">
               Habla o escribe en español o inglés y obtén la traducción al instante.
             </p>
           </div>
@@ -467,7 +467,7 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
               onChange={(e) => setTextInput(e.target.value)}
               placeholder="Escribe una frase en inglés"
               rows={2}
-              className="w-full rounded-2xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none px-4 py-3 text-gray-800 text-base resize-none"
+              className="w-full rounded-2xl border-2 border-gray-300 bg-white shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-100 px-4 py-3 text-gray-900 text-base placeholder:text-gray-500 resize-none"
             />
 
             <button
