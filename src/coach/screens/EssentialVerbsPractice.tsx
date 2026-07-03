@@ -487,22 +487,28 @@ function ConnectorIntro({ onContinue }: { onContinue: () => void }) {
         {UNIT_3_CONNECTORS.map((connector) => (
           <article
             key={connector.id}
-            className="bg-white border-2 border-amber-200 rounded-2xl p-5 shadow-sm"
+            className="overflow-hidden bg-white border-2 border-amber-200 rounded-2xl shadow-sm"
           >
-            <p className="text-amber-800 text-2xl font-black mb-4">{connector.label}</p>
-            <div className="border-t border-gray-100 py-3">
-              <p className="text-gray-500 text-xs font-black uppercase mb-1">Significa</p>
-              <p className="text-gray-950 text-lg font-extrabold">{connector.spanish}</p>
+            <div className="p-4 flex items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-amber-800 text-2xl font-black">{connector.label}</p>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                  <p className="text-gray-950 font-extrabold">
+                    <span className="text-gray-500 text-xs font-black uppercase mr-1">Significa:</span>
+                    {connector.spanish}
+                  </p>
+                  <p className="text-amber-800 font-extrabold">
+                    <span className="text-gray-500 text-xs font-black uppercase mr-1">Se dice:</span>
+                    {connector.pronunciation}
+                  </p>
+                </div>
+              </div>
+              <CompactAudioButton phrase={connector.label} label={connector.label} />
             </div>
-            <div className="border-t border-gray-100 py-3">
-              <p className="text-gray-500 text-xs font-black uppercase mb-1">Pronunciación</p>
-              <p className="text-amber-800 text-lg font-extrabold">{connector.pronunciation}</p>
+            <div className="bg-amber-50 border-t border-amber-100 px-4 py-3">
+              <p className="text-gray-600 text-xs font-black uppercase mb-1">Se usa para</p>
+              <p className="text-gray-950 font-extrabold">{connector.function}</p>
             </div>
-            <div className="border-t border-gray-100 pt-3">
-              <p className="text-gray-500 text-xs font-black uppercase mb-1">Se usa para</p>
-              <p className="text-gray-950 text-base font-extrabold">{connector.function}</p>
-            </div>
-            <AudioButton phrase={connector.label} />
           </article>
         ))}
       </div>
@@ -734,6 +740,42 @@ function AudioButton({ phrase }: { phrase: string }) {
       className="mt-3 min-h-12 w-full rounded-xl bg-sky-500 hover:bg-sky-600 active:scale-[0.98] px-4 py-3 text-white text-sm font-extrabold shadow-sm transition-all"
     >
       {playing ? 'Detener audio' : `Escuchar: ${phrase}`}
+    </button>
+  );
+}
+
+function CompactAudioButton({ phrase, label }: { phrase: string; label: string }) {
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => () => stopSpeech(), []);
+
+  const handlePlay = async () => {
+    if (playing) {
+      stopSpeech();
+      setPlaying(false);
+      return;
+    }
+    setPlaying(true);
+    try {
+      await generateSpeech(phrase, 'normal');
+    } finally {
+      setPlaying(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={() => void handlePlay()}
+      className={
+        playing
+          ? 'w-12 h-12 shrink-0 rounded-full bg-amber-500 text-white font-black shadow-sm'
+          : 'w-12 h-12 shrink-0 rounded-full bg-sky-500 hover:bg-sky-600 text-white font-black shadow-sm'
+      }
+      aria-label={`Escuchar ${label}`}
+      title={`Escuchar ${label}`}
+    >
+      {playing ? '■' : '▶'}
     </button>
   );
 }
