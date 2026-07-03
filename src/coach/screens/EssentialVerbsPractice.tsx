@@ -15,6 +15,7 @@ import {
 
 type ReviewStep =
   | { kind: 'activation' }
+  | { kind: 'verbs-intro' }
   | { kind: 'verb'; item: EssentialVerbCard }
   | { kind: 'connectors-intro' }
   | { kind: 'connector'; item: ConnectorCard }
@@ -31,6 +32,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
   const steps = useMemo<ReviewStep[]>(
     () => [
       { kind: 'activation' },
+      { kind: 'verbs-intro' },
       ...ESSENTIAL_VERBS.map((item): ReviewStep => ({ kind: 'verb', item })),
       { kind: 'connectors-intro' },
       ...UNIT_3_CONNECTORS.map((item): ReviewStep => ({ kind: 'connector', item })),
@@ -111,6 +113,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
 
       <main className="px-5 pb-10 max-w-xl mx-auto">
         {step.kind === 'activation' && <ActivationStep onContinue={next} />}
+        {step.kind === 'verbs-intro' && <VerbsIntroStep onContinue={next} />}
         {step.kind === 'verb' && (
           <TeachingCard
             key={step.item.id}
@@ -213,6 +216,49 @@ function ActivationStep({ onContinue }: { onContinue: () => void }) {
         ))}
       </div>
       <PrimaryButton onClick={onContinue}>Aprender verbos esenciales</PrimaryButton>
+    </section>
+  );
+}
+
+function VerbsIntroStep({ onContinue }: { onContinue: () => void }) {
+  const purposes: Record<EssentialVerbCard['id'], string> = {
+    need: 'Decir lo que necesitas',
+    have: 'Decir lo que tienes',
+    want: 'Decir lo que quieres',
+    'go-to': 'Decir a dónde vas',
+  };
+
+  return (
+    <section className="pt-8">
+      <p className="text-sm font-extrabold uppercase text-emerald-700 mb-2">
+        Abre una nueva puerta
+      </p>
+      <h1 className="text-3xl font-black text-gray-950 leading-tight mb-3">
+        Ahora vas a expresar lo que necesitas, tienes y quieres
+      </h1>
+      <p className="text-gray-700 text-base font-semibold leading-relaxed mb-5">
+        Estos cuatro verbos te ayudarán a comunicar acciones e ideas útiles en situaciones reales.
+      </p>
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        {ESSENTIAL_VERBS.map((verb) => (
+          <article
+            key={verb.id}
+            className="bg-white border-2 border-emerald-200 rounded-2xl p-4 shadow-sm"
+          >
+            <p className="text-emerald-800 text-2xl font-black">{verb.label}</p>
+            <p className="text-gray-600 font-bold">{verb.spanish}</p>
+            <p className="text-gray-900 text-sm font-extrabold leading-snug mt-3">
+              {purposes[verb.id]}
+            </p>
+          </article>
+        ))}
+      </div>
+      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-6">
+        <p className="text-emerald-900 font-extrabold leading-relaxed">
+          Al terminar, podrás comunicar necesidades, deseos, cosas que tienes y lugares a los que vas.
+        </p>
+      </div>
+      <PrimaryButton onClick={onContinue}>Comenzar con NEED</PrimaryButton>
     </section>
   );
 }
@@ -390,6 +436,13 @@ function TeachingCard(props: TeachingCardProps) {
 }
 
 function ConnectorIntro({ onContinue }: { onContinue: () => void }) {
+  const connectorPurpose: Record<ConnectorCard['id'], string> = {
+    and: 'Agregar',
+    but: 'Contrastar',
+    because: 'Explicar una razón',
+    also: 'Añadir otra idea',
+  };
+
   return (
     <section className="pt-12 text-center">
       <div className="flex items-end justify-center gap-5 mb-4" aria-hidden="true">
@@ -407,8 +460,27 @@ function ConnectorIntro({ onContinue }: { onContinue: () => void }) {
       <p className="text-sm font-extrabold uppercase text-amber-700 mb-2">Nueva habilidad</p>
       <h1 className="text-4xl font-black text-gray-950 leading-tight mb-4">Ahora puedes unir ideas</h1>
       <p className="text-gray-700 text-lg font-medium leading-relaxed mb-8">
-        Aprenderás cuatro piezas pequeñas que convierten frases sueltas en una idea completa.
+        Estas cuatro palabras convierten frases sueltas en ideas más completas.
       </p>
+      <div className="grid grid-cols-2 gap-3 mb-6 text-left">
+        {UNIT_3_CONNECTORS.map((connector) => (
+          <article
+            key={connector.id}
+            className="bg-white border-2 border-amber-200 rounded-2xl p-4"
+          >
+            <p className="text-amber-800 text-xl font-black">{connector.label}</p>
+            <p className="text-gray-600 font-bold">{connector.spanish}</p>
+            <p className="text-gray-900 text-sm font-extrabold mt-2">
+              {connectorPurpose[connector.id]}
+            </p>
+          </article>
+        ))}
+      </div>
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
+        <p className="text-amber-900 font-extrabold leading-relaxed">
+          Con ellos podrás agregar, contrastar y explicar tus ideas.
+        </p>
+      </div>
       <PrimaryButton onClick={onContinue}>Desbloquear conectores</PrimaryButton>
     </section>
   );
