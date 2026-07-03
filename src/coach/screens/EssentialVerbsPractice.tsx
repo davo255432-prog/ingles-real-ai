@@ -257,9 +257,12 @@ function TeachingCard(props: TeachingCardProps) {
           </span>
         </div>
         <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-5 mb-4">
-          <p className="text-emerald-800 text-base font-black uppercase mb-3">Regla clave</p>
+          <p className="text-emerald-800 text-lg font-black uppercase mb-3">Regla clave:</p>
           {props.title === 'have' ? (
             <>
+              <p className="text-gray-950 text-lg font-extrabold mb-3">
+                En esta práctica, <span className="text-emerald-700 text-xl">HAVE</span> se usa solo con:
+              </p>
               <div className="flex flex-wrap gap-2 mb-3">
                 {['I', 'YOU', 'WE', 'THEY'].map((pronoun) => (
                   <span
@@ -270,8 +273,10 @@ function TeachingCard(props: TeachingCardProps) {
                   </span>
                 ))}
               </div>
-              <div className="bg-emerald-600 text-white rounded-xl px-4 py-3 text-center text-lg font-black">
-                + HAVE + COSA
+              <div className="bg-emerald-700 text-white rounded-xl px-4 py-4 text-center font-black">
+                <span className="text-xl">+</span>{' '}
+                <span className="text-3xl text-yellow-200">HAVE</span>{' '}
+                <span className="text-xl">+ COSA</span>
               </div>
             </>
           ) : (
@@ -281,10 +286,18 @@ function TeachingCard(props: TeachingCardProps) {
         {props.title === 'have' && ESSENTIAL_VERBS.find((verb) => verb.id === 'have')?.importantNote && (
           <div className="bg-sky-50 border-2 border-sky-300 rounded-2xl p-5 mb-5">
             <p className="text-sky-800 text-xl font-black mb-2">¿Por qué cambia?</p>
-            <p className="text-gray-900 text-lg font-bold leading-relaxed">
-              Con <span className="text-sky-800">he, she e it</span> usamos{' '}
-              <span className="text-sky-800">has</span> en lugar de have.
+            <p className="text-gray-900 text-lg font-bold leading-relaxed mb-4">
+              Con <span className="text-sky-800 font-black">he, she e it</span> usamos:
             </p>
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <span className="bg-sky-700 text-white rounded-xl px-5 py-3 text-3xl font-black">
+                HAS
+              </span>
+              <span className="text-gray-500 text-base font-bold">en lugar de</span>
+              <span className="bg-emerald-100 border-2 border-emerald-300 text-emerald-900 rounded-xl px-5 py-3 text-3xl font-black">
+                HAVE
+              </span>
+            </div>
             <div className="grid grid-cols-2 gap-2 my-4">
               <div className="bg-white rounded-xl p-3 text-center border border-sky-200">
                 <p className="text-gray-950 font-black">I have</p>
