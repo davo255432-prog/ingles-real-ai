@@ -36,6 +36,12 @@ export interface EssentialVerbCard {
   spanish: string;
   pronunciation: string;
   miniRule: string;
+  realUse: {
+    situation: string;
+    english: string;
+    spanish: string;
+    pronunciation: string;
+  };
   importantNote?: {
     title: string;
     text: string;
@@ -97,6 +103,12 @@ export const ESSENTIAL_VERBS: EssentialVerbCard[] = [
     spanish: 'necesitar',
     pronunciation: 'nid',
     miniRule: 'Usa pronombre + need + cosa para decir lo que necesitas.',
+    realUse: {
+      situation: 'Estás en el trabajo y necesitas ayuda.',
+      english: 'I am at work. I need help.',
+      spanish: 'Estoy en el trabajo. Necesito ayuda.',
+      pronunciation: 'ai am at uerk. ai nid jelp',
+    },
     examples: [
       { english: 'I need water.', spanish: 'Necesito agua.', pronunciation: 'ai nid uo-ter' },
       { english: 'We need help.', spanish: 'Necesitamos ayuda.', pronunciation: 'wi nid jelp' },
@@ -114,6 +126,12 @@ export const ESSENTIAL_VERBS: EssentialVerbCard[] = [
     spanish: 'tener',
     pronunciation: 'jav',
     miniRule: 'Usa I, you, we o they + have + cosa para decir lo que tienes.',
+    realUse: {
+      situation: 'Estás listo para salir. Tienes agua y comida.',
+      english: 'I am ready. I have water and food.',
+      spanish: 'Estoy listo. Tengo agua y comida.',
+      pronunciation: 'ai am re-di. ai jav uo-ter and fud',
+    },
     importantNote: {
       title: 'Cambio importante',
       text: 'Con he, she e it usamos has en lugar de have.',
@@ -137,6 +155,12 @@ export const ESSENTIAL_VERBS: EssentialVerbCard[] = [
     spanish: 'querer',
     pronunciation: 'uant',
     miniRule: 'Usa pronombre + want + cosa para decir lo que deseas.',
+    realUse: {
+      situation: 'Estás en el trabajo y quieres agua.',
+      english: 'I am at work. I want water.',
+      spanish: 'Estoy en el trabajo. Quiero agua.',
+      pronunciation: 'ai am at uerk. ai uant uo-ter',
+    },
     examples: [
       { english: 'I want water.', spanish: 'Quiero agua.', pronunciation: 'ai uant uo-ter' },
       { english: 'They want help.', spanish: 'Ellos quieren ayuda.', pronunciation: 'dei uant jelp' },
@@ -154,6 +178,12 @@ export const ESSENTIAL_VERBS: EssentialVerbCard[] = [
     spanish: 'ir a',
     pronunciation: 'gou tu',
     miniRule: 'Aprende go to como un bloque para hablar de un destino.',
+    realUse: {
+      situation: 'Estás listo y vas al trabajo.',
+      english: 'I am ready. I go to work.',
+      spanish: 'Estoy listo. Voy al trabajo.',
+      pronunciation: 'ai am re-di. ai gou tu uerk',
+    },
     examples: [
       { english: 'I go to work.', spanish: 'Voy al trabajo.', pronunciation: 'ai gou tu uerk' },
       { english: 'We go to school.', spanish: 'Vamos a la escuela.', pronunciation: 'wi gou tu skul' },

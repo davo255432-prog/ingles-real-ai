@@ -48,6 +48,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
       ...UNIT_3_PRONOUN_REVIEW.map((pronoun) => pronoun.english),
       ...UNIT_3_ACTIVATION.map((example) => example.english),
       ...ESSENTIAL_VERBS.flatMap((verb) => verb.examples.map((example) => example.english)),
+      ...ESSENTIAL_VERBS.map((verb) => verb.realUse.english),
       ...UNIT_3_CONNECTORS.map((connector) => connector.combined),
       ...UNIT_3_REPETITION_PHRASES.map((phrase) => phrase.english),
     ];
@@ -112,6 +113,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
             meaning={step.item.spanish}
             pronunciation={step.item.pronunciation}
             rule={step.item.miniRule}
+            realUse={step.item.realUse}
             examples={step.item.examples}
             exercise={step.item.exercise}
             selected={selected}
@@ -215,6 +217,7 @@ interface TeachingCardProps {
   meaning: string;
   pronunciation: string;
   rule: string;
+  realUse: EssentialVerbCard['realUse'];
   examples: EssentialVerbCard['examples'];
   exercise: EssentialVerbCard['exercise'];
   selected: string | null;
@@ -226,9 +229,9 @@ interface TeachingCardProps {
 }
 
 function TeachingCard(props: TeachingCardProps) {
-  const [practiceReady, setPracticeReady] = useState(false);
+  const [phase, setPhase] = useState<'learn' | 'real-use' | 'practice'>('learn');
   const correct = props.selected === props.exercise.answer;
-  if (practiceReady) {
+  if (phase === 'practice') {
     return (
       <ThinkAndAnswer
         exercise={props.exercise}
@@ -240,6 +243,34 @@ function TeachingCard(props: TeachingCardProps) {
         onRetry={props.onRetry}
         onContinue={props.onContinue}
       />
+    );
+  }
+
+  if (phase === 'real-use') {
+    return (
+      <section className="pt-4">
+        <p className="text-sm font-extrabold uppercase text-violet-700 mb-2">
+          Úsalo en una situación real
+        </p>
+        <div className="bg-white border-2 border-violet-200 rounded-3xl p-6 shadow-sm mb-5">
+          <div className="bg-violet-50 border border-violet-200 rounded-2xl p-5 mb-5">
+            <p className="text-violet-800 text-sm font-black uppercase mb-2">Situación</p>
+            <p className="text-gray-950 text-xl font-extrabold leading-relaxed">
+              {props.realUse.situation}
+            </p>
+          </div>
+          <p className="text-gray-500 text-sm font-black uppercase mb-2">Así lo dices</p>
+          <p className="text-gray-950 text-2xl font-black leading-tight">
+            {props.realUse.english}
+          </p>
+          <p className="text-gray-700 text-base font-semibold mt-2">{props.realUse.spanish}</p>
+          <p className="text-violet-700 text-base font-extrabold mt-3">
+            {props.realUse.pronunciation}
+          </p>
+          <AudioButton phrase={props.realUse.english} />
+        </div>
+        <PrimaryButton onClick={() => setPhase('practice')}>Ahora piensa tú</PrimaryButton>
+      </section>
     );
   }
 
@@ -347,7 +378,7 @@ function TeachingCard(props: TeachingCardProps) {
           ))}
         </div>
       </div>
-      <PrimaryButton onClick={() => setPracticeReady(true)}>Ahora piensa tú</PrimaryButton>
+      <PrimaryButton onClick={() => setPhase('real-use')}>Ver una situación real</PrimaryButton>
     </section>
   );
 }
