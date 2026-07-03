@@ -61,6 +61,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
       ...UNIT_3_ACTIVATION.map((example) => example.english),
       ...ESSENTIAL_VERBS.flatMap((verb) => verb.examples.map((example) => example.english)),
       ...ESSENTIAL_VERBS.map((verb) => verb.realUse.english),
+      ...UNIT_3_CONNECTORS.map((connector) => connector.label),
       ...UNIT_3_CONNECTORS.map((connector) => connector.combined),
       ...UNIT_3_CONNECTOR_REVIEW.flatMap((item) =>
         [item.resultAudio, ...('audioPhrase' in item ? [item.audioPhrase] : [])],
@@ -463,13 +464,6 @@ function TeachingCard(props: TeachingCardProps) {
 }
 
 function ConnectorIntro({ onContinue }: { onContinue: () => void }) {
-  const connectorPurpose: Record<ConnectorCard['id'], string> = {
-    and: 'Agregar',
-    but: 'Contrastar',
-    because: 'Explicar una razón',
-    also: 'Añadir otra idea',
-  };
-
   return (
     <section className="pt-12 text-center">
       <div className="flex items-end justify-center gap-5 mb-4" aria-hidden="true">
@@ -489,17 +483,26 @@ function ConnectorIntro({ onContinue }: { onContinue: () => void }) {
       <p className="text-gray-700 text-lg font-medium leading-relaxed mb-8">
         Estas cuatro palabras convierten frases sueltas en ideas más completas.
       </p>
-      <div className="grid grid-cols-2 gap-3 mb-6 text-left">
+      <div className="space-y-4 mb-6 text-left">
         {UNIT_3_CONNECTORS.map((connector) => (
           <article
             key={connector.id}
-            className="bg-white border-2 border-amber-200 rounded-2xl p-4"
+            className="bg-white border-2 border-amber-200 rounded-2xl p-5 shadow-sm"
           >
-            <p className="text-amber-800 text-xl font-black">{connector.label}</p>
-            <p className="text-gray-600 font-bold">{connector.spanish}</p>
-            <p className="text-gray-900 text-sm font-extrabold mt-2">
-              {connectorPurpose[connector.id]}
-            </p>
+            <p className="text-amber-800 text-2xl font-black mb-4">{connector.label}</p>
+            <div className="border-t border-gray-100 py-3">
+              <p className="text-gray-500 text-xs font-black uppercase mb-1">Significa</p>
+              <p className="text-gray-950 text-lg font-extrabold">{connector.spanish}</p>
+            </div>
+            <div className="border-t border-gray-100 py-3">
+              <p className="text-gray-500 text-xs font-black uppercase mb-1">Pronunciación</p>
+              <p className="text-amber-800 text-lg font-extrabold">{connector.pronunciation}</p>
+            </div>
+            <div className="border-t border-gray-100 pt-3">
+              <p className="text-gray-500 text-xs font-black uppercase mb-1">Se usa para</p>
+              <p className="text-gray-950 text-base font-extrabold">{connector.function}</p>
+            </div>
+            <AudioButton phrase={connector.label} />
           </article>
         ))}
       </div>
