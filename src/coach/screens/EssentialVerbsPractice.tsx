@@ -4,12 +4,15 @@ import {
   ESSENTIAL_VERBS,
   UNIT_3_ACTIVATION,
   UNIT_3_CONNECTORS,
+  UNIT_3_CONNECTOR_MATCHING,
   UNIT_3_CONNECTOR_REVIEW,
   UNIT_3_GUIDED_BUILD,
   UNIT_3_PRONOUN_REVIEW,
   UNIT_3_REPETITION_PHRASES,
+  UNIT_3_VERB_MATCHING,
   type ConnectorCard,
   type EssentialVerbCard,
+  type Unit3MatchingItem,
   type Unit3RepetitionPhrase,
 } from '../data/essentialVerbsPractice';
 
@@ -17,9 +20,11 @@ type ReviewStep =
   | { kind: 'activation' }
   | { kind: 'verbs-intro' }
   | { kind: 'verb'; item: EssentialVerbCard }
+  | { kind: 'verb-matching' }
   | { kind: 'connectors-intro' }
   | { kind: 'connector'; item: ConnectorCard }
   | { kind: 'connector-review' }
+  | { kind: 'connector-matching' }
   | { kind: 'builder' }
   | { kind: 'repetition'; item: Unit3RepetitionPhrase }
   | { kind: 'complete' };
@@ -34,9 +39,11 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
       { kind: 'activation' },
       { kind: 'verbs-intro' },
       ...ESSENTIAL_VERBS.map((item): ReviewStep => ({ kind: 'verb', item })),
+      { kind: 'verb-matching' },
       { kind: 'connectors-intro' },
       ...UNIT_3_CONNECTORS.map((item): ReviewStep => ({ kind: 'connector', item })),
       { kind: 'connector-review' },
+      { kind: 'connector-matching' },
       { kind: 'builder' },
       ...UNIT_3_REPETITION_PHRASES.map((item): ReviewStep => ({ kind: 'repetition', item })),
       { kind: 'complete' },
@@ -60,6 +67,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
       ),
       UNIT_3_GUIDED_BUILD.result,
       ...UNIT_3_REPETITION_PHRASES.map((phrase) => phrase.english),
+      ...UNIT_3_VERB_MATCHING.flatMap((item) => item.audioPhrase ? [item.audioPhrase] : []),
     ];
     teachingPhrases.forEach((phrase) => void prefetchSpeech(phrase, 'normal'));
   }, []);
@@ -137,6 +145,15 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
             onContinue={next}
           />
         )}
+        {step.kind === 'verb-matching' && (
+          <MatchingChallenge
+            eyebrow="Reto de verbos"
+            title="Lleva cada frase a su situación"
+            intro="Arrastra la frase o tócala y después toca la situación correcta."
+            items={UNIT_3_VERB_MATCHING}
+            onContinue={next}
+          />
+        )}
         {step.kind === 'connectors-intro' && <ConnectorIntro onContinue={next} />}
         {step.kind === 'connector' && (
           <ConnectorStep
@@ -154,6 +171,15 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
           />
         )}
         {step.kind === 'connector-review' && <ConnectorReviewStep onContinue={next} />}
+        {step.kind === 'connector-matching' && (
+          <MatchingChallenge
+            eyebrow="Reto de conectores"
+            title="Une cada conector con su función"
+            intro="Arrastra cada conector o toca primero la pieza y luego su función."
+            items={UNIT_3_CONNECTOR_MATCHING}
+            onContinue={next}
+          />
+        )}
         {step.kind === 'builder' && (
           <BuilderStep
             revealedPieces={revealedPieces}
@@ -706,6 +732,172 @@ function AudioButton({ phrase }: { phrase: string }) {
     >
       {playing ? 'Detener audio' : `Escuchar: ${phrase}`}
     </button>
+  );
+}
+
+function MatchingChallenge(props: {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  items: Unit3MatchingItem[];
+  onContinue: () => void;
+}) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [matchedIds, setMatchedIds] = useState<string[]>([]);
+  const [wrongTargetId, setWrongTargetId] = useState<string | null>(null);
+  const [starTargetId, setStarTargetId] = useState<string | null>(null);
+  const [dragging, setDragging] = useState<{ id: string; x: number; y: number } | null>(null);
+  const complete = matchedIds.length === props.items.length;
+  const destinations = useMemo(
+    () => [...props.items].sort((a, b) => b.id.localeCompare(a.id)),
+    [props.items],
+  );
+
+  const tryMatch = (pieceId: string, targetId: string) => {
+    if (matchedIds.includes(pieceId)) return;
+    if (pieceId === targetId) {
+      setMatchedIds((current) => [...current, pieceId]);
+      setSelectedId(null);
+      setWrongTargetId(null);
+      setStarTargetId(targetId);
+      window.setTimeout(() => setStarTargetId(null), 900);
+    } else {
+      setWrongTargetId(targetId);
+      window.setTimeout(() => setWrongTargetId(null), 700);
+    }
+  };
+
+  const finishDrag = (event: React.PointerEvent<HTMLButtonElement>, pieceId: string) => {
+    const target = document
+      .elementFromPoint(event.clientX, event.clientY)
+      ?.closest<HTMLElement>('[data-match-target]');
+    const targetId = target?.dataset.matchTarget;
+    setDragging(null);
+    if (targetId) {
+      tryMatch(pieceId, targetId);
+    } else {
+      setSelectedId((current) => current === pieceId ? null : pieceId);
+    }
+  };
+
+  return (
+    <section className="pt-4">
+      {dragging && (
+        <div
+          className="fixed z-50 pointer-events-none bg-violet-600 text-white border-2 border-violet-700 rounded-2xl px-4 py-3 font-black shadow-xl"
+          style={{
+            left: dragging.x,
+            top: dragging.y,
+            transform: 'translate(-50%, -50%) rotate(-2deg)',
+          }}
+          aria-hidden="true"
+        >
+          {props.items.find((item) => item.id === dragging.id)?.piece}
+        </div>
+      )}
+      <p className="text-sm font-extrabold uppercase text-violet-700 mb-2">{props.eyebrow}</p>
+      <h1 className="text-gray-950 text-3xl font-black leading-tight mb-3">{props.title}</h1>
+      <p className="text-gray-700 font-semibold leading-relaxed mb-5">{props.intro}</p>
+
+      <div className="bg-white border-2 border-violet-200 rounded-3xl p-5 shadow-sm mb-4">
+        <p className="text-gray-500 text-xs font-black uppercase mb-3">Piezas</p>
+        <div className="grid grid-cols-2 gap-3">
+          {props.items.map((item) => {
+            const matched = matchedIds.includes(item.id);
+            const selected = selectedId === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                disabled={matched}
+                onPointerDown={(event) => {
+                  if (matched) return;
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                  setDragging({ id: item.id, x: event.clientX, y: event.clientY });
+                }}
+                onPointerMove={(event) => {
+                  if (dragging?.id !== item.id) return;
+                  setDragging({ id: item.id, x: event.clientX, y: event.clientY });
+                }}
+                onPointerUp={(event) => finishDrag(event, item.id)}
+                className={[
+                  'min-h-20 rounded-2xl border-2 p-3 text-center font-black transition-all select-none',
+                  matched
+                    ? 'bg-emerald-100 border-emerald-300 text-emerald-800 opacity-60'
+                    : selected
+                      ? 'bg-violet-600 border-violet-700 text-white scale-[1.02]'
+                      : 'bg-violet-50 border-violet-200 text-gray-950 active:scale-[0.98]',
+                ].join(' ')}
+                style={{ touchAction: 'none' }}
+              >
+                {matched ? '✓ ' : ''}{item.piece}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="space-y-3 mb-5">
+        <p className="text-gray-500 text-xs font-black uppercase">Situaciones o funciones</p>
+        {destinations.map((item) => {
+          const matched = matchedIds.includes(item.id);
+          const wrong = wrongTargetId === item.id;
+          const star = starTargetId === item.id;
+          return (
+            <div
+              key={item.id}
+              data-match-target={item.id}
+              role="button"
+              tabIndex={matched ? -1 : 0}
+              onClick={() => {
+                if (selectedId) tryMatch(selectedId, item.id);
+              }}
+              onKeyDown={(event) => {
+                if (selectedId && (event.key === 'Enter' || event.key === ' ')) {
+                  event.preventDefault();
+                  tryMatch(selectedId, item.id);
+                }
+              }}
+              className={[
+                'relative rounded-2xl border-2 p-4 transition-all',
+                matched
+                  ? 'bg-emerald-50 border-emerald-300'
+                  : wrong
+                    ? 'bg-red-50 border-red-300 animate-pulse'
+                    : selectedId
+                      ? 'bg-white border-violet-300 cursor-pointer'
+                      : 'bg-gray-50 border-gray-200',
+              ].join(' ')}
+            >
+              {star && (
+                <span
+                  className="absolute -top-4 right-4 text-4xl animate-bounce"
+                  aria-label="Conexión correcta"
+                >
+                  ⭐
+                </span>
+              )}
+              <p className="text-gray-950 text-lg font-extrabold">{item.destination}</p>
+              {matched && (
+                <>
+                  <p className="text-emerald-800 font-black mt-2">¡Muy bien! Conexión correcta.</p>
+                  {item.audioPhrase && <AudioButton phrase={item.audioPhrase} />}
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {wrongTargetId && (
+        <p className="text-center text-amber-800 font-extrabold mb-4">
+          Casi. Prueba otra conexión.
+        </p>
+      )}
+      <PrimaryButton onClick={props.onContinue} disabled={!complete}>
+        Continuar
+      </PrimaryButton>
+    </section>
   );
 }
 

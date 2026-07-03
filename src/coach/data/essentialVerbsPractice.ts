@@ -312,6 +312,27 @@ export const UNIT_3_CONNECTOR_REVIEW = [
   },
 ] as const;
 
+export interface Unit3MatchingItem {
+  id: string;
+  piece: string;
+  destination: string;
+  audioPhrase?: string;
+}
+
+export const UNIT_3_VERB_MATCHING: Unit3MatchingItem[] = [
+  { id: 'need', piece: 'I need help.', destination: 'Necesitas ayuda.', audioPhrase: 'I need help.' },
+  { id: 'have', piece: 'I have the keys.', destination: 'Tienes las llaves.', audioPhrase: 'I have the keys.' },
+  { id: 'want', piece: 'I want water.', destination: 'Quieres agua.', audioPhrase: 'I want water.' },
+  { id: 'go-to', piece: 'I go to work.', destination: 'Vas al trabajo.', audioPhrase: 'I go to work.' },
+];
+
+export const UNIT_3_CONNECTOR_MATCHING: Unit3MatchingItem[] = [
+  { id: 'and', piece: 'AND', destination: 'Agregar información.' },
+  { id: 'but', piece: 'BUT', destination: 'Mostrar contraste.' },
+  { id: 'because', piece: 'BECAUSE', destination: 'Explicar una razón.' },
+  { id: 'also', piece: 'ALSO', destination: 'Añadir otra idea.' },
+];
+
 export const UNIT_3_GUIDED_BUILD = {
   labels: ['Pronombre', 'Verbo', 'Complemento', 'Conector', 'Idea'],
   pieces: ['I', 'need', 'help', 'because', 'I am tired'],
