@@ -556,21 +556,19 @@ function ConnectorStep(props: ConnectorStepProps) {
       <div className="bg-white border-2 border-amber-200 rounded-3xl p-5 shadow-sm mb-4">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-4xl font-black text-gray-950">{connector.label}</h1>
-              <span className="bg-amber-100 border border-amber-200 text-amber-900 rounded-lg px-3 py-1.5 font-extrabold">
-                <span className="text-[10px] uppercase mr-1">Significa:</span>
-                {connector.spanish}
-              </span>
-            </div>
-            <p className="text-amber-800 font-extrabold mt-3">
-              <span className="text-gray-500 text-xs font-black uppercase mr-2">
-                Pronunciación:
-              </span>
-              {connector.pronunciation}
-            </p>
+            <h1 className="text-4xl font-black text-gray-950">{connector.label}</h1>
           </div>
           <CompactAudioButton phrase={connector.label} label={connector.label} />
+        </div>
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+            <p className="text-emerald-800 text-xs font-black uppercase mb-1">Significado</p>
+            <p className="text-gray-950 text-lg font-black">{connector.spanish}</p>
+          </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+            <p className="text-amber-800 text-xs font-black uppercase mb-1">Pronunciación</p>
+            <p className="text-gray-950 text-lg font-black">{connector.pronunciation}</p>
+          </div>
         </div>
         <div className="bg-white border-y border-gray-100 py-3 mb-4">
           <p className="text-gray-500 text-xs font-black uppercase mb-1">Se usa para</p>
