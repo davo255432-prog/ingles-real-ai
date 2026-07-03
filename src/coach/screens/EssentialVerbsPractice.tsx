@@ -256,9 +256,27 @@ function TeachingCard(props: TeachingCardProps) {
             {props.pronunciation}
           </span>
         </div>
-        <div className="bg-emerald-50 rounded-2xl p-4 mb-4">
-          <p className="text-xs font-extrabold uppercase text-emerald-700 mb-1">Mini regla</p>
-          <p className="text-gray-900 font-bold leading-relaxed">{props.rule}</p>
+        <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-5 mb-4">
+          <p className="text-emerald-800 text-base font-black uppercase mb-3">Regla clave</p>
+          {props.title === 'have' ? (
+            <>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {['I', 'YOU', 'WE', 'THEY'].map((pronoun) => (
+                  <span
+                    key={pronoun}
+                    className="bg-white border border-emerald-300 rounded-lg px-3 py-2 text-emerald-900 font-black"
+                  >
+                    {pronoun}
+                  </span>
+                ))}
+              </div>
+              <div className="bg-emerald-600 text-white rounded-xl px-4 py-3 text-center text-lg font-black">
+                + HAVE + COSA
+              </div>
+            </>
+          ) : (
+            <p className="text-gray-950 text-lg font-extrabold leading-relaxed">{props.rule}</p>
+          )}
         </div>
         {props.title === 'have' && ESSENTIAL_VERBS.find((verb) => verb.id === 'have')?.importantNote && (
           <div className="bg-sky-50 border-2 border-sky-300 rounded-2xl p-5 mb-5">
@@ -277,9 +295,32 @@ function TeachingCard(props: TeachingCardProps) {
                 <p className="text-gray-600 font-semibold">él tiene</p>
               </div>
             </div>
-            <p className="text-sky-950 text-base font-extrabold leading-relaxed">
-              Por ahora practicaremos have con I, you, we y they. Más adelante aprenderemos has.
-            </p>
+            <div className="border-t-2 border-sky-200 pt-4 mt-4">
+              <p className="text-emerald-800 text-sm font-black uppercase mb-2">
+                Por ahora practicaremos
+              </p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {['I HAVE', 'YOU HAVE', 'WE HAVE', 'THEY HAVE'].map((form) => (
+                  <span
+                    key={form}
+                    className="bg-emerald-100 border border-emerald-300 rounded-lg px-3 py-2 text-emerald-900 font-black"
+                  >
+                    {form}
+                  </span>
+                ))}
+              </div>
+              <p className="text-sky-800 text-sm font-black uppercase mb-2">Más adelante</p>
+              <div className="flex flex-wrap gap-2">
+                {['HE HAS', 'SHE HAS', 'IT HAS'].map((form) => (
+                  <span
+                    key={form}
+                    className="bg-white border border-sky-300 rounded-lg px-3 py-2 text-sky-900 font-black"
+                  >
+                    {form}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         )}
         <div className="space-y-3">
