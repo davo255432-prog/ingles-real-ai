@@ -20,6 +20,16 @@ export interface Unit3RepetitionPhrase extends Unit3Example {
   motivation: string;
 }
 
+export const UNIT_3_PRONOUN_REVIEW = [
+  { english: 'I', spanish: 'yo', pronunciation: 'ai' },
+  { english: 'You', spanish: 'tú / usted', pronunciation: 'iu' },
+  { english: 'He', spanish: 'él', pronunciation: 'ji' },
+  { english: 'She', spanish: 'ella', pronunciation: 'shi' },
+  { english: 'We', spanish: 'nosotros', pronunciation: 'wi' },
+  { english: 'They', spanish: 'ellos / ellas', pronunciation: 'dei' },
+  { english: 'It', spanish: 'eso / ello', pronunciation: 'it' },
+] as const;
+
 export interface EssentialVerbCard {
   id: EssentialVerbId;
   label: string;

@@ -5,6 +5,7 @@ import {
   UNIT_3_ACTIVATION,
   UNIT_3_CONNECTORS,
   UNIT_3_GUIDED_BUILD,
+  UNIT_3_PRONOUN_REVIEW,
   UNIT_3_REPETITION_PHRASES,
   type ConnectorCard,
   type EssentialVerbCard,
@@ -44,6 +45,8 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
 
   useEffect(() => {
     const teachingPhrases = [
+      ...UNIT_3_PRONOUN_REVIEW.map((pronoun) => pronoun.english),
+      ...UNIT_3_ACTIVATION.map((example) => example.english),
       ...ESSENTIAL_VERBS.flatMap((verb) => verb.examples.map((example) => example.english)),
       ...UNIT_3_CONNECTORS.map((connector) => connector.combined),
       ...UNIT_3_REPETITION_PHRASES.map((phrase) => phrase.english),
@@ -166,12 +169,38 @@ function ActivationStep({ onContinue }: { onContinue: () => void }) {
       <p className="text-gray-700 text-base font-medium leading-relaxed mb-5">
         Primero recuerda los pronombres y el verbo To Be que ya aprendiste.
       </p>
+      <div className="bg-white border-2 border-sky-200 rounded-3xl p-5 shadow-sm mb-5">
+        <p className="text-sky-800 text-sm font-extrabold uppercase mb-3">
+          Recuerda todos los pronombres
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {UNIT_3_PRONOUN_REVIEW.map((pronoun) => (
+            <article
+              key={pronoun.english}
+              className="bg-sky-50 border border-sky-200 rounded-2xl p-4"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-gray-950 text-xl font-black">{pronoun.english}</p>
+                  <p className="text-gray-600 text-sm font-semibold">{pronoun.spanish}</p>
+                  <p className="text-sky-800 font-extrabold mt-1">{pronoun.pronunciation}</p>
+                </div>
+                <PronounAudioButton phrase={pronoun.english} label={pronoun.english} />
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+      <p className="text-emerald-800 text-sm font-extrabold uppercase mb-3">
+        Repasa To Be en frases
+      </p>
       <div className="space-y-3 mb-6">
         {UNIT_3_ACTIVATION.map((example) => (
           <article key={example.english} className="bg-white border border-emerald-100 rounded-2xl p-5 shadow-sm">
             <p className="text-gray-950 text-xl font-extrabold">{example.english}</p>
             <p className="text-gray-600 font-medium mt-1">{example.spanish}</p>
             <p className="text-emerald-700 font-bold mt-2">{example.pronunciation}</p>
+            <AudioButton phrase={example.english} />
           </article>
         ))}
       </div>
@@ -509,9 +538,41 @@ function AudioButton({ phrase }: { phrase: string }) {
     <button
       type="button"
       onClick={() => void handlePlay()}
-      className="mt-3 min-h-11 rounded-xl bg-white border border-gray-200 px-4 py-2 text-gray-800 text-sm font-extrabold"
+      className="mt-3 min-h-12 w-full rounded-xl bg-sky-500 hover:bg-sky-600 active:scale-[0.98] px-4 py-3 text-white text-sm font-extrabold shadow-sm transition-all"
     >
-      {playing ? 'Detener audio' : 'Escuchar pronunciación'}
+      {playing ? 'Detener audio' : `Escuchar: ${phrase}`}
+    </button>
+  );
+}
+
+function PronounAudioButton({ phrase, label }: { phrase: string; label: string }) {
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => () => stopSpeech(), []);
+
+  const handlePlay = async () => {
+    if (playing) {
+      stopSpeech();
+      setPlaying(false);
+      return;
+    }
+    setPlaying(true);
+    try {
+      await generateSpeech(phrase, 'normal');
+    } finally {
+      setPlaying(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={() => void handlePlay()}
+      className="w-11 h-11 shrink-0 rounded-full bg-sky-500 hover:bg-sky-600 text-white font-black shadow-sm"
+      aria-label={`Escuchar ${label}`}
+      title={`Escuchar ${label}`}
+    >
+      {playing ? '■' : '▶'}
     </button>
   );
 }
