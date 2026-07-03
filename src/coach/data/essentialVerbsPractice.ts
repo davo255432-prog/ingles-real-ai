@@ -115,7 +115,7 @@ export const ESSENTIAL_VERBS: EssentialVerbCard[] = [
     pronunciation: 'jav',
     miniRule: 'Usa I, you, we o they + have + cosa para decir lo que tienes.',
     importantNote: {
-      title: '¿Por qué cambia?',
+      title: 'Cambio importante',
       text: 'Con he, she e it usamos has en lugar de have.',
       examples: ['I have = yo tengo', 'He has = él tiene'],
       focus: 'Por ahora practicaremos have con I, you, we y they. Más adelante aprenderemos has.',

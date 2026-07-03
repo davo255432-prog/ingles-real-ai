@@ -283,18 +283,20 @@ function TeachingCard(props: TeachingCardProps) {
         </div>
         {props.title === 'have' && ESSENTIAL_VERBS.find((verb) => verb.id === 'have')?.importantNote && (
           <div className="bg-sky-50 border-2 border-sky-300 rounded-2xl p-5 mb-5">
-            <p className="text-sky-800 text-xl font-black mb-2">¿Por qué cambia?</p>
-            <p className="text-gray-900 text-lg font-bold leading-relaxed mb-4">
-              Con <span className="text-sky-800 font-black">he, she e it</span> usamos:
-            </p>
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <span className="bg-sky-700 text-white rounded-xl px-5 py-3 text-3xl font-black">
-                HAS
-              </span>
-              <span className="text-gray-500 text-base font-bold">en lugar de</span>
-              <span className="bg-emerald-100 border-2 border-emerald-300 text-emerald-900 rounded-xl px-5 py-3 text-3xl font-black">
-                HAVE
-              </span>
+            <p className="text-sky-800 text-xl font-black mb-4">Cambio importante</p>
+            <div className="space-y-3 mb-4">
+              <div className="bg-white border border-emerald-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+                <p className="text-gray-900 font-black">I · YOU · WE · THEY</p>
+                <span className="bg-emerald-700 text-white rounded-xl px-4 py-2 text-xl font-black">
+                  HAVE
+                </span>
+              </div>
+              <div className="bg-white border border-sky-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+                <p className="text-gray-900 font-black">HE · SHE · IT</p>
+                <span className="bg-sky-700 text-white rounded-xl px-4 py-2 text-xl font-black">
+                  HAS
+                </span>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-2 my-4">
               <div className="bg-white rounded-xl p-3 text-center border border-sky-200">
