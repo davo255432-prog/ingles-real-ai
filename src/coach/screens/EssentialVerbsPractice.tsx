@@ -172,26 +172,25 @@ function ActivationStep({ onContinue }: { onContinue: () => void }) {
         Primero recuerda los pronombres y el verbo To Be que ya aprendiste.
       </p>
       <div className="bg-white border-2 border-sky-200 rounded-3xl p-5 shadow-sm mb-5">
-        <p className="text-sky-800 text-sm font-extrabold uppercase mb-3">
-          Recuerda todos los pronombres
+        <p className="text-sky-800 text-base font-black uppercase mb-4">
+          Repaso rápido: pronombres
         </p>
-        <div className="grid grid-cols-2 gap-3">
-          {UNIT_3_PRONOUN_REVIEW.map((pronoun) => (
-            <article
-              key={pronoun.english}
-              className="bg-sky-50 border border-sky-200 rounded-2xl p-4"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-gray-950 text-xl font-black">{pronoun.english}</p>
-                  <p className="text-gray-600 text-sm font-semibold">{pronoun.spanish}</p>
-                  <p className="text-sky-800 font-extrabold mt-1">{pronoun.pronunciation}</p>
-                </div>
-                <PronounAudioButton phrase={pronoun.english} label={pronoun.english} />
-              </div>
-            </article>
-          ))}
-        </div>
+        <PronounGroup
+          title="Personas en la conversación"
+          pronouns={UNIT_3_PRONOUN_REVIEW.filter((item) => ['I', 'You'].includes(item.english))}
+          columns="grid-cols-2"
+        />
+        <PronounGroup
+          title="Una persona o cosa"
+          pronouns={UNIT_3_PRONOUN_REVIEW.filter((item) => ['He', 'She', 'It'].includes(item.english))}
+          columns="grid-cols-3"
+        />
+        <PronounGroup
+          title="Grupos"
+          pronouns={UNIT_3_PRONOUN_REVIEW.filter((item) => ['We', 'They'].includes(item.english))}
+          columns="grid-cols-2"
+          last
+        />
       </div>
       <p className="text-emerald-800 text-sm font-extrabold uppercase mb-3">
         Repasa To Be en frases
@@ -630,7 +629,27 @@ function AudioButton({ phrase }: { phrase: string }) {
   );
 }
 
-function PronounAudioButton({ phrase, label }: { phrase: string; label: string }) {
+function PronounGroup(props: {
+  title: string;
+  pronouns: ReadonlyArray<{ english: string; spanish: string; pronunciation: string }>;
+  columns: 'grid-cols-2' | 'grid-cols-3';
+  last?: boolean;
+}) {
+  return (
+    <div className={props.last ? '' : 'mb-4'}>
+      <p className="text-gray-500 text-xs font-black uppercase mb-2">{props.title}</p>
+      <div className={`grid ${props.columns} gap-2`}>
+        {props.pronouns.map((pronoun) => (
+          <PronounReviewButton key={pronoun.english} pronoun={pronoun} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PronounReviewButton(props: {
+  pronoun: { english: string; spanish: string; pronunciation: string };
+}) {
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => () => stopSpeech(), []);
@@ -643,7 +662,7 @@ function PronounAudioButton({ phrase, label }: { phrase: string; label: string }
     }
     setPlaying(true);
     try {
-      await generateSpeech(phrase, 'normal');
+      await generateSpeech(props.pronoun.english, 'normal');
     } finally {
       setPlaying(false);
     }
@@ -653,11 +672,34 @@ function PronounAudioButton({ phrase, label }: { phrase: string; label: string }
     <button
       type="button"
       onClick={() => void handlePlay()}
-      className="w-11 h-11 shrink-0 rounded-full bg-sky-500 hover:bg-sky-600 text-white font-black shadow-sm"
-      aria-label={`Escuchar ${label}`}
-      title={`Escuchar ${label}`}
+      className={
+        playing
+          ? 'min-h-24 rounded-2xl bg-sky-600 border-2 border-sky-700 p-3 text-left text-white shadow-sm'
+          : 'min-h-24 rounded-2xl bg-sky-50 border border-sky-200 p-3 text-left hover:bg-sky-100 active:scale-[0.98] transition-all'
+      }
+      aria-label={`Escuchar ${props.pronoun.english}`}
     >
-      {playing ? '■' : '▶'}
+      <div className="flex items-start justify-between gap-1">
+        <span className={playing ? 'text-xl font-black text-white' : 'text-xl font-black text-gray-950'}>
+          {props.pronoun.english}
+        </span>
+        <span
+          className={
+            playing
+              ? 'w-7 h-7 rounded-full bg-white text-sky-700 flex items-center justify-center text-xs'
+              : 'w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs'
+          }
+          aria-hidden="true"
+        >
+          {playing ? '■' : '▶'}
+        </span>
+      </div>
+      <span className={playing ? 'block text-xs font-semibold text-sky-50' : 'block text-xs font-semibold text-gray-600'}>
+        {props.pronoun.spanish}
+      </span>
+      <span className={playing ? 'block font-black text-white mt-1' : 'block font-black text-sky-800 mt-1'}>
+        {props.pronoun.pronunciation}
+      </span>
     </button>
   );
 }
