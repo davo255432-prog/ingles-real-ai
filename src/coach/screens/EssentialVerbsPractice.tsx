@@ -553,17 +553,29 @@ function ConnectorStep(props: ConnectorStepProps) {
   return (
     <section className="pt-4">
       <p className="text-sm font-extrabold uppercase text-amber-700 mb-2">Conector visual</p>
-      <div className="bg-white border-2 border-amber-200 rounded-3xl p-6 shadow-sm mb-4">
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <div>
-            <h1 className="text-4xl font-black text-gray-950">{connector.label}</h1>
-            <p className="text-gray-700 text-lg font-bold">{connector.spanish}</p>
+      <div className="bg-white border-2 border-amber-200 rounded-3xl p-5 shadow-sm mb-4">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-4xl font-black text-gray-950">{connector.label}</h1>
+              <span className="bg-amber-100 border border-amber-200 text-amber-900 rounded-lg px-3 py-1.5 font-extrabold">
+                <span className="text-[10px] uppercase mr-1">Significa:</span>
+                {connector.spanish}
+              </span>
+            </div>
+            <p className="text-amber-800 font-extrabold mt-3">
+              <span className="text-gray-500 text-xs font-black uppercase mr-2">
+                Pronunciación:
+              </span>
+              {connector.pronunciation}
+            </p>
           </div>
-          <span className="bg-amber-100 text-amber-800 rounded-xl px-3 py-2 font-extrabold">
-            {connector.pronunciation}
-          </span>
+          <CompactAudioButton phrase={connector.label} label={connector.label} />
         </div>
-        <p className="text-gray-900 text-xl font-extrabold mb-3">{connector.function}</p>
+        <div className="bg-white border-y border-gray-100 py-3 mb-4">
+          <p className="text-gray-500 text-xs font-black uppercase mb-1">Se usa para</p>
+          <p className="text-gray-950 text-lg font-extrabold">{connector.function}</p>
+        </div>
         <div className="bg-amber-50 rounded-2xl p-4 mb-5">
           <p className="text-xs font-extrabold uppercase text-amber-700 mb-1">Mini regla</p>
           <p className="text-gray-900 font-bold leading-relaxed">{connector.miniRule}</p>
