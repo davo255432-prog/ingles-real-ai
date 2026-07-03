@@ -56,8 +56,9 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
       ...ESSENTIAL_VERBS.map((verb) => verb.realUse.english),
       ...UNIT_3_CONNECTORS.map((connector) => connector.combined),
       ...UNIT_3_CONNECTOR_REVIEW.flatMap((item) =>
-        'audioPhrase' in item ? [item.audioPhrase] : [],
+        [item.resultAudio, ...('audioPhrase' in item ? [item.audioPhrase] : [])],
       ),
+      UNIT_3_GUIDED_BUILD.result,
       ...UNIT_3_REPETITION_PHRASES.map((phrase) => phrase.english),
     ];
     teachingPhrases.forEach((phrase) => void prefetchSpeech(phrase, 'normal'));
@@ -815,6 +816,7 @@ function BuilderStep(props: { revealedPieces: number; onReveal: () => void; onCo
             <p className="text-gray-950 text-xl font-black">{UNIT_3_GUIDED_BUILD.result}</p>
             <p className="text-gray-700 font-medium mt-1">{UNIT_3_GUIDED_BUILD.spanish}</p>
             <p className="text-emerald-700 font-bold mt-2">{UNIT_3_GUIDED_BUILD.pronunciation}</p>
+            <AudioButton phrase={UNIT_3_GUIDED_BUILD.result} />
           </div>
         )}
       </div>
@@ -885,6 +887,13 @@ function ConnectorReviewStep({ onContinue }: { onContinue: () => void }) {
         onRetry={retry}
         onContinue={advance}
       />
+      {checked && correct && (
+        <div className="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 mt-4">
+          <p className="text-sky-900 font-black mb-2">Escucha la frase completa</p>
+          <p className="text-gray-950 text-lg font-extrabold">{question.resultAudio}</p>
+          <AudioButton phrase={question.resultAudio} />
+        </div>
+      )}
     </section>
   );
 }

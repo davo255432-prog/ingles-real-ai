@@ -276,6 +276,7 @@ export const UNIT_3_CONNECTOR_REVIEW = [
     options: ['and', 'but', 'because', 'also'],
     answer: 'and',
     explanation: 'And une dos cosas: agua y comida.',
+    resultAudio: 'I need water and food.',
   },
   {
     id: 'review-but',
@@ -284,6 +285,7 @@ export const UNIT_3_CONNECTOR_REVIEW = [
     options: ['because', 'also', 'and', 'but'],
     answer: 'but',
     explanation: 'But muestra el contraste entre cansado y listo.',
+    resultAudio: 'I am tired, but I am ready.',
   },
   {
     id: 'review-because',
@@ -296,6 +298,7 @@ export const UNIT_3_CONNECTOR_REVIEW = [
     ],
     answer: 'I need help because I am tired.',
     explanation: 'Primero va la idea y después because con la razón.',
+    resultAudio: 'I need help because I am tired.',
   },
   {
     id: 'review-listen-also',
@@ -305,6 +308,7 @@ export const UNIT_3_CONNECTOR_REVIEW = [
     options: ['but', 'because', 'also', 'and'],
     answer: 'also',
     explanation: 'Also agrega otra información.',
+    resultAudio: 'I also have food.',
   },
 ] as const;
 
