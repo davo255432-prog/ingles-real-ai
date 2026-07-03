@@ -273,10 +273,8 @@ function TeachingCard(props: TeachingCardProps) {
                   </span>
                 ))}
               </div>
-              <div className="bg-emerald-700 text-white rounded-xl px-4 py-4 text-center font-black">
-                <span className="text-xl">+</span>{' '}
-                <span className="text-3xl text-yellow-200">HAVE</span>{' '}
-                <span className="text-xl">+ COSA</span>
+              <div className="bg-emerald-700 text-white rounded-xl px-4 py-3 text-center text-lg font-black">
+                PRONOMBRE + <span className="text-xl text-yellow-200">HAVE</span> + COSA
               </div>
             </>
           ) : (
