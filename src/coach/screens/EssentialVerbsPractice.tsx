@@ -231,6 +231,28 @@ function TeachingCard(props: TeachingCardProps) {
           <p className="text-xs font-extrabold uppercase text-emerald-700 mb-1">Mini regla</p>
           <p className="text-gray-900 font-bold leading-relaxed">{props.rule}</p>
         </div>
+        {props.title === 'have' && ESSENTIAL_VERBS.find((verb) => verb.id === 'have')?.importantNote && (
+          <div className="bg-sky-50 border-2 border-sky-300 rounded-2xl p-5 mb-5">
+            <p className="text-sky-800 text-xl font-black mb-2">¿Por qué cambia?</p>
+            <p className="text-gray-900 text-lg font-bold leading-relaxed">
+              Con <span className="text-sky-800">he, she e it</span> usamos{' '}
+              <span className="text-sky-800">has</span> en lugar de have.
+            </p>
+            <div className="grid grid-cols-2 gap-2 my-4">
+              <div className="bg-white rounded-xl p-3 text-center border border-sky-200">
+                <p className="text-gray-950 font-black">I have</p>
+                <p className="text-gray-600 font-semibold">yo tengo</p>
+              </div>
+              <div className="bg-white rounded-xl p-3 text-center border border-sky-200">
+                <p className="text-gray-950 font-black">He has</p>
+                <p className="text-gray-600 font-semibold">él tiene</p>
+              </div>
+            </div>
+            <p className="text-sky-950 text-base font-extrabold leading-relaxed">
+              Por ahora practicaremos have con I, you, we y they. Más adelante aprenderemos has.
+            </p>
+          </div>
+        )}
         <div className="space-y-3">
           {props.examples.map((example) => (
             <div key={example.english} className="border-t border-gray-100 pt-3">

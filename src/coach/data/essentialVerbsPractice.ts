@@ -26,6 +26,12 @@ export interface EssentialVerbCard {
   spanish: string;
   pronunciation: string;
   miniRule: string;
+  importantNote?: {
+    title: string;
+    text: string;
+    examples: string[];
+    focus: string;
+  };
   examples: Unit3Example[];
   exercise: {
     prompt: string;
@@ -98,6 +104,12 @@ export const ESSENTIAL_VERBS: EssentialVerbCard[] = [
     spanish: 'tener',
     pronunciation: 'jav',
     miniRule: 'Usa I, you, we o they + have + cosa para decir lo que tienes.',
+    importantNote: {
+      title: '¿Por qué cambia?',
+      text: 'Con he, she e it usamos has en lugar de have.',
+      examples: ['I have = yo tengo', 'He has = él tiene'],
+      focus: 'Por ahora practicaremos have con I, you, we y they. Más adelante aprenderemos has.',
+    },
     examples: [
       { english: 'I have the keys.', spanish: 'Tengo las llaves.', pronunciation: 'ai jav de kis' },
       { english: 'They have food.', spanish: 'Ellos tienen comida.', pronunciation: 'dei jav fud' },
