@@ -4,6 +4,7 @@ import {
   ESSENTIAL_VERBS,
   UNIT_3_ACTIVATION,
   UNIT_3_CONNECTORS,
+  UNIT_3_CONNECTOR_REVIEW,
   UNIT_3_GUIDED_BUILD,
   UNIT_3_PRONOUN_REVIEW,
   UNIT_3_REPETITION_PHRASES,
@@ -17,6 +18,7 @@ type ReviewStep =
   | { kind: 'verb'; item: EssentialVerbCard }
   | { kind: 'connectors-intro' }
   | { kind: 'connector'; item: ConnectorCard }
+  | { kind: 'connector-review' }
   | { kind: 'builder' }
   | { kind: 'repetition'; item: Unit3RepetitionPhrase }
   | { kind: 'complete' };
@@ -32,6 +34,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
       ...ESSENTIAL_VERBS.map((item): ReviewStep => ({ kind: 'verb', item })),
       { kind: 'connectors-intro' },
       ...UNIT_3_CONNECTORS.map((item): ReviewStep => ({ kind: 'connector', item })),
+      { kind: 'connector-review' },
       { kind: 'builder' },
       ...UNIT_3_REPETITION_PHRASES.map((item): ReviewStep => ({ kind: 'repetition', item })),
       { kind: 'complete' },
@@ -50,6 +53,9 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
       ...ESSENTIAL_VERBS.flatMap((verb) => verb.examples.map((example) => example.english)),
       ...ESSENTIAL_VERBS.map((verb) => verb.realUse.english),
       ...UNIT_3_CONNECTORS.map((connector) => connector.combined),
+      ...UNIT_3_CONNECTOR_REVIEW.flatMap((item) =>
+        'audioPhrase' in item ? [item.audioPhrase] : [],
+      ),
       ...UNIT_3_REPETITION_PHRASES.map((phrase) => phrase.english),
     ];
     teachingPhrases.forEach((phrase) => void prefetchSpeech(phrase, 'normal'));
@@ -143,6 +149,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
             onContinue={next}
           />
         )}
+        {step.kind === 'connector-review' && <ConnectorReviewStep onContinue={next} />}
         {step.kind === 'builder' && (
           <BuilderStep
             revealedPieces={revealedPieces}
@@ -746,6 +753,70 @@ function BuilderStep(props: { revealedPieces: number; onReveal: () => void; onCo
   );
 }
 
+function ConnectorReviewStep({ onContinue }: { onContinue: () => void }) {
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [checked, setChecked] = useState(false);
+  const question = UNIT_3_CONNECTOR_REVIEW[questionIndex];
+  const correct = selected === question.answer;
+  const isLast = questionIndex === UNIT_3_CONNECTOR_REVIEW.length - 1;
+
+  const retry = () => {
+    setSelected(null);
+    setChecked(false);
+  };
+
+  const advance = () => {
+    if (isLast) {
+      onContinue();
+      return;
+    }
+    setQuestionIndex((current) => current + 1);
+    setSelected(null);
+    setChecked(false);
+  };
+
+  return (
+    <section className="pt-4">
+      <p className="text-sm font-extrabold uppercase text-amber-700 mb-2">
+        Refuerzo de conectores
+      </p>
+      <div className="bg-amber-50 border-2 border-amber-200 rounded-3xl p-5 mb-4">
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <h1 className="text-gray-950 text-2xl font-black">Ahora mézclalos</h1>
+          <span className="bg-white border border-amber-200 rounded-lg px-3 py-1 text-amber-800 font-black">
+            {questionIndex + 1}/{UNIT_3_CONNECTOR_REVIEW.length}
+          </span>
+        </div>
+        <p className="text-gray-700 font-semibold leading-relaxed">
+          Ya no verás cada conector por separado. Recuerda qué función cumple cada uno.
+        </p>
+      </div>
+
+      {'audioPhrase' in question && (
+        <div className="bg-white border border-sky-200 rounded-2xl p-4 mb-4">
+          <p className="text-gray-600 text-sm font-bold mb-2">Escucha antes de responder</p>
+          <AudioButton phrase={question.audioPhrase} />
+        </div>
+      )}
+
+      <ExercisePanel
+        prompt={`${question.instruction} ${question.prompt}`}
+        options={[...question.options]}
+        answer={question.answer}
+        explanation={question.explanation}
+        selected={selected}
+        checked={checked}
+        correct={correct}
+        onSelect={setSelected}
+        onCheck={() => setChecked(true)}
+        onRetry={retry}
+        onContinue={advance}
+      />
+    </section>
+  );
+}
+
 function PreviewComplete({ onExit }: { onExit: () => void }) {
   return (
     <section className="pt-16 text-center">
@@ -757,12 +828,22 @@ function PreviewComplete({ onExit }: { onExit: () => void }) {
       <div className="w-20 h-20 mx-auto rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-4xl font-black mb-5">
         ✓
       </div>
-      <p className="text-sm font-extrabold uppercase text-emerald-700 mb-2">Fase 1 completa</p>
-      <h1 className="text-3xl font-black text-gray-950 mb-4">Base de Unidad 3 lista para revisar</h1>
-      <p className="text-gray-700 font-medium leading-relaxed mb-8">
-        La práctica hablada y la Misión Final se agregarán en la siguiente fase.
+      <p className="text-sm font-extrabold uppercase text-emerald-700 mb-2">
+        ¡Primera parte completada!
       </p>
-      <PrimaryButton onClick={onExit}>Cerrar vista previa</PrimaryButton>
+      <h1 className="text-3xl font-black text-gray-950 mb-4">
+        Ya puedes usar verbos esenciales y unir ideas
+      </h1>
+      <p className="text-gray-700 font-medium leading-relaxed mb-8">
+        Lo siguiente será practicar estas ideas en conversaciones y situaciones reales.
+      </p>
+      <div className="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 mb-4">
+        <p className="text-sky-800 font-black">Siguiente etapa: práctica real</p>
+        <p className="text-gray-700 text-sm font-semibold mt-1">
+          Diálogo, práctica hablada y Misión Final.
+        </p>
+      </div>
+      <PrimaryButton onClick={onExit}>Cerrar por ahora</PrimaryButton>
     </section>
   );
 }

@@ -268,6 +268,46 @@ export const UNIT_3_CONNECTORS: ConnectorCard[] = [
   },
 ];
 
+export const UNIT_3_CONNECTOR_REVIEW = [
+  {
+    id: 'review-and',
+    instruction: 'Elige el conector correcto.',
+    prompt: 'I need water ___ food.',
+    options: ['and', 'but', 'because', 'also'],
+    answer: 'and',
+    explanation: 'And une dos cosas: agua y comida.',
+  },
+  {
+    id: 'review-but',
+    instruction: 'Une dos ideas que contrastan.',
+    prompt: 'I am tired, ___ I am ready.',
+    options: ['because', 'also', 'and', 'but'],
+    answer: 'but',
+    explanation: 'But muestra el contraste entre cansado y listo.',
+  },
+  {
+    id: 'review-because',
+    instruction: 'Elige la frase construida correctamente.',
+    prompt: 'Necesito ayuda porque estoy cansado.',
+    options: [
+      'I because need help I am tired.',
+      'I need help because I am tired.',
+      'Because I need tired help.',
+    ],
+    answer: 'I need help because I am tired.',
+    explanation: 'Primero va la idea y después because con la razón.',
+  },
+  {
+    id: 'review-listen-also',
+    instruction: 'Escucha y reconoce el conector.',
+    prompt: '¿Qué conector escuchaste?',
+    audioPhrase: 'I also have food.',
+    options: ['but', 'because', 'also', 'and'],
+    answer: 'also',
+    explanation: 'Also agrega otra información.',
+  },
+] as const;
+
 export const UNIT_3_GUIDED_BUILD = {
   labels: ['Pronombre', 'Verbo', 'Complemento', 'Conector', 'Idea'],
   pieces: ['I', 'need', 'help', 'because', 'I am tired'],
