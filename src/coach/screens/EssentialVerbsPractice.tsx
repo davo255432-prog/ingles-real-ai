@@ -268,16 +268,19 @@ function ActivationStep({ onContinue }: { onContinue: () => void }) {
           title="Personas en la conversación"
           pronouns={UNIT_3_PRONOUN_REVIEW.filter((item) => ['I', 'You'].includes(item.english))}
           columns="grid-cols-2"
+          tone="sky"
         />
         <PronounGroup
           title="Una persona o cosa"
           pronouns={UNIT_3_PRONOUN_REVIEW.filter((item) => ['He', 'She', 'It'].includes(item.english))}
           columns="grid-cols-3"
+          tone="amber"
         />
         <PronounGroup
           title="Grupos"
           pronouns={UNIT_3_PRONOUN_REVIEW.filter((item) => ['We', 'They'].includes(item.english))}
           columns="grid-cols-2"
+          tone="emerald"
           last
         />
       </div>
@@ -1011,14 +1014,21 @@ function PronounGroup(props: {
   title: string;
   pronouns: ReadonlyArray<{ english: string; spanish: string; pronunciation: string }>;
   columns: 'grid-cols-2' | 'grid-cols-3';
+  tone: 'sky' | 'amber' | 'emerald';
   last?: boolean;
 }) {
+  const groupStyles = {
+    sky: 'bg-sky-50/70 border-sky-100 text-sky-800',
+    amber: 'bg-amber-50/70 border-amber-100 text-amber-800',
+    emerald: 'bg-emerald-50/70 border-emerald-100 text-emerald-800',
+  }[props.tone];
+
   return (
-    <div className={props.last ? '' : 'mb-4'}>
-      <p className="text-gray-500 text-xs font-black uppercase mb-2">{props.title}</p>
+    <div className={`${props.last ? '' : 'mb-5'} rounded-2xl border p-3 ${groupStyles}`}>
+      <p className="text-xs font-black uppercase mb-3">{props.title}</p>
       <div className={`grid ${props.columns} gap-2`}>
         {props.pronouns.map((pronoun) => (
-          <PronounReviewButton key={pronoun.english} pronoun={pronoun} />
+          <PronounReviewButton key={pronoun.english} pronoun={pronoun} tone={props.tone} />
         ))}
       </div>
     </div>
@@ -1027,8 +1037,29 @@ function PronounGroup(props: {
 
 function PronounReviewButton(props: {
   pronoun: { english: string; spanish: string; pronunciation: string };
+  tone: 'sky' | 'amber' | 'emerald';
 }) {
   const [playing, setPlaying] = useState(false);
+  const toneStyles = {
+    sky: {
+      card: 'border-sky-200',
+      accent: 'text-sky-800',
+      audio: 'border-sky-300 text-sky-700',
+      playing: 'bg-sky-600 border-sky-700',
+    },
+    amber: {
+      card: 'border-amber-200',
+      accent: 'text-amber-800',
+      audio: 'border-amber-300 text-amber-700',
+      playing: 'bg-amber-500 border-amber-600',
+    },
+    emerald: {
+      card: 'border-emerald-200',
+      accent: 'text-emerald-800',
+      audio: 'border-emerald-300 text-emerald-700',
+      playing: 'bg-emerald-600 border-emerald-700',
+    },
+  }[props.tone];
 
   useEffect(() => () => stopSpeech(), []);
 
@@ -1052,8 +1083,8 @@ function PronounReviewButton(props: {
       onClick={() => void handlePlay()}
       className={
         playing
-          ? 'min-h-24 rounded-2xl bg-sky-600 border-2 border-sky-700 p-3 text-left text-white shadow-sm'
-          : 'min-h-24 rounded-2xl bg-sky-50 border border-sky-200 p-3 text-left hover:bg-sky-100 active:scale-[0.98] transition-all'
+          ? `min-h-24 rounded-xl border-2 p-3 text-left text-white shadow-sm ${toneStyles.playing}`
+          : `min-h-24 rounded-xl bg-white border-2 p-3 text-left shadow-sm active:scale-[0.98] transition-all ${toneStyles.card}`
       }
       aria-label={`Escuchar ${props.pronoun.english}`}
     >
@@ -1065,7 +1096,7 @@ function PronounReviewButton(props: {
           className={
             playing
               ? 'w-7 h-7 rounded-full bg-white text-sky-700 flex items-center justify-center text-xs'
-              : 'w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs'
+              : `w-8 h-8 rounded-full bg-white border-2 flex items-center justify-center text-xs ${toneStyles.audio}`
           }
           aria-hidden="true"
         >
@@ -1075,7 +1106,7 @@ function PronounReviewButton(props: {
       <span className={playing ? 'block text-xs font-semibold text-sky-50' : 'block text-xs font-semibold text-gray-600'}>
         {props.pronoun.spanish}
       </span>
-      <span className={playing ? 'block font-black text-white mt-1' : 'block font-black text-sky-800 mt-1'}>
+      <span className={playing ? 'block font-black text-white mt-1' : `block font-black mt-1 ${toneStyles.accent}`}>
         {props.pronoun.pronunciation}
       </span>
     </button>
