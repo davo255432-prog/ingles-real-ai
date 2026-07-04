@@ -44,7 +44,7 @@ export const LearningCommitmentScreen: React.FC<LearningCommitmentScreenProps> =
         No necesitas hacerlo perfecto. Necesitas seguir intentándolo.
       </p>
       <p className="text-emerald-800 text-xl font-black mt-5 mb-8">
-        Cada práctica te acerca a hablar inglés.
+        Cada práctica te acerca a tu meta.
       </p>
 
       <button
