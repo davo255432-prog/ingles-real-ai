@@ -191,6 +191,18 @@ export const EssentialVerbsFinalMission: React.FC<EssentialVerbsFinalMissionProp
     setListeningStory((current) => getDifferentItem(UNIT_3_LISTENING_STORIES, current.id));
   };
 
+  const replayListening = async () => {
+    stopSpeech();
+    setListenState('loading');
+    try {
+      setListenState('playing');
+      await generateSpeech(listeningStory.expected, speed);
+      setListenState('idle');
+    } catch {
+      setListenState('error');
+    }
+  };
+
   const checkListening = () => {
     setComprehension(scoreListening(listenAnswer, listeningStory.expected));
   };
@@ -268,7 +280,7 @@ export const EssentialVerbsFinalMission: React.FC<EssentialVerbsFinalMissionProp
         <button type="button" disabled={!listenAnswer.trim()} onClick={checkListening} className="w-full rounded-2xl bg-emerald-500 text-white py-4 font-black disabled:bg-gray-300">Revisar comprensión</button>
         {comprehension !== null && <div className="mt-4 bg-sky-50 rounded-2xl p-4"><p className="text-xs font-black uppercase text-sky-700">Texto correcto</p><p className="font-black mt-2">{listeningStory.expected}</p></div>}
         <div className="grid grid-cols-2 gap-3 mt-4">
-          <button type="button" onClick={() => { stopSpeech(); setListenState('idle'); }} className="rounded-2xl border-2 border-sky-200 py-3 font-black">Escuchar otra vez</button>
+          <button type="button" onClick={() => void replayListening()} className="rounded-2xl border-2 border-sky-200 py-3 font-black">Escuchar otra vez</button>
           <button type="button" onClick={newListeningStory} className="rounded-2xl border-2 border-sky-200 py-3 font-black">Nueva historia</button>
         </div>
       </section>
