@@ -1,20 +1,33 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { generateSpeech, prefetchSpeech, stopSpeech } from '../../services/speechApi';
+import {
+  generateSpeech,
+  prefetchSpeech,
+  stopSpeech,
+  type SpeechSpeed,
+} from '../../services/speechApi';
 import {
   ESSENTIAL_VERBS,
   UNIT_3_ACTIVATION,
+  UNIT_3_BASE_DIALOGUE,
   UNIT_3_CONNECTORS,
   UNIT_3_CONNECTOR_MATCHING,
   UNIT_3_CONNECTOR_REVIEW,
   UNIT_3_GUIDED_BUILD,
+  UNIT_3_MISSION_PREPARATION,
   UNIT_3_PRONOUN_REVIEW,
   UNIT_3_REPETITION_PHRASES,
   UNIT_3_VERB_MATCHING,
+  UNIT_3_VOCABULARY,
   type ConnectorCard,
   type EssentialVerbCard,
   type Unit3MatchingItem,
   type Unit3RepetitionPhrase,
 } from '../data/essentialVerbsPractice';
+import { EssentialVerbsFinalPractice } from './EssentialVerbsFinalPractice';
+import {
+  EssentialVerbsFinalMission,
+  type Unit3BestResult,
+} from './EssentialVerbsFinalMission';
 
 type ReviewStep =
   | { kind: 'activation' }
@@ -27,6 +40,10 @@ type ReviewStep =
   | { kind: 'connector-matching' }
   | { kind: 'builder' }
   | { kind: 'repetition'; item: Unit3RepetitionPhrase }
+  | { kind: 'dialogue' }
+  | { kind: 'pre-challenge' }
+  | { kind: 'final-practice' }
+  | { kind: 'final-mission' }
   | { kind: 'complete' };
 
 interface EssentialVerbsPracticeProps {
@@ -46,6 +63,10 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
       { kind: 'connector-matching' },
       { kind: 'builder' },
       ...UNIT_3_REPETITION_PHRASES.map((item): ReviewStep => ({ kind: 'repetition', item })),
+      { kind: 'dialogue' },
+      { kind: 'pre-challenge' },
+      { kind: 'final-practice' },
+      { kind: 'final-mission' },
       { kind: 'complete' },
     ],
     [],
@@ -54,6 +75,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
   const [selected, setSelected] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [revealedPieces, setRevealedPieces] = useState(1);
+  const [bestResult, setBestResult] = useState<Unit3BestResult | null>(null);
 
   useEffect(() => {
     const teachingPhrases = [
@@ -69,6 +91,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
       UNIT_3_GUIDED_BUILD.result,
       ...UNIT_3_REPETITION_PHRASES.map((phrase) => phrase.english),
       ...UNIT_3_VERB_MATCHING.flatMap((item) => item.audioPhrase ? [item.audioPhrase] : []),
+      ...UNIT_3_BASE_DIALOGUE.lines.map((line) => line.english),
     ];
     teachingPhrases.forEach((phrase) => void prefetchSpeech(phrase, 'normal'));
   }, []);
@@ -93,6 +116,24 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
     setRevealedPieces(1);
     setIndex((current) => current - 1);
   };
+
+  if (step.kind === 'final-practice') {
+    return <EssentialVerbsFinalPractice onBack={previous} onComplete={next} />;
+  }
+
+  if (step.kind === 'final-mission') {
+    return (
+      <EssentialVerbsFinalMission
+        onBack={previous}
+        onComplete={(result) => {
+          setBestResult((current) =>
+            !current || result.overall > current.overall ? result : current,
+          );
+          next();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
@@ -195,7 +236,9 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
         {step.kind === 'repetition' && (
           <RepetitionStep key={step.item.id} phrase={step.item} onContinue={next} />
         )}
-        {step.kind === 'complete' && <PreviewComplete onExit={onExit} />}
+        {step.kind === 'dialogue' && <DialogueStep onContinue={next} />}
+        {step.kind === 'pre-challenge' && <PreChallengeStep onContinue={next} />}
+        {step.kind === 'complete' && <PreviewComplete onExit={onExit} result={bestResult} />}
       </main>
     </div>
   );
@@ -1145,7 +1188,92 @@ function ConnectorReviewStep({ onContinue }: { onContinue: () => void }) {
   );
 }
 
-function PreviewComplete({ onExit }: { onExit: () => void }) {
+function DialogueStep({ onContinue }: { onContinue: () => void }) {
+  const [playing, setPlaying] = useState<SpeechSpeed | null>(null);
+  const dialogueText = UNIT_3_BASE_DIALOGUE.lines.map((line) => line.english).join(' ');
+
+  useEffect(() => () => stopSpeech(), []);
+
+  const play = async (speed: SpeechSpeed) => {
+    stopSpeech();
+    setPlaying(speed);
+    try {
+      await generateSpeech(dialogueText, speed);
+    } finally {
+      setPlaying(null);
+    }
+  };
+
+  return (
+    <section className="pt-4">
+      <p className="text-violet-700 text-sm font-black uppercase">Diálogo real</p>
+      <h1 className="text-gray-950 text-3xl font-black mt-1">{UNIT_3_BASE_DIALOGUE.title}</h1>
+      <p className="text-gray-700 font-semibold mt-2 mb-5">{UNIT_3_BASE_DIALOGUE.context}</p>
+      <div className="space-y-3 mb-4">
+        {UNIT_3_BASE_DIALOGUE.lines.map((line, index) => (
+          <article key={`${line.speaker}-${line.english}`} className={index % 2 === 0 ? 'bg-white border-2 border-violet-200 rounded-2xl p-4 mr-8' : 'bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 ml-8'}>
+            <p className="text-xs font-black uppercase text-gray-500">Persona {line.speaker}</p>
+            <p className="text-gray-950 text-lg font-black mt-1">{line.english}</p>
+            <p className="text-gray-700 font-semibold mt-1">{line.spanish}</p>
+            <p className="text-violet-700 font-extrabold mt-2">{line.pronunciation}</p>
+            <AudioButton phrase={line.english} />
+          </article>
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <button type="button" onClick={() => void play('slow')} className="rounded-2xl bg-sky-500 text-white py-4 font-black">{playing === 'slow' ? 'Reproduciendo...' : 'Diálogo lento'}</button>
+        <button type="button" onClick={() => void play('normal')} className="rounded-2xl bg-violet-500 text-white py-4 font-black">{playing === 'normal' ? 'Reproduciendo...' : 'Diálogo normal'}</button>
+      </div>
+      <PrimaryButton onClick={onContinue}>Prepararme para el reto</PrimaryButton>
+    </section>
+  );
+}
+
+function PreChallengeStep({ onContinue }: { onContinue: () => void }) {
+  const preparedVocabulary = UNIT_3_VOCABULARY.filter((item) =>
+    UNIT_3_MISSION_PREPARATION.vocabularyIds.includes(item.id),
+  );
+  return (
+    <section className="pt-4">
+      <p className="text-amber-700 text-sm font-black uppercase">Pre-reto</p>
+      <h1 className="text-gray-950 text-3xl font-black mt-1 mb-4">Prepárate para hablar y escuchar</h1>
+      <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 mb-5">
+        <p className="text-amber-950 text-lg font-black">
+          Revisa estas palabras antes de comenzar. Nada nuevo aparecerá en el reto.
+        </p>
+      </div>
+      <p className="text-gray-500 text-xs font-black uppercase mb-2">Verbos y conectores</p>
+      <div className="flex flex-wrap gap-2 mb-5">
+        {[...UNIT_3_MISSION_PREPARATION.verbs, ...UNIT_3_MISSION_PREPARATION.connectors].map((word) => (
+          <span key={word} className="bg-emerald-100 border border-emerald-300 rounded-lg px-3 py-2 text-emerald-900 font-black">{word}</span>
+        ))}
+      </div>
+      <p className="text-gray-500 text-xs font-black uppercase mb-2">Palabras que pueden aparecer</p>
+      <div className="grid grid-cols-2 gap-2 mb-5">
+        {preparedVocabulary.map((item) => (
+          <div key={item.id} className="bg-white border border-gray-200 rounded-xl p-3">
+            <p className="font-black">{item.english}</p>
+            <p className="text-gray-600 text-sm font-semibold">{item.spanish}</p>
+            <p className="text-emerald-700 text-sm font-extrabold">{item.pronunciation}</p>
+            <CompactAudioButton phrase={item.english} label={item.english} />
+          </div>
+        ))}
+      </div>
+      <p className="text-gray-500 text-xs font-black uppercase mb-2">Bloques útiles</p>
+      <div className="space-y-2 mb-5">
+        {UNIT_3_MISSION_PREPARATION.usefulBlocks.map((block) => (
+          <div key={block} className="bg-sky-50 border border-sky-200 rounded-xl p-3">
+            <p className="font-black">{block}</p>
+            <AudioButton phrase={block} />
+          </div>
+        ))}
+      </div>
+      <PrimaryButton onClick={onContinue}>Comenzar práctica hablada</PrimaryButton>
+    </section>
+  );
+}
+
+function PreviewComplete({ onExit, result }: { onExit: () => void; result: Unit3BestResult | null }) {
   return (
     <section className="pt-16 text-center">
       <div className="flex justify-center gap-5 mb-5" aria-hidden="true">
@@ -1157,23 +1285,40 @@ function PreviewComplete({ onExit }: { onExit: () => void }) {
         ✓
       </div>
       <p className="text-sm font-extrabold uppercase text-emerald-700 mb-2">
-        ¡Primera parte completada!
+        Lo que ya puedes hacer
       </p>
       <h1 className="text-3xl font-black text-gray-950 mb-4">
-        Ya puedes usar verbos esenciales y unir ideas
+        ¡Unidad 3 completada en la vista temporal!
       </h1>
-      <p className="text-gray-700 font-medium leading-relaxed mb-8">
-        Lo siguiente será practicar estas ideas en conversaciones y situaciones reales.
-      </p>
-      <div className="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 mb-4">
-        <p className="text-sky-800 font-black">Siguiente etapa: práctica real</p>
-        <p className="text-gray-700 text-sm font-semibold mt-1">
-          Diálogo, práctica hablada y Misión Final.
-        </p>
+      <div className="text-left bg-white border-2 border-emerald-200 rounded-2xl p-5 mb-4 space-y-2">
+        {[
+          'Decir lo que necesitas.',
+          'Hablar de lo que tienes.',
+          'Expresar lo que quieres.',
+          'Decir a dónde vas.',
+          'Unir ideas usando AND, BUT, BECAUSE y ALSO.',
+        ].map((text) => <p key={text} className="font-extrabold text-gray-900">✅ {text}</p>)}
       </div>
+      {result && (
+        <div className="bg-sky-50 border-2 border-sky-200 rounded-2xl p-5 mb-4">
+          <p className="text-sky-800 text-lg font-black mb-3">⭐ Tu mejor resultado</p>
+          <div className="grid grid-cols-3 gap-2">
+            <Score label="Pronunciación" value={result.pronunciation} />
+            <Score label="Comprensión" value={result.comprehension} />
+            <Score label="General" value={result.overall} />
+          </div>
+        </div>
+      )}
+      <p className="text-gray-600 text-sm font-semibold mb-5">
+        Este resultado vive solo en la vista temporal. Se integrará al progreso cuando la unidad sea aprobada.
+      </p>
       <PrimaryButton onClick={onExit}>Cerrar por ahora</PrimaryButton>
     </section>
   );
+}
+
+function Score({ label, value }: { label: string; value: number }) {
+  return <div className="bg-white rounded-xl p-3"><p className="text-2xl font-black text-sky-800">{value}</p><p className="text-[10px] font-black uppercase text-gray-500">{label}</p></div>;
 }
 
 function RepetitionStep(props: {

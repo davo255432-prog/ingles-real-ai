@@ -388,3 +388,92 @@ export const UNIT_3_MISSION_PREPARATION = {
     'I need help because I am tired.',
   ],
 };
+
+export interface Unit3SpeakingPractice {
+  id: string;
+  situation: string;
+  expected: string;
+  pronunciation: string;
+}
+
+export const UNIT_3_SPEAKING_PRACTICES: Unit3SpeakingPractice[] = [
+  {
+    id: 'work-help',
+    situation: 'Estás en el trabajo. Necesitas ayuda porque estás cansado.',
+    expected: 'I am at work. I need help because I am tired.',
+    pronunciation: 'ai am at uerk. ai nid jelp bi-kos ai am tai-erd',
+  },
+  {
+    id: 'ready-keys',
+    situation: 'Estás listo. Tienes las llaves y el teléfono.',
+    expected: 'I am ready. I have the keys and the phone.',
+    pronunciation: 'ai am re-di. ai jav de kis and de foun',
+  },
+  {
+    id: 'want-water',
+    situation: 'Estás en el trabajo. Quieres agua y comida.',
+    expected: 'I am at work. I want water and food.',
+    pronunciation: 'ai am at uerk. ai uant uo-ter and fud',
+  },
+  {
+    id: 'go-work',
+    situation: 'Estás aquí, pero vas al trabajo.',
+    expected: 'I am here, but I go to work.',
+    pronunciation: 'ai am jir, bat ai gou tu uerk',
+  },
+];
+
+export interface Unit3MissionStory {
+  id: string;
+  situation: string;
+  expected: string;
+  pronunciation: string;
+}
+
+export const UNIT_3_SPEAKING_STORIES: Unit3MissionStory[] = [
+  {
+    id: 'mission-work',
+    situation: 'Estás en el trabajo. Necesitas ayuda porque estás cansado, pero estás listo.',
+    expected: 'I am at work. I need help because I am tired, but I am ready.',
+    pronunciation: 'ai am at uerk. ai nid jelp bi-kos ai am tai-erd, bat ai am re-di',
+  },
+  {
+    id: 'mission-ready',
+    situation: 'Estás aquí. Tienes las llaves y el teléfono. También tienes comida.',
+    expected: 'I am here. I have the keys and the phone. I also have food.',
+    pronunciation: 'ai am jir. ai jav de kis and de foun. ai ol-sou jav fud',
+  },
+  {
+    id: 'mission-school',
+    situation: 'Estás listo. Quieres agua y comida, pero vas a la escuela.',
+    expected: 'I am ready. I want water and food, but I go to school.',
+    pronunciation: 'ai am re-di. ai uant uo-ter and fud, bat ai gou tu skul',
+  },
+];
+
+export const UNIT_3_LISTENING_STORIES: Unit3MissionStory[] = [
+  {
+    id: 'listen-home',
+    situation: 'Escucha una historia sobre una persona en casa.',
+    expected: 'I am at home. I have water and food. I am tired, but I am ready.',
+    pronunciation: 'ai am at joum. ai jav uo-ter and fud. ai am tai-erd, bat ai am re-di',
+  },
+  {
+    id: 'listen-work',
+    situation: 'Escucha una historia sobre una persona en el trabajo.',
+    expected: 'I am at work. I need help because I am tired. I also want water.',
+    pronunciation: 'ai am at uerk. ai nid jelp bi-kos ai am tai-erd. ai ol-sou uant uo-ter',
+  },
+  {
+    id: 'listen-school',
+    situation: 'Escucha una historia sobre una persona que va a la escuela.',
+    expected: 'I am here. I have the phone and the keys. I go to school.',
+    pronunciation: 'ai am jir. ai jav de foun and de kis. ai gou tu skul',
+  },
+];
+
+export function getDifferentItem<T extends { id: string }>(items: T[], previousId?: string): T {
+  const available = previousId ? items.filter((item) => item.id !== previousId) : items;
+  const pool = available.length > 0 ? available : items;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
