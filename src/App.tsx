@@ -47,12 +47,14 @@ import { KitchenProgressScreen } from './screens/KitchenProgressScreen';
 // Coach IA — módulo aislado (gestiona su propia navegación interna)
 import { CoachRoot } from './coach/CoachRoot';
 import { EssentialVerbsPractice } from './coach/screens/EssentialVerbsPractice';
+import { LearningCommitmentScreen } from './coach/screens/LearningCommitmentScreen';
 
 // Biblioteca (placeholder)
 import { BibliotecaScreen } from './screens/BibliotecaScreen';
 
 const UNIT_3_PREVIEW_PARAM = 'preview-unit-3';
 const UNIT_3_PREVIEW_KEY = 'familia-u3-2026';
+const LEARNING_COMMITMENT_KEY = 'unit-3-learning-commitment-seen';
 
 function App() {
   const showUnit3Preview =
@@ -60,17 +62,29 @@ function App() {
     UNIT_3_PREVIEW_KEY;
   const startUnit3AtPhase2 =
     new URLSearchParams(window.location.search).get('unit3-section') === 'phase2';
+  const [showLearningCommitment, setShowLearningCommitment] = useState(
+    () => sessionStorage.getItem(LEARNING_COMMITMENT_KEY) !== 'yes',
+  );
 
   if (showUnit3Preview) {
     return (
       <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
         <div className="w-full max-w-[640px] min-h-screen bg-gray-50 shadow-[0_0_40px_rgba(0,0,0,0.12)]">
-          <EssentialVerbsPractice
-            startAtPhase2={startUnit3AtPhase2}
-            onExit={() => {
-              window.location.href = window.location.pathname;
-            }}
-          />
+          {showLearningCommitment ? (
+            <LearningCommitmentScreen
+              onContinue={() => {
+                sessionStorage.setItem(LEARNING_COMMITMENT_KEY, 'yes');
+                setShowLearningCommitment(false);
+              }}
+            />
+          ) : (
+            <EssentialVerbsPractice
+              startAtPhase2={startUnit3AtPhase2}
+              onExit={() => {
+                window.location.href = window.location.pathname;
+              }}
+            />
+          )}
         </div>
       </div>
     );
