@@ -20,7 +20,7 @@ export const LearningCommitmentScreen: React.FC<LearningCommitmentScreenProps> =
         Antes de comenzar
       </p>
       <h1 className="text-gray-950 text-4xl font-black leading-tight">
-        Tu progreso depende de ti
+        Aprender depende de ti
       </h1>
       <p className="text-gray-700 text-lg font-semibold leading-relaxed mt-5">
         Esta aplicación te muestra el camino, pero nadie puede aprender por ti.
@@ -41,10 +41,10 @@ export const LearningCommitmentScreen: React.FC<LearningCommitmentScreenProps> =
       </div>
 
       <p className="text-gray-800 text-lg font-bold leading-relaxed">
-        No necesitas hacerlo perfecto. Necesitas seguir intentándolo.
+        Aprender inglés es practicar, repetir y volver a intentarlo.
       </p>
       <p className="text-emerald-800 text-xl font-black mt-5 mb-8">
-        Cada práctica te acerca a tu meta.
+        No avances por avanzar. Repite hasta sentir que puedes usarlo.
       </p>
 
       <button
