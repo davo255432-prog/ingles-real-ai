@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { transcribeAudio } from '../../services/voiceApi';
+import { generateSpeech, prefetchSpeech, stopSpeech } from '../../services/speechApi';
 import {
   UNIT_3_SPEAKING_PRACTICES,
   getDifferentItem,
@@ -24,6 +25,7 @@ export const EssentialVerbsFinalPractice: React.FC<EssentialVerbsFinalPracticePr
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [modelPlaying, setModelPlaying] = useState(false);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -31,7 +33,17 @@ export const EssentialVerbsFinalPractice: React.FC<EssentialVerbsFinalPracticePr
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioUrlRef = useRef<string | null>(null);
 
-  useEffect(() => () => cleanup(), []);
+  useEffect(() => {
+    void prefetchSpeech(practice.expected, 'normal');
+  }, [practice.expected]);
+
+  useEffect(
+    () => () => {
+      stopSpeech();
+      cleanup();
+    },
+    [],
+  );
 
   const cleanup = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -45,6 +57,8 @@ export const EssentialVerbsFinalPractice: React.FC<EssentialVerbsFinalPracticePr
   };
 
   const resetResult = () => {
+    stopSpeech();
+    setModelPlaying(false);
     if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
     audioUrlRef.current = null;
     setAudioUrl(null);
@@ -136,6 +150,23 @@ export const EssentialVerbsFinalPractice: React.FC<EssentialVerbsFinalPracticePr
     setPractice((current) => getDifferentItem(UNIT_3_SPEAKING_PRACTICES, current.id));
   };
 
+  const playModelPronunciation = async () => {
+    if (modelPlaying) {
+      stopSpeech();
+      setModelPlaying(false);
+      return;
+    }
+    setError(null);
+    setModelPlaying(true);
+    try {
+      await generateSpeech(practice.expected, 'normal');
+    } catch {
+      setError('No se pudo reproducir la pronunciación. Intenta otra vez.');
+    } finally {
+      setModelPlaying(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50 px-5 pt-10 pb-8">
       <button type="button" onClick={onBack} className="w-11 h-11 rounded-full bg-white shadow mb-5" aria-label="Volver">
@@ -186,6 +217,13 @@ export const EssentialVerbsFinalPractice: React.FC<EssentialVerbsFinalPracticePr
           <p className="text-sky-800 text-xs font-black uppercase">Versión sugerida</p>
           <p className="text-gray-950 text-lg font-black mt-2">{practice.expected}</p>
           <p className="text-sky-800 font-extrabold mt-3">{practice.pronunciation}</p>
+          <button
+            type="button"
+            onClick={() => void playModelPronunciation()}
+            className="w-full rounded-2xl bg-sky-500 text-white py-4 mt-4 text-base font-black shadow-sm"
+          >
+            {modelPlaying ? 'Detener pronunciación' : 'Escuchar pronunciación correcta'}
+          </button>
         </div>
       )}
       {error && <p className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-900 font-bold mb-4">{error}</p>}
