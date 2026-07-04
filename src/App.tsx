@@ -58,12 +58,15 @@ function App() {
   const showUnit3Preview =
     new URLSearchParams(window.location.search).get(UNIT_3_PREVIEW_PARAM) ===
     UNIT_3_PREVIEW_KEY;
+  const startUnit3AtPhase2 =
+    new URLSearchParams(window.location.search).get('unit3-section') === 'phase2';
 
   if (showUnit3Preview) {
     return (
       <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
         <div className="w-full max-w-[640px] min-h-screen bg-gray-50 shadow-[0_0_40px_rgba(0,0,0,0.12)]">
           <EssentialVerbsPractice
+            startAtPhase2={startUnit3AtPhase2}
             onExit={() => {
               window.location.href = window.location.pathname;
             }}

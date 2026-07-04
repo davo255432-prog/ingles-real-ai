@@ -165,6 +165,12 @@ export const EssentialVerbsFinalPractice: React.FC<EssentialVerbsFinalPracticePr
 
       {audioUrl && (
         <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-5 mb-4">
+          <div className="flex gap-2 mb-2" aria-hidden="true">
+            <span className="animate-pulse">⭐</span>
+            <span className="animate-bounce">⭐</span>
+            <span className="animate-pulse">⭐</span>
+          </div>
+          <p className="text-emerald-900 font-black mb-1">¡Buen trabajo! Ya produces una idea completa.</p>
           <p className="text-gray-950 text-lg font-black mb-3">Escúchate y mejora</p>
           <audio controls src={audioUrl} className="w-full h-16" />
         </div>

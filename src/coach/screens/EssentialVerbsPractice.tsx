@@ -48,9 +48,13 @@ type ReviewStep =
 
 interface EssentialVerbsPracticeProps {
   onExit: () => void;
+  startAtPhase2?: boolean;
 }
 
-export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ onExit }) => {
+export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({
+  onExit,
+  startAtPhase2 = false,
+}) => {
   const steps = useMemo<ReviewStep[]>(
     () => [
       { kind: 'activation' },
@@ -71,7 +75,11 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({ 
     ],
     [],
   );
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() => {
+    if (!startAtPhase2) return 0;
+    const phase2Index = steps.findIndex((item) => item.kind === 'dialogue');
+    return phase2Index >= 0 ? phase2Index : 0;
+  });
   const [selected, setSelected] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [revealedPieces, setRevealedPieces] = useState(1);
@@ -1190,6 +1198,7 @@ function ConnectorReviewStep({ onContinue }: { onContinue: () => void }) {
 
 function DialogueStep({ onContinue }: { onContinue: () => void }) {
   const [playing, setPlaying] = useState<SpeechSpeed | null>(null);
+  const [achievement, setAchievement] = useState(false);
   const dialogueText = UNIT_3_BASE_DIALOGUE.lines.map((line) => line.english).join(' ');
 
   useEffect(() => () => stopSpeech(), []);
@@ -1224,12 +1233,21 @@ function DialogueStep({ onContinue }: { onContinue: () => void }) {
         <button type="button" onClick={() => void play('slow')} className="rounded-2xl bg-sky-500 text-white py-4 font-black">{playing === 'slow' ? 'Reproduciendo...' : 'Diálogo lento'}</button>
         <button type="button" onClick={() => void play('normal')} className="rounded-2xl bg-violet-500 text-white py-4 font-black">{playing === 'normal' ? 'Reproduciendo...' : 'Diálogo normal'}</button>
       </div>
-      <PrimaryButton onClick={onContinue}>Prepararme para el reto</PrimaryButton>
+      {achievement && (
+        <Achievement
+          title="¡Ya entiendes una conversación real!"
+          text="Escuchaste verbos y conectores dentro de una situación."
+        />
+      )}
+      <PrimaryButton onClick={achievement ? onContinue : () => setAchievement(true)}>
+        {achievement ? 'Prepararme para el reto' : 'Completar diálogo'}
+      </PrimaryButton>
     </section>
   );
 }
 
 function PreChallengeStep({ onContinue }: { onContinue: () => void }) {
+  const [achievement, setAchievement] = useState(false);
   const preparedVocabulary = UNIT_3_VOCABULARY.filter((item) =>
     UNIT_3_MISSION_PREPARATION.vocabularyIds.includes(item.id),
   );
@@ -1268,7 +1286,15 @@ function PreChallengeStep({ onContinue }: { onContinue: () => void }) {
           </div>
         ))}
       </div>
-      <PrimaryButton onClick={onContinue}>Comenzar práctica hablada</PrimaryButton>
+      {achievement && (
+        <Achievement
+          title="¡Estás listo para la misión!"
+          text="Nada nuevo aparecerá: ya reconoces las palabras y los bloques."
+        />
+      )}
+      <PrimaryButton onClick={achievement ? onContinue : () => setAchievement(true)}>
+        {achievement ? 'Comenzar práctica hablada' : 'Terminar preparación'}
+      </PrimaryButton>
     </section>
   );
 }
@@ -1309,6 +1335,11 @@ function PreviewComplete({ onExit, result }: { onExit: () => void; result: Unit3
           </div>
         </div>
       )}
+      <div className="bg-violet-50 border-2 border-violet-200 rounded-2xl p-5 mb-4">
+        <p className="text-3xl mb-2" aria-hidden="true">🏅</p>
+        <p className="text-violet-900 text-xl font-black">Insignia: Ideas completas</p>
+        <p className="text-gray-700 font-semibold mt-1">Ya no dices palabras sueltas: conectas ideas reales.</p>
+      </div>
       <p className="text-gray-600 text-sm font-semibold mb-5">
         Este resultado vive solo en la vista temporal. Se integrará al progreso cuando la unidad sea aprobada.
       </p>
@@ -1319,6 +1350,20 @@ function PreviewComplete({ onExit, result }: { onExit: () => void; result: Unit3
 
 function Score({ label, value }: { label: string; value: number }) {
   return <div className="bg-white rounded-xl p-3"><p className="text-2xl font-black text-sky-800">{value}</p><p className="text-[10px] font-black uppercase text-gray-500">{label}</p></div>;
+}
+
+function Achievement({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5 mb-4 text-center">
+      <div className="flex justify-center gap-3 mb-2" aria-hidden="true">
+        <span className="text-2xl animate-pulse">⭐</span>
+        <span className="text-4xl animate-bounce">⭐</span>
+        <span className="text-2xl animate-pulse">⭐</span>
+      </div>
+      <p className="text-emerald-900 text-xl font-black">{title}</p>
+      <p className="text-gray-700 font-semibold mt-1">{text}</p>
+    </div>
+  );
 }
 
 function RepetitionStep(props: {

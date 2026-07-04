@@ -243,6 +243,7 @@ export const EssentialVerbsFinalMission: React.FC<EssentialVerbsFinalMissionProp
         {voiceError && <p className="mt-4 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-900 font-bold">{voiceError}</p>}
         {evaluation && (
           <div className="mt-4 space-y-3">
+            <MissionAchievement score={evaluation.score} label="Pronunciación y producción" />
             <Result label="Lo que dijiste" value={evaluation.transcript} />
             <Result label="Forma esperada" value={speakingStory.expected} />
             <Result label="Pronunciación" value={speakingStory.pronunciation} />
@@ -278,7 +279,7 @@ export const EssentialVerbsFinalMission: React.FC<EssentialVerbsFinalMissionProp
         </button>
         <textarea value={listenAnswer} onChange={(event) => { setListenAnswer(event.target.value); setComprehension(null); }} placeholder="Escribe en inglés lo que escuchaste..." className="w-full min-h-28 rounded-2xl border-2 border-gray-300 p-4 mb-3" />
         <button type="button" disabled={!listenAnswer.trim()} onClick={checkListening} className="w-full rounded-2xl bg-emerald-500 text-white py-4 font-black disabled:bg-gray-300">Revisar comprensión</button>
-        {comprehension !== null && <div className="mt-4 bg-sky-50 rounded-2xl p-4"><p className="text-xs font-black uppercase text-sky-700">Texto correcto</p><p className="font-black mt-2">{listeningStory.expected}</p></div>}
+        {comprehension !== null && <div className="mt-4 space-y-3"><MissionAchievement score={comprehension} label="Comprensión auditiva" /><div className="bg-sky-50 rounded-2xl p-4"><p className="text-xs font-black uppercase text-sky-700">Texto correcto</p><p className="font-black mt-2">{listeningStory.expected}</p></div></div>}
         <div className="grid grid-cols-2 gap-3 mt-4">
           <button type="button" onClick={() => void replayListening()} className="rounded-2xl border-2 border-sky-200 py-3 font-black">Escuchar otra vez</button>
           <button type="button" onClick={newListeningStory} className="rounded-2xl border-2 border-sky-200 py-3 font-black">Nueva historia</button>
@@ -304,6 +305,22 @@ function Result({ label, value }: { label: string; value: string }) {
 function WordResult({ label, words }: { label: string; words: string[] }) {
   if (words.length === 0) return null;
   return <div className="bg-amber-50 rounded-2xl p-4"><p className="text-amber-800 text-xs font-black uppercase">{label}</p><p className="font-bold mt-1">{words.join(' · ')}</p></div>;
+}
+
+function MissionAchievement({ score, label }: { score: number; label: string }) {
+  const perfect = score === 100;
+  const strong = score >= 80;
+  return (
+    <div className={strong ? 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 text-center' : 'bg-violet-50 border-2 border-violet-200 rounded-2xl p-4 text-center'}>
+      <div className="flex justify-center gap-2 text-2xl mb-1" aria-hidden="true">
+        {strong ? <><span className="animate-pulse">⭐</span><span className="animate-bounce">⭐</span><span className="animate-pulse">⭐</span></> : <span>💪</span>}
+      </div>
+      <p className="font-black text-gray-950">
+        {perfect ? '¡Perfecto! Logro especial.' : strong ? '¡Excelente resultado!' : 'Cada intento cuenta. Repite despacio.'}
+      </p>
+      <p className="text-gray-600 text-sm font-bold mt-1">{label}: {score}/100</p>
+    </div>
+  );
 }
 
 function normalize(text: string): string[] {
