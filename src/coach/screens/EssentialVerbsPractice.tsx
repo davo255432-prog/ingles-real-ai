@@ -34,6 +34,7 @@ type ReviewStep =
   | { kind: 'verbs-intro' }
   | { kind: 'verb'; item: EssentialVerbCard }
   | { kind: 'verb-matching' }
+  | { kind: 'prepositions-review' }
   | { kind: 'connectors-intro' }
   | { kind: 'connector'; item: ConnectorCard }
   | { kind: 'connector-review' }
@@ -61,6 +62,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({
       { kind: 'verbs-intro' },
       ...ESSENTIAL_VERBS.map((item): ReviewStep => ({ kind: 'verb', item })),
       { kind: 'verb-matching' },
+      { kind: 'prepositions-review' },
       { kind: 'connectors-intro' },
       ...UNIT_3_CONNECTORS.map((item): ReviewStep => ({ kind: 'connector', item })),
       { kind: 'connector-review' },
@@ -100,6 +102,9 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({
       ...UNIT_3_REPETITION_PHRASES.map((phrase) => phrase.english),
       ...UNIT_3_VERB_MATCHING.flatMap((item) => item.audioPhrase ? [item.audioPhrase] : []),
       ...UNIT_3_BASE_DIALOGUE.lines.map((line) => line.english),
+      'I am in California.',
+      'I am at home.',
+      'I am at work.',
     ];
     teachingPhrases.forEach((phrase) => void prefetchSpeech(phrase, 'normal'));
   }, []);
@@ -204,6 +209,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({
             onContinue={next}
           />
         )}
+        {step.kind === 'prepositions-review' && <PrepositionsReview onContinue={next} />}
         {step.kind === 'connectors-intro' && <ConnectorIntro onContinue={next} />}
         {step.kind === 'connector' && (
           <ConnectorStep
@@ -513,6 +519,89 @@ function TeachingCard(props: TeachingCardProps) {
         </div>
       </div>
       <PrimaryButton onClick={() => setPhase('real-use')}>Ver una situación real</PrimaryButton>
+    </section>
+  );
+}
+
+function PrepositionsReview({ onContinue }: { onContinue: () => void }) {
+  return (
+    <section className="pt-6">
+      <p className="text-sky-700 text-sm font-black uppercase mb-2">Repaso de lugar</p>
+      <h1 className="text-gray-950 text-4xl font-black leading-tight mb-3">
+        ¿IN o AT?
+      </h1>
+      <p className="text-gray-700 text-lg font-semibold leading-relaxed mb-5">
+        Las dos ayudan a decir dónde estás.
+      </p>
+
+      <div className="bg-violet-50 border-2 border-violet-200 rounded-2xl p-4 mb-6">
+        <p className="text-violet-950 text-lg font-black">
+          IN y AT son preposiciones de lugar.
+        </p>
+        <p className="text-violet-800 font-bold mt-1">
+          No son conectores: ubican una persona o cosa en un lugar.
+        </p>
+      </div>
+
+      <article className="bg-sky-50 border-2 border-sky-300 rounded-3xl overflow-hidden mb-5">
+        <div className="bg-sky-600 text-white px-5 py-4 flex items-center justify-between">
+          <div>
+            <p className="text-4xl font-black">IN</p>
+            <p className="font-bold">dentro de una ciudad, estado o país</p>
+          </div>
+          <span className="text-5xl" aria-hidden="true">🏙️</span>
+        </div>
+        <div className="p-5">
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-5xl" aria-hidden="true">🧍</span>
+            <div>
+              <p className="text-gray-950 text-xl font-black">I am in California.</p>
+              <p className="text-gray-700 font-semibold">Estoy en California.</p>
+              <p className="text-sky-800 font-black mt-1">ai am in ca-li-for-nia</p>
+            </div>
+          </div>
+          <AudioButton phrase="I am in California." />
+        </div>
+      </article>
+
+      <article className="bg-amber-50 border-2 border-amber-300 rounded-3xl overflow-hidden mb-6">
+        <div className="bg-amber-500 text-gray-950 px-5 py-4 flex items-center justify-between">
+          <div>
+            <p className="text-4xl font-black">AT</p>
+            <p className="font-bold">en un lugar o punto específico</p>
+          </div>
+          <span className="text-5xl" aria-hidden="true">🏠</span>
+        </div>
+        <div className="p-5">
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-5xl" aria-hidden="true">🧍</span>
+            <div>
+              <p className="text-gray-950 text-xl font-black">I am at home.</p>
+              <p className="text-gray-700 font-semibold">Estoy en casa.</p>
+              <p className="text-amber-800 font-black mt-1">ai am at joum</p>
+            </div>
+          </div>
+          <AudioButton phrase="I am at home." />
+          <div className="border-t-2 border-amber-200 mt-5 pt-4">
+            <p className="text-gray-950 text-lg font-black">I am at work.</p>
+            <p className="text-gray-700 font-semibold">Estoy en el trabajo.</p>
+            <AudioButton phrase="I am at work." />
+          </div>
+        </div>
+      </article>
+
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="rounded-2xl bg-sky-100 border-2 border-sky-300 p-4 text-center">
+          <p className="text-sky-900 text-2xl font-black">IN</p>
+          <p className="text-gray-800 font-bold mt-1">área grande</p>
+        </div>
+        <div className="rounded-2xl bg-amber-100 border-2 border-amber-300 p-4 text-center">
+          <p className="text-amber-900 text-2xl font-black">AT</p>
+          <p className="text-gray-800 font-bold mt-1">lugar concreto</p>
+        </div>
+      </div>
+
+      <PrimaryButton onClick={onContinue}>Ahora sí: unir ideas</PrimaryButton>
     </section>
   );
 }
