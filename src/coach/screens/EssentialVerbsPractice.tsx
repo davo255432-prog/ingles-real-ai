@@ -707,6 +707,10 @@ interface ExercisePanelProps {
 }
 
 function ExercisePanel(props: ExercisePanelProps) {
+  const completedPhrase = props.prompt
+    .replace(/^Completa:\s*/i, '')
+    .replace('___', props.answer);
+
   return (
     <div className="bg-white border border-gray-200 rounded-3xl p-5 shadow-sm">
       <p className="text-xs font-extrabold uppercase text-gray-500 mb-2">Práctica inmediata</p>
@@ -749,6 +753,7 @@ function ExercisePanel(props: ExercisePanelProps) {
             <p className="text-emerald-800 text-xl font-black">¡Muy bien!</p>
             <p className="text-gray-950 font-extrabold mt-1">Habilidad desbloqueada</p>
             <p className="text-gray-700 font-medium mt-2">{props.explanation}</p>
+            <AudioButton phrase={completedPhrase} />
           </div>
         ) : (
           <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 mb-4">
