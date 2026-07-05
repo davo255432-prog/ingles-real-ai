@@ -50,11 +50,13 @@ type ReviewStep =
 interface EssentialVerbsPracticeProps {
   onExit: () => void;
   startAtPhase2?: boolean;
+  startAtPrepositions?: boolean;
 }
 
 export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({
   onExit,
   startAtPhase2 = false,
+  startAtPrepositions = false,
 }) => {
   const steps = useMemo<ReviewStep[]>(
     () => [
@@ -78,6 +80,10 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({
     [],
   );
   const [index, setIndex] = useState(() => {
+    if (startAtPrepositions) {
+      const prepositionsIndex = steps.findIndex((item) => item.kind === 'prepositions-review');
+      return prepositionsIndex >= 0 ? prepositionsIndex : 0;
+    }
     if (!startAtPhase2) return 0;
     const phase2Index = steps.findIndex((item) => item.kind === 'dialogue');
     return phase2Index >= 0 ? phase2Index : 0;

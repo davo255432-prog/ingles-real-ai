@@ -62,6 +62,8 @@ function App() {
     UNIT_3_PREVIEW_KEY;
   const startUnit3AtPhase2 =
     new URLSearchParams(window.location.search).get('unit3-section') === 'phase2';
+  const startUnit3AtPrepositions =
+    new URLSearchParams(window.location.search).get('unit3-section') === 'prepositions';
   const [showLearningCommitment, setShowLearningCommitment] = useState(
     () => sessionStorage.getItem(LEARNING_COMMITMENT_KEY) !== 'yes',
   );
@@ -80,6 +82,7 @@ function App() {
           ) : (
             <EssentialVerbsPractice
               startAtPhase2={startUnit3AtPhase2}
+              startAtPrepositions={startUnit3AtPrepositions}
               onExit={() => {
                 window.location.href = window.location.pathname;
               }}
