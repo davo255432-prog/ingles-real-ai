@@ -239,7 +239,14 @@ export const EssentialVerbsFinalMission: React.FC<EssentialVerbsFinalMissionProp
         >
           {micState === 'recording' ? 'Detener grabación' : micState === 'processing' ? 'Evaluando...' : 'Contar con mi voz'}
         </button>
-        {audioUrl && <div className="mt-4 bg-emerald-50 rounded-2xl p-4"><p className="font-black mb-2">Escúchate y mejora</p><audio controls src={audioUrl} className="w-full h-16" /></div>}
+        {audioUrl && (
+          <div className="mt-4 bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+            <p className="font-black mb-2">Escúchate y mejora</p>
+            <div className="bg-white rounded-2xl p-2 border border-emerald-100 overflow-hidden">
+              <audio controls src={audioUrl} className="block w-full max-w-full h-12" />
+            </div>
+          </div>
+        )}
         {voiceError && <p className="mt-4 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-900 font-bold">{voiceError}</p>}
         {evaluation && (
           <div className="mt-4 space-y-3">

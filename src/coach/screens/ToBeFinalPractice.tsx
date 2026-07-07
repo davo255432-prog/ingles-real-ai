@@ -329,11 +329,13 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
         )}
 
         {audioUrl && (
-          <div className="bg-emerald-50 rounded-2xl p-6 shadow-sm border-2 border-emerald-200 mb-4">
-            <p className="text-gray-900 text-xl font-extrabold leading-snug mb-4">
+          <div className="bg-emerald-50 rounded-2xl p-5 shadow-sm border-2 border-emerald-200 mb-4">
+            <p className="text-gray-900 text-lg sm:text-xl font-extrabold leading-snug mb-3">
               Escúchate y mejora. ¡Vamos, que sí puedes!
             </p>
-            <audio controls src={audioUrl} className="w-full h-20" />
+            <div className="bg-white rounded-2xl p-2 border border-emerald-100 overflow-hidden">
+              <audio controls src={audioUrl} className="block w-full max-w-full h-12" />
+            </div>
           </div>
         )}
 
