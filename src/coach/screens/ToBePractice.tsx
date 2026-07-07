@@ -1220,10 +1220,17 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
       mr.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
-      mr.start();
-      intervalRef.current = setInterval(() => {
-        if (mr.state === 'recording') mr.requestData();
-      }, 500);
+      const ios =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (ios) {
+        mr.start();
+        intervalRef.current = setInterval(() => {
+          if (mr.state === 'recording') mr.requestData();
+        }, 500);
+      } else {
+        mr.start(250);
+      }
       startBrowserRecognition();
       setMic('recording');
     } catch {

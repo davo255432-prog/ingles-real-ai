@@ -145,10 +145,17 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) chunksRef.current.push(event.data);
       };
-      recorder.start();
-      intervalRef.current = setInterval(() => {
-        if (recorder.state === 'recording') recorder.requestData();
-      }, 500);
+      const ios =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (ios) {
+        recorder.start();
+        intervalRef.current = setInterval(() => {
+          if (recorder.state === 'recording') recorder.requestData();
+        }, 500);
+      } else {
+        recorder.start(250);
+      }
       startBrowserRecognition();
       setMicState('recording');
     } catch (err) {
