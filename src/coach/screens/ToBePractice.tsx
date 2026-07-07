@@ -429,11 +429,13 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
     return (
       <Shell onExit={onExit} hideTop>
         <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+          <div className="text-4xl mb-3" aria-hidden="true">🎈 ⭐ 🎈</div>
           <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mb-6">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
+          <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-2">Segunda base lograda</p>
           <h1 className="text-3xl font-extrabold text-gray-900 mb-3">Unidad 2 — Verbo to be completada</h1>
           <p className="text-gray-600 leading-relaxed mb-8">
             Ya puedes usar am, is y are para formar frases sencillas.
@@ -549,6 +551,24 @@ const PrimaryButton: React.FC<{ onClick: () => void; children: React.ReactNode; 
 );
 
 // ── Botón de audio ───────────────────────────────────────────────────────────
+const AchievementCard: React.FC<{ title: string; subtitle: string; tone?: 'green' | 'blue' }> = ({
+  title,
+  subtitle,
+  tone = 'green',
+}) => {
+  const colors =
+    tone === 'blue'
+      ? 'bg-sky-50 border-sky-200 text-sky-800'
+      : 'bg-emerald-50 border-emerald-200 text-emerald-800';
+  return (
+    <div className={`border-2 rounded-3xl p-5 mb-4 text-center shadow-sm ${colors}`}>
+      <div className="text-3xl mb-2" aria-hidden="true">⭐ ⭐ ⭐</div>
+      <p className="text-xl font-black leading-tight">{title}</p>
+      <p className="text-gray-900 font-extrabold mt-1">{subtitle}</p>
+    </div>
+  );
+};
+
 const AudioButton: React.FC<{ state: AudioState; onPlay: () => void; size?: 'sm' | 'lg' }> = ({
   state,
   onPlay,
@@ -772,9 +792,10 @@ const ExerciseCard: React.FC<{ ex: OptionExercise; onDone: (correct: boolean) =>
 
         {/* Feedback de acierto */}
         {stage === 'right' && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-4">
-            <p className="text-emerald-700 font-bold">¡Correcto! 🎉</p>
-          </div>
+          <AchievementCard
+            title="¡Muy bien!"
+            subtitle="Elegiste la forma correcta de to be."
+          />
         )}
 
         {/* Feedback de error: explicación del Coach + ejemplo distinto */}
@@ -864,25 +885,20 @@ const OrderCard: React.FC<{
         </div>
 
         {checked && (
-          <div
-            className={
-              isCorrect
-                ? 'bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-4'
-                : 'bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4'
-            }
-          >
-            <p className={isCorrect ? 'text-emerald-700 font-bold' : 'text-amber-800 font-bold mb-1'}>
-              {isCorrect ? '¡Correcto! 🎉' : 'Casi…'}
-            </p>
-            {!isCorrect && (
-              <>
-                <p className="text-amber-800 text-sm">🎓 {coach}</p>
-                <p className="text-amber-700 text-sm mt-1">
-                  Respuesta: <span className="font-semibold">{answer}</span>
-                </p>
-              </>
-            )}
-          </div>
+          isCorrect ? (
+            <AchievementCard
+              title="¡Frase armada!"
+              subtitle="Ya estás poniendo las palabras en orden."
+            />
+          ) : (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
+              <p className="text-amber-800 font-bold mb-1">Casi…</p>
+              <p className="text-amber-800 text-sm">🎓 {coach}</p>
+              <p className="text-amber-700 text-sm mt-1">
+                Respuesta: <span className="font-semibold">{answer}</span>
+              </p>
+            </div>
+          )
         )}
       </div>
 
@@ -1290,9 +1306,11 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
 
         {/* Feedback de voz */}
         {verdict?.kind === 'got' && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-4">
-            <p className="text-emerald-700 font-bold">Te entendí. ✅</p>
-          </div>
+          <AchievementCard
+            title="¡Buen trabajo!"
+            subtitle="Tu voz ya empieza a sonar con estructura."
+            tone="blue"
+          />
         )}
         {verdict?.kind === 'word' && (
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">

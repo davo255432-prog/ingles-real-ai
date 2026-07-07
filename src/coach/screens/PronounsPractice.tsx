@@ -48,6 +48,14 @@ function buildOptions(correct: string, pool: string[], n = 4): string[] {
 
 const byId = (id: string): PronounInfo => PRONOUNS_INFO.find((p) => p.id === id)!;
 
+const AchievementCard: React.FC<{ title: string; subtitle: string }> = ({ title, subtitle }) => (
+  <div className="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-5 mb-4 text-center shadow-sm">
+    <div className="text-3xl mb-2" aria-hidden="true">⭐ ⭐ ⭐</div>
+    <p className="text-emerald-800 text-xl font-black leading-tight">{title}</p>
+    <p className="text-gray-900 font-extrabold mt-1">{subtitle}</p>
+  </div>
+);
+
 // ── Generador del set de práctica (cambia en cada ronda) ──────────────────────
 function generatePractice(): PracticeQ[] {
   const enPool = PRONOUNS_INFO.map((p) => p.en);
@@ -276,6 +284,14 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
         </div>
 
         <div className="px-5 flex-1">
+          <div className="bg-emerald-600 rounded-3xl p-5 mb-4 shadow-md">
+            <p className="text-white text-xl font-extrabold leading-snug">
+              Primero reconoce quién habla o de quién hablamos.
+            </p>
+            <p className="text-emerald-50 text-sm font-bold leading-relaxed mt-2">
+              Si fallas, repasas y vuelves. Así se construye la base.
+            </p>
+          </div>
           <div className="flex flex-col gap-2.5">
             {PRONOUNS_INFO.map((p) => (
               <div
@@ -319,11 +335,13 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           <span className="text-gray-400 text-sm font-medium">Coach IA</span>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+          <div className="text-4xl mb-3" aria-hidden="true">🎈 ⭐ 🎈</div>
           <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mb-6">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
+          <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-2">Primera base lograda</p>
           <h1 className="text-3xl font-extrabold text-gray-900 mb-3">Unidad Pronombres completada</h1>
           <p className="text-gray-600 leading-relaxed mb-8">
             Ya puedes reconocer los pronombres personales y distinguir quién realiza la acción.
@@ -458,9 +476,10 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
         {/* Feedback: acierto */}
         {showCorrect && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-4">
-            <p className="text-emerald-700 font-bold">¡Correcto! 🎉</p>
-          </div>
+          <AchievementCard
+            title="¡Muy bien!"
+            subtitle="Ya reconoces quién hace la acción."
+          />
         )}
 
         {/* Feedback: primer error → explicación del Coach + ejemplo distinto */}
