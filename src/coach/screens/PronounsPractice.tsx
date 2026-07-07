@@ -187,7 +187,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
     setQIndex(0);
     setCorrectCount(0);
     resetQuestion();
-    setPhase('summary');
+    setPhase('intro');
   };
 
   const playAudio = async (text: string) => {

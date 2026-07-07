@@ -48,15 +48,21 @@ import { KitchenProgressScreen } from './screens/KitchenProgressScreen';
 import { CoachRoot } from './coach/CoachRoot';
 import { EssentialVerbsPractice } from './coach/screens/EssentialVerbsPractice';
 import { LearningCommitmentScreen } from './coach/screens/LearningCommitmentScreen';
+import { PronounsPractice } from './coach/screens/PronounsPractice';
 
 // Biblioteca (placeholder)
 import { BibliotecaScreen } from './screens/BibliotecaScreen';
 
 const UNIT_3_PREVIEW_PARAM = 'preview-unit-3';
 const UNIT_3_PREVIEW_KEY = 'familia-u3-2026';
+const UNIT_1_PREVIEW_PARAM = 'preview-unit-1';
+const UNIT_1_PREVIEW_KEY = 'familia-u1-2026';
 const LEARNING_COMMITMENT_KEY = 'unit-3-learning-commitment-seen';
 
 function App() {
+  const showUnit1Preview =
+    new URLSearchParams(window.location.search).get(UNIT_1_PREVIEW_PARAM) ===
+    UNIT_1_PREVIEW_KEY;
   const showUnit3Preview =
     new URLSearchParams(window.location.search).get(UNIT_3_PREVIEW_PARAM) ===
     UNIT_3_PREVIEW_KEY;
@@ -67,6 +73,24 @@ function App() {
   const [showLearningCommitment, setShowLearningCommitment] = useState(
     () => sessionStorage.getItem(LEARNING_COMMITMENT_KEY) !== 'yes',
   );
+
+  if (showUnit1Preview) {
+    return (
+      <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
+        <div className="w-full max-w-[640px] min-h-screen bg-gray-50 shadow-[0_0_40px_rgba(0,0,0,0.12)]">
+          <PronounsPractice
+            onExit={() => {
+              window.location.href = window.location.pathname;
+            }}
+            onUnitComplete={() => undefined}
+            onBackToMap={() => {
+              window.location.href = window.location.pathname;
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (showUnit3Preview) {
     return (
