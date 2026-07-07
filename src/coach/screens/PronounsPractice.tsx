@@ -142,11 +142,11 @@ function generatePractice(): PracticeQ[] {
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
-type Phase = 'summary' | 'exercises' | 'done';
+type Phase = 'intro' | 'summary' | 'exercises' | 'done';
 type Stage = 'answer' | 'firstError' | 'teachCard';
 
 export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUnitComplete, onBackToMap }) => {
-  const [phase, setPhase] = useState<Phase>('summary');
+  const [phase, setPhase] = useState<Phase>('intro');
   const [round, setRound] = useState(0); // fuerza regeneración en "Practicar otra vez"
   const questions = useMemo(() => generatePractice(), [round]);
 
@@ -260,6 +260,82 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   // ─────────────────────────────────────────────────────────────────────────
   // FASE: Cuadro resumen
   // ─────────────────────────────────────────────────────────────────────────
+  if (phase === 'intro') {
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
+        <div className="flex items-center gap-3 px-5 pt-12 pb-2">
+          <button
+            onClick={onExit}
+            className="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-500"
+            aria-label="Volver"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <span className="text-gray-400 text-sm font-medium">Unidad 1 · Pronombres</span>
+        </div>
+
+        <div className="px-6 pt-5 pb-4">
+          <p className="text-emerald-700 text-xs font-black uppercase tracking-wide mb-2">
+            Aquí empieza tu meta
+          </p>
+          <h1 className="text-4xl font-black text-gray-950 leading-tight mb-4">
+            Tu primera base para hablar inglés
+          </h1>
+          <div className="bg-emerald-600 rounded-3xl p-5 shadow-md mb-5">
+            <p className="text-white text-xl font-extrabold leading-snug">
+              Hoy no vas a memorizar palabras sueltas.
+            </p>
+            <p className="text-emerald-50 text-base font-bold leading-relaxed mt-3">
+              Vas a aprender quién habla, de quién hablamos y cómo empezar a formar frases reales.
+            </p>
+          </div>
+          <div className="bg-white border-2 border-emerald-100 rounded-3xl p-4 shadow-sm">
+            <p className="text-gray-950 text-lg font-black leading-snug">
+              Los pronombres son el primer paso.
+            </p>
+            <p className="text-gray-600 text-sm font-semibold leading-relaxed mt-2">
+              Sin ellos no sabemos quién hace la acción. Por eso empezamos aquí.
+            </p>
+          </div>
+        </div>
+
+        <div className="px-5 flex-1">
+          <div className="grid grid-cols-2 gap-3">
+            {PRONOUNS_INFO.map((p) => (
+              <div
+                key={p.id}
+                className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-4 min-h-[132px]"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-3xl" aria-hidden="true">{p.icon}</span>
+                  <span className="bg-emerald-50 text-emerald-700 text-xs font-black px-2 py-1 rounded-full">
+                    {p.pron}
+                  </span>
+                </div>
+                <p className="text-gray-950 text-3xl font-black leading-none mt-3">{p.en}</p>
+                <p className="text-gray-600 text-sm font-bold leading-snug mt-2">{p.translation ?? p.meaning}</p>
+                <p className="text-emerald-800 text-xs font-black uppercase tracking-wide mt-3">
+                  se dice: {p.pron}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="px-5 py-8">
+          <button
+            onClick={() => setPhase('summary')}
+            className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
+          >
+            Empezar con los pronombres
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (phase === 'summary') {
     return (
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
