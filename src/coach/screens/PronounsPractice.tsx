@@ -48,6 +48,17 @@ function buildOptions(correct: string, pool: string[], n = 4): string[] {
 
 const byId = (id: string): PronounInfo => PRONOUNS_INFO.find((p) => p.id === id)!;
 
+const CorrectPronounCard: React.FC<{ pronoun: PronounInfo }> = ({ pronoun }) => (
+  <div className="bg-white border border-emerald-100 rounded-3xl p-5 mb-4 text-center shadow-sm">
+    <div className="text-6xl mb-2" aria-hidden="true">{pronoun.icon}</div>
+    <p className="text-gray-950 text-5xl font-black leading-none">{pronoun.en}</p>
+    <p className="text-gray-700 text-xl font-extrabold mt-3">{pronoun.translation ?? pronoun.meaning}</p>
+    <div className="mt-4 inline-flex items-center justify-center rounded-2xl bg-emerald-100 px-4 py-2">
+      <span className="text-emerald-900 text-lg font-black">Se dice: {pronoun.pron}</span>
+    </div>
+  </div>
+);
+
 const AchievementCard: React.FC<{ title: string; subtitle: string }> = ({ title, subtitle }) => (
   <div className="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-5 mb-4 text-center shadow-sm">
     <div className="text-3xl mb-2" aria-hidden="true">⭐ ⭐ ⭐</div>
@@ -310,14 +321,14 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-3xl" aria-hidden="true">{p.icon}</span>
-                  <span className="bg-emerald-50 text-emerald-700 text-xs font-black px-2 py-1 rounded-full">
+                  <span className="bg-emerald-50 text-emerald-700 text-base font-black px-3 py-1.5 rounded-full">
                     {p.pron}
                   </span>
                 </div>
                 <p className="text-gray-950 text-3xl font-black leading-none mt-3">{p.en}</p>
                 <p className="text-gray-600 text-sm font-bold leading-snug mt-2">{p.translation ?? p.meaning}</p>
-                <p className="text-emerald-800 text-xs font-black uppercase tracking-wide mt-3">
-                  se dice: {p.pron}
+                <p className="text-emerald-800 text-sm font-black uppercase tracking-wide mt-3">
+                  se dice: <span className="text-lg">{p.pron}</span>
                 </p>
               </div>
             ))}
@@ -552,10 +563,13 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
         {/* Feedback: acierto */}
         {showCorrect && (
+          <>
           <AchievementCard
             title="¡Muy bien!"
             subtitle="Ya reconoces quién hace la acción."
           />
+          <CorrectPronounCard pronoun={info} />
+          </>
         )}
 
         {/* Feedback: primer error → explicación del Coach + ejemplo distinto */}
