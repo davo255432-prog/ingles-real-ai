@@ -153,7 +153,7 @@ function generatePractice(): PracticeQ[] {
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
-type Phase = 'intro' | 'summary' | 'exercises' | 'done';
+type Phase = 'intro' | 'summary' | 'memory' | 'exercises' | 'done';
 type Stage = 'answer' | 'firstError' | 'teachCard';
 
 export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUnitComplete, onBackToMap }) => {
@@ -173,6 +173,9 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   //  error   → la voz falló (muestra reintentar)
   const [audioState, setAudioState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const [audioError, setAudioError] = useState<string | null>(null);
+  const [selectedMemoryPronoun, setSelectedMemoryPronoun] = useState<string | null>(null);
+  const [matchedPronouns, setMatchedPronouns] = useState<string[]>([]);
+  const [memoryError, setMemoryError] = useState<string | null>(null);
 
   const q = questions[qIndex];
 
@@ -192,11 +195,21 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
     setPhase('exercises');
   };
 
+  const startMemory = () => {
+    setSelectedMemoryPronoun(null);
+    setMatchedPronouns([]);
+    setMemoryError(null);
+    setPhase('memory');
+  };
+
   const playAgain = () => {
     stopSpeech();
     setRound((r) => r + 1);
     setQIndex(0);
     setCorrectCount(0);
+    setSelectedMemoryPronoun(null);
+    setMatchedPronouns([]);
+    setMemoryError(null);
     resetQuestion();
     setPhase('intro');
   };
@@ -266,6 +279,18 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   const continueFromTeachCard = () => {
     // Tras repasar la tarjeta, seguimos a la siguiente pregunta (no al inicio).
     advance();
+  };
+
+  const handleMemoryMeaning = (pronounId: string) => {
+    if (!selectedMemoryPronoun || matchedPronouns.includes(pronounId)) return;
+    if (selectedMemoryPronoun === pronounId) {
+      setMatchedPronouns((current) => [...current, pronounId]);
+      setSelectedMemoryPronoun(null);
+      setMemoryError(null);
+    } else {
+      setMemoryError('Míralo otra vez. Si fallas, empiezas de nuevo. Vamos, tú puedes.');
+      setSelectedMemoryPronoun(null);
+    }
   };
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -402,10 +427,10 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
         <div className="px-5 py-8">
           <button
-            onClick={startPractice}
+            onClick={startMemory}
             className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
           >
-            Empezar la práctica
+            Memorizar con juego
           </button>
         </div>
       </div>
@@ -415,6 +440,130 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   // ─────────────────────────────────────────────────────────────────────────
   // FASE: Pantalla final de unidad completada
   // ─────────────────────────────────────────────────────────────────────────
+  if (phase === 'memory') {
+    const memoryComplete = matchedPronouns.length === PRONOUNS_INFO.length;
+
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
+        <div className="flex items-center gap-3 px-5 pt-12 pb-2">
+          <button
+            onClick={() => setPhase('summary')}
+            className="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-500"
+            aria-label="Volver"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <span className="text-gray-400 text-sm font-medium">Pronombres · Memoria</span>
+        </div>
+
+        <div className="px-6 pt-4 pb-2">
+          <p className="text-emerald-700 text-xs font-black uppercase tracking-wide mb-2">Reto de memoria</p>
+          <h1 className="text-3xl font-black text-gray-950 leading-tight mb-2">Une cada pronombre</h1>
+          <p className="text-gray-700 text-base font-semibold leading-relaxed">
+            Toca un pronombre y luego toca su significado. Asi lo guardas en la memoria.
+          </p>
+        </div>
+
+        <div className="px-5 flex-1">
+          <div className="bg-white border-2 border-emerald-100 rounded-3xl p-4 shadow-sm mb-4">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <p className="text-gray-900 text-sm font-black uppercase tracking-wide">Pronombres</p>
+              <p className="text-emerald-700 text-sm font-black">{matchedPronouns.length}/{PRONOUNS_INFO.length}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              {PRONOUNS_INFO.map((p) => {
+                const isDone = matchedPronouns.includes(p.id);
+                const isSelected = selectedMemoryPronoun === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      if (isDone) return;
+                      setSelectedMemoryPronoun(p.id);
+                      setMemoryError(null);
+                    }}
+                    className={
+                      isDone
+                        ? 'rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-3 py-3 text-left opacity-80'
+                        : isSelected
+                          ? 'rounded-2xl border-2 border-emerald-500 bg-emerald-100 px-3 py-3 text-left shadow-md scale-[1.01]'
+                          : 'rounded-2xl border-2 border-gray-100 bg-white px-3 py-3 text-left shadow-sm active:scale-[0.98]'
+                    }
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-2xl" aria-hidden="true">{p.icon}</span>
+                      <span className="text-emerald-700 text-sm font-black">{p.pron}</span>
+                    </div>
+                    <p className="text-gray-950 text-2xl font-black leading-none mt-2">{p.en}</p>
+                    {isDone && <p className="text-emerald-700 text-sm font-black mt-2">Listo</p>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-white border-2 border-sky-100 rounded-3xl p-4 shadow-sm">
+            <p className="text-gray-900 text-sm font-black uppercase tracking-wide mb-3">Significados</p>
+            <div className="grid grid-cols-1 gap-2.5">
+              {PRONOUNS_INFO.map((p) => {
+                const isDone = matchedPronouns.includes(p.id);
+                return (
+                  <button
+                    key={p.id}
+                    disabled={isDone || !selectedMemoryPronoun}
+                    onClick={() => handleMemoryMeaning(p.id)}
+                    className={
+                      isDone
+                        ? 'rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-4 py-3 text-left'
+                        : selectedMemoryPronoun
+                          ? 'rounded-2xl border-2 border-sky-300 bg-sky-50 px-4 py-3 text-left active:scale-[0.98]'
+                          : 'rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3 text-left'
+                    }
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-gray-950 text-lg font-black">{p.translation ?? p.meaning}</span>
+                      {isDone && <span className="text-emerald-700 text-xl font-black">✓</span>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {memoryError && (
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-3xl p-4 mt-4 text-center">
+              <p className="text-amber-800 text-base font-black leading-relaxed">{memoryError}</p>
+            </div>
+          )}
+
+          {memoryComplete && (
+            <div className="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-5 mt-4 text-center shadow-sm">
+              <div className="text-3xl mb-2" aria-hidden="true">⭐ ⭐ ⭐</div>
+              <p className="text-emerald-800 text-xl font-black">¡Memoria activada!</p>
+              <p className="text-gray-900 font-extrabold mt-1">Ya estas listo para reconocerlos en practica.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="px-5 py-8">
+          <button
+            onClick={memoryComplete ? startPractice : undefined}
+            disabled={!memoryComplete}
+            className={
+              memoryComplete
+                ? 'w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200'
+                : 'w-full bg-gray-200 text-gray-400 text-base font-bold rounded-2xl py-4 cursor-not-allowed'
+            }
+          >
+            Empezar la práctica
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (phase === 'done') {
     return (
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
