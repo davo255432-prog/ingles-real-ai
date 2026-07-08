@@ -153,7 +153,7 @@ function generatePractice(): PracticeQ[] {
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
-type Phase = 'intro' | 'summary' | 'memory' | 'exercises' | 'done';
+type Phase = 'intro' | 'summary' | 'guide' | 'memory' | 'exercises' | 'done';
 type Stage = 'answer' | 'firstError' | 'teachCard';
 
 export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUnitComplete, onBackToMap }) => {
@@ -427,10 +427,10 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
         <div className="px-5 py-8">
           <button
-            onClick={startMemory}
+            onClick={() => setPhase('guide')}
             className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
           >
-            Memorizar con juego
+            Entender como se usan
           </button>
         </div>
       </div>
@@ -440,6 +440,120 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   // ─────────────────────────────────────────────────────────────────────────
   // FASE: Pantalla final de unidad completada
   // ─────────────────────────────────────────────────────────────────────────
+  if (phase === 'guide') {
+    const guideGroups = [
+      {
+        title: 'Personas en la conversacion',
+        note: 'Cuando hablas de ti o de la persona que tienes enfrente.',
+        ids: ['i', 'you'],
+      },
+      {
+        title: 'Una persona, cosa o animal',
+        note: 'Cuando hablas de alguien o algo que no eres tu.',
+        ids: ['he', 'she', 'it'],
+      },
+      {
+        title: 'Grupos',
+        note: 'Cuando hablas de varias personas.',
+        ids: ['we', 'they'],
+      },
+    ];
+
+    const guideExamples = [
+      { icon: '👨', label: 'David', answer: 'he', text: 'David es una persona hombre.' },
+      { icon: '👩', label: 'Ana', answer: 'she', text: 'Ana es una persona mujer.' },
+      { icon: '📱', label: 'telefono', answer: 'it', text: 'Un objeto no es he ni she.' },
+      { icon: '🧑‍🤝‍🧑', label: 'tu y yo', answer: 'we', text: 'Si tu estas dentro del grupo, usa we.' },
+      { icon: '👥', label: 'ellos sin mi', answer: 'they', text: 'Si tu no estas dentro del grupo, usa they.' },
+    ];
+
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
+        <div className="flex items-center gap-3 px-5 pt-12 pb-2">
+          <button
+            onClick={() => setPhase('summary')}
+            className="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-500"
+            aria-label="Volver"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <span className="text-gray-400 text-sm font-medium">Pronombres · Guia</span>
+        </div>
+
+        <div className="px-6 pt-4 pb-2">
+          <p className="text-emerald-700 text-xs font-black uppercase tracking-wide mb-2">Antes del juego</p>
+          <h1 className="text-3xl font-black text-gray-950 leading-tight mb-2">Primero entiende cada pronombre</h1>
+          <p className="text-gray-700 text-base font-semibold leading-relaxed">
+            No los memorices como lista. Mira a quien representa cada palabra.
+          </p>
+        </div>
+
+        <div className="px-5 flex-1">
+          <div className="space-y-4">
+            {guideGroups.map((group) => (
+              <div key={group.title} className="bg-white border-2 border-emerald-100 rounded-3xl p-4 shadow-sm">
+                <p className="text-emerald-800 text-sm font-black uppercase tracking-wide mb-1">{group.title}</p>
+                <p className="text-gray-700 text-sm font-bold leading-relaxed mb-3">{group.note}</p>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {group.ids.map((id) => {
+                    const p = byId(id);
+                    return (
+                      <div key={p.id} className="rounded-2xl bg-emerald-50 border border-emerald-100 p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-3xl" aria-hidden="true">{p.icon}</span>
+                          <span className="rounded-full bg-white px-3 py-1 text-emerald-800 text-sm font-black">{p.pron}</span>
+                        </div>
+                        <p className="text-gray-950 text-3xl font-black leading-none mt-2">{p.en}</p>
+                        <p className="text-gray-700 text-base font-extrabold mt-1">{p.translation ?? p.meaning}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-sky-50 border-2 border-sky-200 rounded-3xl p-4 mt-5 shadow-sm">
+            <p className="text-sky-900 text-sm font-black uppercase tracking-wide mb-3">Ejemplos rapidos</p>
+            <div className="space-y-2.5">
+              {guideExamples.map((item) => {
+                const p = byId(item.answer);
+                return (
+                  <div key={item.label} className="bg-white rounded-2xl border border-sky-100 p-3 flex items-center gap-3">
+                    <span className="text-3xl w-10 text-center" aria-hidden="true">{item.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-gray-950 text-base font-black">{item.label} → <span className="text-sky-800">{p.en}</span></p>
+                      <p className="text-gray-600 text-sm font-semibold leading-snug">{item.text}</p>
+                    </div>
+                    <span className="bg-sky-100 text-sky-900 rounded-full px-3 py-1 text-sm font-black">{p.pron}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-3xl p-4 mt-5 text-center">
+            <p className="text-amber-900 text-lg font-black leading-snug">Ahora si: vamos a memorizar.</p>
+            <p className="text-amber-800 text-sm font-bold leading-relaxed mt-1">
+              Primero estudias, despues juegas, y luego practicas.
+            </p>
+          </div>
+        </div>
+
+        <div className="px-5 py-8">
+          <button
+            onClick={startMemory}
+            className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
+          >
+            Ir al juego de memoria
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (phase === 'memory') {
     const memoryComplete = matchedPronouns.length === PRONOUNS_INFO.length;
 
