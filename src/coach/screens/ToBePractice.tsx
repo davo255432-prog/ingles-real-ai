@@ -648,18 +648,28 @@ const Welcome: React.FC<{ userName?: string; onNext: () => void }> = ({ userName
   const greeting = name ? `Hola, ${name}.` : 'Hola.';
   return (
     <>
-      <div className="pt-4 pb-6 flex-1">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center">
-            <span className="text-lg">🎓</span>
+      <div className="pt-4 pb-6 flex-1 flex flex-col justify-center">
+        <div className="text-center mb-7">
+          <div className="mx-auto w-20 h-20 rounded-full bg-emerald-100 border-2 border-emerald-300 flex items-center justify-center mb-4">
+            <span className="text-4xl" aria-hidden="true">🎓</span>
           </div>
-          <span className="text-emerald-700 font-bold text-sm">Coach IA</span>
+          <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-2">Unidad 2</p>
+          <h1 className="text-4xl font-black text-gray-950 leading-tight">Verbo to be</h1>
         </div>
-        <div className="bg-white rounded-3xl rounded-tl-md p-5 shadow-md border border-emerald-100">
-          <p className="text-gray-800 text-lg leading-relaxed">
-            {greeting} Hoy aprenderás a usar <span className="font-bold">am</span>,{' '}
-            <span className="font-bold">is</span> y <span className="font-bold">are</span>. Al terminar, podrás
-            decir quién eres, cómo estás y describir personas, cosas y situaciones sencillas.
+        <div className="bg-white rounded-3xl p-6 shadow-md border border-emerald-100">
+          <p className="text-gray-900 text-xl font-extrabold leading-relaxed">
+            {greeting} Ahora aprenderás a decir <span className="text-emerald-700">ser</span> y{' '}
+            <span className="text-emerald-700">estar</span> en inglés.
+          </p>
+          <div className="grid grid-cols-3 gap-2 my-5">
+            {['am', 'is', 'are'].map((item) => (
+              <div key={item} className="rounded-2xl bg-emerald-50 border border-emerald-200 py-3 text-center">
+                <p className="text-emerald-800 text-2xl font-black">{item}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-gray-600 text-base font-bold leading-relaxed">
+            Con estas tres formas podrás presentarte, decir cómo estás y describir personas o cosas.
           </p>
         </div>
       </div>
@@ -718,19 +728,29 @@ const ScoreIntro: React.FC<{ onNext: () => void }> = ({ onNext }) => (
 const Overview: React.FC<{ onNext: () => void }> = ({ onNext }) => (
   <>
     <div className="pt-2 pb-4 flex-1">
-      <h1 className="text-2xl font-extrabold text-gray-900 mb-1">El verbo to be</h1>
-      <p className="text-gray-500 text-sm mb-5">Tres formas según quién hace la acción:</p>
-      <div className="flex flex-col gap-3">
+      <p className="text-emerald-700 text-xs font-black uppercase tracking-wide mb-2">Regla base</p>
+      <h1 className="text-3xl font-black text-gray-950 mb-2">Cada persona usa una forma</h1>
+      <p className="text-gray-700 text-base font-bold leading-relaxed mb-5">
+        No memorices una tabla. Mira qué palabra se une con cada grupo.
+      </p>
+      <div className="flex flex-col gap-4">
         {TO_BE_GROUPS.map((g) => {
           const s = FORM_STYLE[g.verb];
           return (
-            <div key={g.verb} className={`rounded-2xl border ${s.soft} p-4 flex items-center gap-4`}>
-              <span className={`text-2xl font-extrabold ${s.accent} w-16 text-center`}>{g.verb}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-gray-900 font-bold">{g.pronouns}</p>
-                <p className="text-gray-500 text-sm">Ejemplo: {g.example}</p>
+            <div key={g.verb} className={`rounded-3xl border-2 ${s.soft} p-5 shadow-sm`}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`w-20 rounded-2xl bg-white py-3 text-center text-3xl font-black ${s.accent}`}>
+                  {g.verb}
+                </div>
+                <div className="flex-1">
+                  <p className="text-gray-500 text-xs font-black uppercase tracking-wide">se usa con</p>
+                  <p className="text-gray-950 text-lg font-black">{g.pronouns}</p>
+                </div>
               </div>
-              <span className={`text-xs font-bold uppercase px-2.5 py-1 rounded-full ${s.chip}`}>to be</span>
+              <div className="rounded-2xl bg-white/80 p-3">
+                <p className="text-gray-500 text-sm font-bold">Ejemplo visual</p>
+                <p className="text-gray-950 text-xl font-black">{g.example}</p>
+              </div>
             </div>
           );
         })}
@@ -767,25 +787,29 @@ const PhraseCard: React.FC<{
           </span>
         )}
         {blockIntro && (
-          <div className="bg-white rounded-2xl rounded-tl-md p-4 shadow-sm border border-emerald-100 mb-4 flex items-start gap-2">
-            <span className="text-base">🎓</span>
-            <p className="text-gray-700 text-sm leading-relaxed">{blockIntro}</p>
+          <div className={`${s.soft} rounded-3xl p-5 shadow-sm border-2 mb-4`}>
+            <p className="text-gray-500 text-xs font-black uppercase tracking-wide mb-2">Regla rápida</p>
+            <p className="text-gray-900 text-lg font-extrabold leading-relaxed">{blockIntro}</p>
           </div>
         )}
 
         {/* Figura / escena + frase + traducción + pronunciación */}
-        <div className={`bg-white rounded-3xl p-6 shadow-md border ${s.ring} mb-4 text-center`}>
+        <div className={`bg-white rounded-3xl p-6 shadow-md border-2 ${s.ring} mb-4 text-center`}>
           <div className="text-6xl mb-3">{phrase.icon}</div>
-          <p className="text-3xl font-extrabold text-gray-900 leading-tight mb-1">{phrase.en}</p>
-          <p className="text-gray-500 text-lg mb-1">{phrase.es}</p>
-          <p className={`text-sm font-semibold mb-3 ${s.accent}`}>Cómo decirlo: {phrase.pron}</p>
-          <AudioButton state={audio.state} onPlay={() => void audio.play(phrase.en)} />
+          <p className="text-4xl font-black text-gray-950 leading-tight mb-2">{phrase.en}</p>
+          <p className="text-gray-600 text-xl font-bold mb-3">{phrase.es}</p>
+          <div className={`inline-flex rounded-2xl bg-gray-50 px-4 py-2 mb-4 ${s.accent}`}>
+            <span className="text-base font-black">Se dice: {phrase.pron}</span>
+          </div>
+          <div>
+            <AudioButton state={audio.state} onPlay={() => void audio.play(phrase.en)} />
+          </div>
         </div>
 
         {/* Explicación breve del Coach */}
-        <div className={`rounded-2xl border ${s.soft} p-4`}>
-          <p className="text-gray-700 text-sm leading-relaxed">
-            <span className="font-bold">🎓 Coach:</span> {phrase.coach}
+        <div className={`rounded-3xl border-2 ${s.soft} p-4`}>
+          <p className="text-gray-900 text-base font-bold leading-relaxed">
+            <span className="font-black">Coach:</span> {phrase.coach}
           </p>
         </div>
       </div>
