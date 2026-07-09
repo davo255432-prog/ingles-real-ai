@@ -588,7 +588,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           </p>
         </div>
 
-        <div className="hidden">
+        <div className="px-5 flex-1">
           <div className="space-y-4">
             {guideGroups.map((group) => (
               <div key={group.title} className="bg-white border-2 border-emerald-100 rounded-3xl p-4 shadow-sm">
