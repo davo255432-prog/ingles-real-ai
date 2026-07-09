@@ -783,6 +783,10 @@ const ExerciseCard: React.FC<{ ex: OptionExercise; onDone: (correct: boolean) =>
 
   const canCheck = selected !== null && (!needsAudio || audio.state === 'ready');
 
+  useEffect(() => {
+    if (stage === 'right') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [stage]);
+
   return (
     <>
       <div className="pt-2 pb-4 flex-1 flex flex-col">
@@ -883,6 +887,10 @@ const OrderCard: React.FC<{
   const remaining = bank.filter((b) => !built.some((x) => x.id === b.id));
   const builtText = built.map((b) => b.text).join(' ');
   const isCorrect = builtText === answer;
+
+  useEffect(() => {
+    if (checked && isCorrect) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [checked, isCorrect]);
 
   return (
     <>

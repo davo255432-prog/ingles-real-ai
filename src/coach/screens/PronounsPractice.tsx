@@ -283,6 +283,18 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
   // Mostramos un breve "¡Correcto!" antes de avanzar.
   const [showCorrect, setShowCorrect] = useState(false);
+
+  useEffect(() => {
+    if (showCorrect) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [showCorrect]);
+
+  useEffect(() => {
+    if (realUseCorrect) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [realUseCorrect]);
+
+  useEffect(() => {
+    if (matchedPronouns.length > 0) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [matchedPronouns.length]);
   const advanceAfterCorrect = () => {
     setShowCorrect(true);
   };
