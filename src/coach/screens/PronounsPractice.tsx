@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { PRONOUNS_INFO, type PronounInfo } from '../data/curriculum';
 import { generateSpeech, stopSpeech } from '../../services/speechApi';
 
@@ -165,7 +165,8 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   const [selected, setSelected] = useState<string | null>(null);
   const [stage, setStage] = useState<Stage>('answer');
   const [attempts, setAttempts] = useState(0);
-  const [correctCount, setCorrectCount] = useState(0);
+  const scorePointsRef = useRef(0);
+  const [finalScore, setFinalScore] = useState<number | null>(null);
   // Estado del audio de la práctica de oído.
   //  idle    → aún no se ha reproducido en esta pregunta
   //  loading → solicitando/reproduciendo la voz
@@ -197,7 +198,8 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
   const startPractice = () => {
     setQIndex(0);
-    setCorrectCount(0);
+    scorePointsRef.current = 0;
+    setFinalScore(null);
     resetQuestion();
     setPhase('exercises');
   };
@@ -220,7 +222,8 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
     stopSpeech();
     setRound((r) => r + 1);
     setQIndex(0);
-    setCorrectCount(0);
+    scorePointsRef.current = 0;
+    setFinalScore(null);
     setSelectedMemoryPronoun(null);
     setMatchedPronouns([]);
     setMemoryError(null);
@@ -251,7 +254,8 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
       setQIndex((i) => i + 1);
       resetQuestion();
     } else {
-      const score = Math.round((correctCount / questions.length) * 100);
+      const score = Math.round((scorePointsRef.current / questions.length) * 100);
+      setFinalScore(score);
       stopSpeech();
       setPhase('done');
       onUnitComplete(score); // marca completada (sin navegar; la pantalla final decide)
@@ -265,8 +269,8 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
     // …ni una pregunta de oído cuyo audio no se haya reproducido todavía.
     if (q.kind === 'listen' && audioState !== 'ready') return;
     if (selected === q.answer) {
-      // Acierto: cuenta como correcto si es el primer intento sin errores.
-      if (attempts === 0) setCorrectCount((c) => c + 1);
+      // Acierto: primer intento vale mas; reintento suma, pero no llega a 100.
+      scorePointsRef.current += attempts === 0 ? 1 : 0.7;
       setStage('answer'); // mostraremos feedback de acierto por bandera aparte
       advanceAfterCorrect();
     } else {
@@ -295,6 +299,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
   const continueFromTeachCard = () => {
     // Tras repasar la tarjeta, seguimos a la siguiente pregunta (no al inicio).
+    // Esta pregunta no suma puntos: puede repetir para subir su nota.
     advance();
   };
 
@@ -942,6 +947,12 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   }
 
   if (phase === 'done') {
+    const achievedScore = finalScore ?? 0;
+    const scoreMessage = achievedScore === 100
+      ? 'Perfecto. Llegaste a 100 porque dominaste la unidad.'
+      : achievedScore >= 80
+        ? 'Muy buen avance. Repite la unidad para acercarte al 100.'
+        : 'Vas por buen camino. Repite, practica y sube tu nota.';
     return (
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
         <div className="flex items-center gap-3 px-5 pt-12 pb-2">
@@ -956,8 +967,13 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           </div>
           <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-2">Primera base lograda</p>
           <h1 className="text-3xl font-extrabold text-gray-900 mb-3">Unidad Pronombres completada</h1>
+          <div className="w-full max-w-sm bg-white border-2 border-emerald-200 rounded-3xl p-5 mb-5 shadow-sm">
+            <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-1">Tu nota</p>
+            <p className="text-5xl font-black text-gray-900 leading-none">{achievedScore}<span className="text-2xl text-gray-400">/100</span></p>
+            <p className="text-gray-700 text-base font-bold mt-3">{scoreMessage}</p>
+          </div>
           <p className="text-gray-600 leading-relaxed mb-8">
-            Ya puedes reconocer los pronombres personales y distinguir quién realiza la acción.
+            Ya puedes reconocer los pronombres personales y distinguir quien realiza la accion.
           </p>
         </div>
         <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent flex flex-col gap-3">
@@ -971,7 +987,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
             onClick={playAgain}
             className="w-full bg-white border border-gray-200 text-gray-700 text-base font-bold rounded-2xl py-4 hover:bg-gray-50 transition-all"
           >
-            Practicar otra vez
+            Repetir para subir a 100
           </button>
         </div>
       </div>

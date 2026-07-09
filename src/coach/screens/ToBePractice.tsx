@@ -400,6 +400,7 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
   const [finished, setFinished] = useState(false);
   const [correct, setCorrect] = useState(0);
   const [exerciseCount, setExerciseCount] = useState(0);
+  const [finishedScore, setFinishedScore] = useState<number | null>(null);
 
   const step = steps[index];
 
@@ -410,22 +411,40 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
   }, [index, finished]);
 
   const advance = (wasCorrect?: boolean, isExercise?: boolean) => {
+    const nextExerciseCount = exerciseCount + (isExercise ? 1 : 0);
+    const nextCorrect = correct + (isExercise && wasCorrect ? 1 : 0);
     if (isExercise) {
-      setExerciseCount((n) => n + 1);
-      if (wasCorrect) setCorrect((c) => c + 1);
+      setExerciseCount(nextExerciseCount);
+      if (wasCorrect) setCorrect(nextCorrect);
     }
     if (index < total - 1) {
       setIndex((i) => i + 1);
     } else {
       stopSpeech();
-      const score = exerciseCount > 0 ? Math.round((correct / exerciseCount) * 100) : 100;
+      const score = nextExerciseCount > 0 ? Math.round((nextCorrect / nextExerciseCount) * 100) : 100;
+      setFinishedScore(score);
       setFinished(true);
       onComplete(score);
     }
   };
 
+  const repeatUnit = () => {
+    stopSpeech();
+    setIndex(0);
+    setCorrect(0);
+    setExerciseCount(0);
+    setFinishedScore(null);
+    setFinished(false);
+  };
+
   // ── Pantalla de cierre ──
   if (finished) {
+    const achievedScore = finishedScore ?? 0;
+    const scoreMessage = achievedScore === 100
+      ? 'Perfecto. Llegaste a 100 porque dominaste la unidad.'
+      : achievedScore >= 80
+        ? 'Muy buen avance. Repite la unidad para acercarte al 100.'
+        : 'Vas por buen camino. Repite, practica y sube tu nota.';
     return (
       <Shell onExit={onExit} hideTop>
         <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
@@ -437,16 +456,29 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
           </div>
           <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-2">Segunda base lograda</p>
           <h1 className="text-3xl font-extrabold text-gray-900 mb-3">Unidad 2 — Verbo to be completada</h1>
+          <div className="w-full max-w-sm bg-white border-2 border-emerald-200 rounded-3xl p-5 mb-5 shadow-sm">
+            <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-1">Tu nota</p>
+            <p className="text-5xl font-black text-gray-900 leading-none">
+              {achievedScore}<span className="text-2xl text-gray-400">/100</span>
+            </p>
+            <p className="text-gray-700 text-base font-bold mt-3">{scoreMessage}</p>
+          </div>
           <p className="text-gray-600 leading-relaxed mb-8">
             Ya puedes usar am, is y are para formar frases sencillas.
           </p>
         </div>
-        <div className="px-5 pb-8">
+        <div className="px-5 pb-8 flex flex-col gap-3">
           <button
             onClick={onBackToMap}
             className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
           >
             Volver al mapa del Nivel Básico
+          </button>
+          <button
+            onClick={repeatUnit}
+            className="w-full bg-white border border-gray-200 text-gray-700 text-base font-bold rounded-2xl py-4 hover:bg-gray-50 transition-all"
+          >
+            Repetir para subir a 100
           </button>
         </div>
       </Shell>
