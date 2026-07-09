@@ -313,9 +313,9 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   const realUseScenarios = [
     { icon: '👨', label: 'David', hint: 'Hablamos de un hombre.', answer: 'he', options: ['he', 'she', 'it'] },
     { icon: '👩', label: 'Ana', hint: 'Hablamos de una mujer.', answer: 'she', options: ['he', 'she', 'it'] },
-    { icon: '📱', label: 'un telefono', hint: 'Hablamos de una cosa.', answer: 'it', options: ['he', 'she', 'it'] },
-    { icon: '🤝', label: 'tu y yo', hint: 'Tu estas dentro del grupo.', answer: 'we', options: ['we', 'they', 'you'] },
-    { icon: '👥', label: 'ellos sin mi', hint: 'Yo no estoy dentro del grupo.', answer: 'they', options: ['we', 'they', 'you'] },
+    { icon: '📱', label: 'un tel�fono', hint: 'Hablamos de una cosa.', answer: 'it', options: ['he', 'she', 'it'] },
+    { icon: '🤝', label: 't� y yo', hint: 'T� est�s dentro del grupo.', answer: 'we', options: ['we', 'they', 'you'] },
+    { icon: '👥', label: 'ellos sin m�', hint: 'Yo no estoy dentro del grupo.', answer: 'they', options: ['we', 'they', 'you'] },
   ];
 
   const currentRealUse = realUseScenarios[realUseIndex];
@@ -600,9 +600,9 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
     const guideExamples = [
       { icon: '👨', label: 'David', answer: 'he', text: 'David es una persona hombre.' },
       { icon: '👩', label: 'Ana', answer: 'she', text: 'Ana es una persona mujer.' },
-      { icon: '📱', label: 'telefono', answer: 'it', text: 'Un objeto no es he ni she.' },
-      { icon: '🧑‍🤝‍🧑', label: 'tu y yo', answer: 'we', text: 'Si tu estas dentro del grupo, usa we.' },
-      { icon: '👥', label: 'ellos sin mi', answer: 'they', text: 'Si tu no estas dentro del grupo, usa they.' },
+      { icon: '📱', label: 'tel�fono', answer: 'it', text: 'Un objeto no es he ni she.' },
+      { icon: '🧑‍🤝‍🧑', label: 't� y yo', answer: 'we', text: 'Si tu estas dentro del grupo, usa we.' },
+      { icon: '👥', label: 'ellos sin m�', answer: 'they', text: 'Si t� no est�s dentro del grupo, usa they.' },
     ];
 
     return (
@@ -873,18 +873,26 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
             Elige el pronombre correcto
           </h1>
           <p className="text-gray-700 text-base font-semibold leading-relaxed">
-            Mira la situacion y decide que palabra usar.
+            Mira la situación y decide qué palabra usar.
           </p>
         </div>
 
-        <div className="px-5 flex-1">
-          <div className="bg-white border-2 border-emerald-100 rounded-3xl p-6 shadow-sm text-center mb-5">
-            <div className="text-7xl mb-4" aria-hidden="true">{currentRealUse.icon}</div>
-            <p className="text-gray-950 text-4xl font-black leading-tight">{currentRealUse.label}</p>
-            <p className="text-gray-600 text-lg font-bold leading-relaxed mt-3">{currentRealUse.hint}</p>
+        <div className="px-5 flex-1 pb-24">
+          <div className="bg-white border-2 border-emerald-100 rounded-3xl p-4 shadow-sm text-center mb-3">
+            <div className="text-5xl mb-2" aria-hidden="true">{currentRealUse.icon}</div>
+            <p className="text-gray-950 text-3xl font-black leading-tight">{currentRealUse.label}</p>
+            <p className="text-gray-600 text-base font-bold leading-relaxed mt-2">{currentRealUse.hint}</p>
           </div>
 
-          <div className="space-y-3">
+          {realUseCorrect && (
+            <div className="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-3 mb-3 text-center shadow-sm">
+              <div className="text-2xl mb-1" aria-hidden="true">⭐ ⭐ ⭐</div>
+              <p className="text-emerald-800 text-xl font-black">Muy bien</p>
+              <p className="text-gray-900 font-extrabold mt-1">{expected.en} es correcto aquí.</p>
+            </div>
+          )}
+
+          <div className="space-y-2.5">
             {currentRealUse.options.map((option) => {
               const isSelected = selectedRealUse === option;
               const isAnswer = option === currentRealUse.answer;
@@ -896,10 +904,10 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
                   onClick={() => handleRealUseChoice(option)}
                   className={
                     showCorrect
-                      ? 'w-full rounded-2xl border-2 border-emerald-400 bg-emerald-50 px-5 py-4 text-left shadow-sm'
+                      ? 'w-full rounded-2xl border-2 border-emerald-400 bg-emerald-50 px-5 py-3.5 text-left shadow-sm'
                       : showWrong
-                        ? 'w-full rounded-2xl border-2 border-amber-300 bg-amber-50 px-5 py-4 text-left shadow-sm'
-                        : 'w-full rounded-2xl border-2 border-gray-100 bg-white px-5 py-4 text-left shadow-sm active:scale-[0.98]'
+                        ? 'w-full rounded-2xl border-2 border-amber-300 bg-amber-50 px-5 py-3.5 text-left shadow-sm'
+                        : 'w-full rounded-2xl border-2 border-gray-100 bg-white px-5 py-3.5 text-left shadow-sm active:scale-[0.98]'
                   }
                 >
                   <span className="text-gray-950 text-2xl font-black">{byId(option).en}</span>
@@ -911,14 +919,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
           {selectedRealUse && !realUseCorrect && (
             <div className="bg-amber-50 border-2 border-amber-200 rounded-3xl p-4 mt-4 text-center">
-              <p className="text-amber-900 text-base font-black">Mira la situacion otra vez. Tu puedes.</p>
-            </div>
-          )}
-
-          {realUseCorrect && (
-            <div className="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-4 mt-4 text-center">
-              <p className="text-emerald-800 text-xl font-black">Muy bien</p>
-              <p className="text-gray-900 font-extrabold mt-1">{expected.en} es correcto aqui.</p>
+              <p className="text-amber-900 text-base font-black">Mira la situación otra vez. Tú puedes.</p>
             </div>
           )}
         </div>
@@ -1175,3 +1176,5 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
     </div>
   );
 };
+
+
