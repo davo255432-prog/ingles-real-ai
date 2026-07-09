@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { PRONOUNS_INFO, type PronounInfo } from '../data/curriculum';
 import { generateSpeech, stopSpeech } from '../../services/speechApi';
 
@@ -181,6 +181,10 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   const [realUseCorrect, setRealUseCorrect] = useState(false);
 
   const q = questions[qIndex];
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [phase, qIndex, realUseIndex]);
 
   const resetQuestion = () => {
     stopSpeech(); // corta cualquier audio anterior antes de cambiar de muestra
@@ -429,7 +433,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           </div>
         </div>
 
-        <div className="px-5 py-8">
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
           <button
             onClick={() => setPhase('summary')}
             className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
@@ -559,7 +563,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           </div>
         </div>
 
-        <div className="px-5 py-8">
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
           <button
             onClick={() => setPhase('guide')}
             className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
@@ -676,7 +680,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           </div>
         </div>
 
-        <div className="px-5 py-8">
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
           <button
             onClick={startMemory}
             className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
@@ -795,7 +799,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           )}
         </div>
 
-        <div className="px-5 py-8">
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
           <button
             onClick={memoryComplete ? startRealUse : undefined}
             disabled={!memoryComplete}
@@ -832,7 +836,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
               Ahora si pasamos a la practica mezclada.
             </p>
           </div>
-          <div className="px-5 pb-8">
+          <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
             <button
               onClick={startPractice}
               className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
@@ -919,7 +923,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           )}
         </div>
 
-        <div className="px-5 py-8">
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
           <button
             onClick={realUseCorrect ? nextRealUse : undefined}
             disabled={!realUseCorrect}
@@ -955,7 +959,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
             Ya puedes reconocer los pronombres personales y distinguir quién realiza la acción.
           </p>
         </div>
-        <div className="px-5 pb-8 flex flex-col gap-3">
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent flex flex-col gap-3">
           <button
             onClick={onBackToMap}
             className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
