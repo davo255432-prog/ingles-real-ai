@@ -158,7 +158,7 @@ function generatePractice(): PracticeQ[] {
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
-type Phase = 'intro' | 'summary' | 'guide' | 'memory' | 'realUse' | 'exercises' | 'done';
+type Phase = 'intro' | 'scoreIntro' | 'summary' | 'guide' | 'memory' | 'realUse' | 'exercises' | 'done';
 type Stage = 'answer' | 'firstError' | 'teachCard';
 
 export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUnitComplete, onBackToMap }) => {
@@ -458,7 +458,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
         <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
           <button
-            onClick={() => setPhase('summary')}
+            onClick={() => setPhase('scoreIntro')}
             className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
           >
             Estoy listo para aprender
@@ -468,6 +468,69 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
     );
   }
 
+  if (phase === 'scoreIntro') {
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
+        <div className="flex items-center gap-3 px-5 pt-12 pb-2">
+          <button
+            onClick={() => setPhase('intro')}
+            className="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-500"
+            aria-label="Volver"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <span className="text-gray-400 text-sm font-medium">Metodo de puntuacion</span>
+        </div>
+
+        <div className="px-6 pt-8 pb-4 flex-1 flex flex-col justify-center text-center">
+          <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-3">Antes de practicar</p>
+          <h1 className="text-4xl font-black text-gray-950 leading-tight mb-4">Asi ganas tu nota</h1>
+          <p className="text-gray-700 text-lg font-bold leading-relaxed mb-7">
+            La meta es mejorar. Puedes fallar, corregir y repetir hasta llegar a 100.
+          </p>
+
+          <div className="space-y-3 text-left">
+            <div className="bg-white border-2 border-emerald-200 rounded-3xl p-5 shadow-sm flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl font-black text-emerald-800">+100</div>
+              <div>
+                <p className="text-gray-950 text-xl font-black">Aciertas a la primera</p>
+                <p className="text-gray-600 text-base font-bold">Demuestras que ya lo tienes claro.</p>
+              </div>
+            </div>
+            <div className="bg-white border-2 border-sky-200 rounded-3xl p-5 shadow-sm flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-sky-100 flex items-center justify-center text-2xl font-black text-sky-800">+70</div>
+              <div>
+                <p className="text-gray-950 text-xl font-black">Fallas y corriges</p>
+                <p className="text-gray-600 text-base font-bold">Tambien cuenta, porque estas aprendiendo.</p>
+              </div>
+            </div>
+            <div className="bg-white border-2 border-amber-200 rounded-3xl p-5 shadow-sm flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center text-3xl" aria-hidden="true">100</div>
+              <div>
+                <p className="text-gray-950 text-xl font-black">Repite hasta 100</p>
+                <p className="text-gray-600 text-base font-bold">No es castigo. Es practica real.</p>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-emerald-800 text-xl font-black leading-relaxed mt-7">
+            No necesitas hacerlo perfecto al inicio. Necesitas seguir intentando.
+          </p>
+        </div>
+
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
+          <button
+            onClick={() => setPhase('summary')}
+            className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
+          >
+            Empezar unidad
+          </button>
+        </div>
+      </div>
+    );
+  }
   if (phase === 'summary') {
     return (
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">

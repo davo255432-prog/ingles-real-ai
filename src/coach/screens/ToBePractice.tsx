@@ -144,6 +144,7 @@ interface OptionExercise {
 // ── Pasos internos de la unidad ──────────────────────────────────────────────
 type ToBeStep =
   | { id: string; kind: 'welcome' }
+  | { id: string; kind: 'score-intro' }
   | { id: string; kind: 'overview' }
   | { id: string; kind: 'phrase'; phrase: BePhrase; blockIntro?: string; blockTitle?: string }
   | { id: string; kind: 'exercise'; ex: OptionExercise }
@@ -164,6 +165,7 @@ function gap(phrase: BePhrase): string {
 function buildSteps(): ToBeStep[] {
   const steps: ToBeStep[] = [];
   steps.push({ id: sid('welcome'), kind: 'welcome' });
+  steps.push({ id: sid('score-intro'), kind: 'score-intro' });
   steps.push({ id: sid('overview'), kind: 'overview' });
 
   // ── Bloques: enseñar → ejercicio corto → oído → voz ──
@@ -498,6 +500,7 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
   return (
     <Shell onExit={onExit} progressPct={progressPct} counter={`${index + 1}/${total}`}>
       {step.kind === 'welcome' && <Welcome userName={userName} onNext={() => advance()} />}
+      {step.kind === 'score-intro' && <ScoreIntro onNext={() => advance()} />}
       {step.kind === 'overview' && <Overview onNext={() => advance()} />}
       {step.kind === 'phrase' && <PhraseCard step={step} onNext={() => advance()} />}
       {step.kind === 'exercise' && (
@@ -668,6 +671,50 @@ const Welcome: React.FC<{ userName?: string; onNext: () => void }> = ({ userName
 };
 
 // ── Cuadro visual am / is / are ──────────────────────────────────────────────
+const ScoreIntro: React.FC<{ onNext: () => void }> = ({ onNext }) => (
+  <>
+    <div className="pt-4 pb-6 flex-1 flex flex-col justify-center text-center">
+      <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-3">Antes de practicar</p>
+      <h1 className="text-4xl font-black text-gray-950 leading-tight mb-4">Asi ganas tu nota</h1>
+      <p className="text-gray-700 text-lg font-bold leading-relaxed mb-7">
+        La meta es mejorar. Puedes fallar, corregir y repetir hasta llegar a 100.
+      </p>
+
+      <div className="space-y-3 text-left">
+        <div className="bg-white border-2 border-emerald-200 rounded-3xl p-5 shadow-sm flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl font-black text-emerald-800">+100</div>
+          <div>
+            <p className="text-gray-950 text-xl font-black">Aciertas a la primera</p>
+            <p className="text-gray-600 text-base font-bold">Demuestras que ya lo tienes claro.</p>
+          </div>
+        </div>
+
+        <div className="bg-white border-2 border-sky-200 rounded-3xl p-5 shadow-sm flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-sky-100 flex items-center justify-center text-2xl font-black text-sky-800">+70</div>
+          <div>
+            <p className="text-gray-950 text-xl font-black">Fallas y corriges</p>
+            <p className="text-gray-600 text-base font-bold">Tambien cuenta, porque estas aprendiendo.</p>
+          </div>
+        </div>
+
+        <div className="bg-white border-2 border-amber-200 rounded-3xl p-5 shadow-sm flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center text-3xl" aria-hidden="true">↻</div>
+          <div>
+            <p className="text-gray-950 text-xl font-black">Repite hasta 100</p>
+            <p className="text-gray-600 text-base font-bold">No es castigo. Es practica real.</p>
+          </div>
+        </div>
+      </div>
+
+      <p className="text-emerald-800 text-xl font-black leading-relaxed mt-7">
+        No necesitas hacerlo perfecto al inicio. Necesitas seguir intentando.
+      </p>
+    </div>
+    <div className="mt-auto">
+      <PrimaryButton onClick={onNext}>Empezar unidad</PrimaryButton>
+    </div>
+  </>
+);
 const Overview: React.FC<{ onNext: () => void }> = ({ onNext }) => (
   <>
     <div className="pt-2 pb-4 flex-1">
