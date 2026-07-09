@@ -597,6 +597,7 @@ const AchievementCard: React.FC<{ title: string; subtitle: string; tone?: 'green
       <div className="text-3xl mb-2" aria-hidden="true">⭐ ⭐ ⭐</div>
       <p className="text-xl font-black leading-tight">{title}</p>
       <p className="text-gray-900 font-extrabold mt-1">{subtitle}</p>
+      <p className="mt-3 inline-flex rounded-2xl bg-white px-4 py-2 text-emerald-800 text-base font-black border border-emerald-200">Logro desbloqueado</p>
     </div>
   );
 };
@@ -754,6 +755,7 @@ const ExerciseCard: React.FC<{ ex: OptionExercise; onDone: (correct: boolean) =>
   const [stage, setStage] = useState<'answer' | 'wrong' | 'right'>('answer');
   const [attempts, setAttempts] = useState(0);
   const [firstTryCorrect, setFirstTryCorrect] = useState(true);
+  const achievementRef = useRef<HTMLDivElement | null>(null);
   const audio = useAudio();
   const needsAudio = !!ex.audioText;
 
@@ -784,7 +786,7 @@ const ExerciseCard: React.FC<{ ex: OptionExercise; onDone: (correct: boolean) =>
   const canCheck = selected !== null && (!needsAudio || audio.state === 'ready');
 
   useEffect(() => {
-    if (stage === 'right') window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (stage === 'right') achievementRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [stage]);
 
   return (
@@ -828,10 +830,12 @@ const ExerciseCard: React.FC<{ ex: OptionExercise; onDone: (correct: boolean) =>
 
         {/* Feedback de acierto */}
         {stage === 'right' && (
-          <AchievementCard
-            title="¡Muy bien!"
-            subtitle="Elegiste la forma correcta de to be."
-          />
+          <div ref={achievementRef}>
+            <AchievementCard
+              title="¡Muy bien!"
+              subtitle={firstTryCorrect ? 'Elegiste la forma correcta de to be. +100' : 'Corregiste y aprendiste. +70'}
+            />
+          </div>
         )}
 
         {/* Feedback de error: explicación del Coach + ejemplo distinto */}
@@ -883,13 +887,14 @@ const OrderCard: React.FC<{
   const [built, setBuilt] = useState<{ id: string; text: string }[]>([]);
   const [checked, setChecked] = useState(false);
   const [firstTryCorrect, setFirstTryCorrect] = useState(true);
+  const achievementRef = useRef<HTMLDivElement | null>(null);
 
   const remaining = bank.filter((b) => !built.some((x) => x.id === b.id));
   const builtText = built.map((b) => b.text).join(' ');
   const isCorrect = builtText === answer;
 
   useEffect(() => {
-    if (checked && isCorrect) window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (checked && isCorrect) achievementRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [checked, isCorrect]);
 
   return (
@@ -926,10 +931,12 @@ const OrderCard: React.FC<{
 
         {checked && (
           isCorrect ? (
-            <AchievementCard
-              title="¡Frase armada!"
-              subtitle="Ya estás poniendo las palabras en orden."
-            />
+            <div ref={achievementRef}>
+              <AchievementCard
+                title="¡Frase armada!"
+                subtitle={firstTryCorrect ? 'Ya estas poniendo las palabras en orden. +100' : 'La corregiste y la armaste bien. +70'}
+              />
+            </div>
           ) : (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
               <p className="text-amber-800 font-bold mb-1">Casi…</p>

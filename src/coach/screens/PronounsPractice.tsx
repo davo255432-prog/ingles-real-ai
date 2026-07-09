@@ -59,11 +59,16 @@ const CorrectPronounCard: React.FC<{ pronoun: PronounInfo }> = ({ pronoun }) => 
   </div>
 );
 
-const AchievementCard: React.FC<{ title: string; subtitle: string }> = ({ title, subtitle }) => (
+const AchievementCard: React.FC<{ title: string; subtitle: string; scoreLabel?: string }> = ({ title, subtitle, scoreLabel }) => (
   <div className="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-5 mb-4 text-center shadow-sm">
     <div className="text-3xl mb-2" aria-hidden="true">⭐ ⭐ ⭐</div>
     <p className="text-emerald-800 text-xl font-black leading-tight">{title}</p>
     <p className="text-gray-900 font-extrabold mt-1">{subtitle}</p>
+      {scoreLabel && (
+      <p className="mt-3 inline-flex rounded-2xl bg-white px-4 py-2 text-emerald-800 text-base font-black border border-emerald-200">
+        {scoreLabel}
+      </p>
+    )}
   </div>
 );
 
@@ -180,6 +185,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   const [realUseIndex, setRealUseIndex] = useState(0);
   const [selectedRealUse, setSelectedRealUse] = useState<string | null>(null);
   const [realUseCorrect, setRealUseCorrect] = useState(false);
+  const achievementRef = useRef<HTMLDivElement | null>(null);
 
   const q = questions[qIndex];
 
@@ -285,11 +291,11 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   const [showCorrect, setShowCorrect] = useState(false);
 
   useEffect(() => {
-    if (showCorrect) window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (showCorrect) achievementRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [showCorrect]);
 
   useEffect(() => {
-    if (realUseCorrect) window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (realUseCorrect) achievementRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [realUseCorrect]);
 
   useEffect(() => {
@@ -902,7 +908,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           </div>
 
           {realUseCorrect && (
-            <div className="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-3 mb-3 text-center shadow-sm">
+            <div ref={achievementRef} className="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-3 mb-3 text-center shadow-sm">
               <div className="text-2xl mb-1" aria-hidden="true">⭐ ⭐ ⭐</div>
               <p className="text-emerald-800 text-xl font-black">Muy bien</p>
               <p className="text-gray-900 font-extrabold mt-1">{expected.en} es correcto aquí.</p>
@@ -1117,13 +1123,14 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
         {/* Feedback: acierto */}
         {showCorrect && (
-          <>
+          <div ref={achievementRef}>
           <AchievementCard
             title="¡Muy bien!"
             subtitle="Ya reconoces quién hace la acción."
+          scoreLabel={attempts === 0 ? "+100 por acertar a la primera" : "+70 por corregir y aprender"}
           />
           <CorrectPronounCard pronoun={info} />
-          </>
+          </div>
         )}
 
         {/* Feedback: primer error → explicación del Coach + ejemplo distinto */}
