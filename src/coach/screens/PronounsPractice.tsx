@@ -312,7 +312,40 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           <span className="text-gray-400 text-sm font-medium">Unidad 1 · Pronombres</span>
         </div>
 
-        <div className="px-6 pt-5 pb-4">
+        <div className="px-6 pt-8 pb-4 flex-1 flex flex-col items-center justify-center text-center">
+          <div className="w-24 h-24 rounded-full bg-emerald-100 border-2 border-emerald-300 flex items-center justify-center mb-7">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-3">
+            Aqui empieza tu meta
+          </p>
+          <h1 className="text-4xl font-black text-gray-950 leading-tight mb-5">
+            Tu progreso depende de ti
+          </h1>
+          <p className="text-gray-700 text-xl font-extrabold leading-relaxed max-w-md">
+            Esta app te muestra el camino, pero nadie puede aprender por ti.
+          </p>
+          <div className="grid grid-cols-3 gap-3 w-full mt-8">
+            {['Estudia', 'Habla', 'Practica'].map((item, index) => (
+              <div key={item} className="bg-white border-2 border-emerald-100 rounded-2xl p-4 shadow-sm">
+                <div className="mx-auto mb-2 w-9 h-9 rounded-full bg-emerald-500 text-white flex items-center justify-center text-lg font-black">
+                  {index + 1}
+                </div>
+                <p className="text-gray-950 text-base font-black">{item}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-gray-950 text-xl font-black leading-relaxed mt-8">
+            No necesitas hacerlo perfecto. Necesitas seguir intentandolo.
+          </p>
+          <p className="text-emerald-800 text-xl font-black leading-relaxed mt-5">
+            Cada practica te acerca a tu meta.
+          </p>
+        </div>
+
+        <div className="hidden">
           <p className="text-emerald-700 text-xs font-black uppercase tracking-wide mb-2">
             Aquí empieza tu meta
           </p>
@@ -337,7 +370,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           </div>
         </div>
 
-        <div className="px-5 flex-1">
+        <div className="hidden">
           <div className="grid grid-cols-2 gap-3">
             {PRONOUNS_INFO.map((p) => (
               <div
@@ -365,7 +398,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
             onClick={() => setPhase('summary')}
             className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
           >
-            Empezar con los pronombres
+            Estoy listo para aprender
           </button>
         </div>
       </div>
@@ -389,13 +422,78 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
         </div>
 
         <div className="px-6 pt-4 pb-2">
-          <h1 className="text-2xl font-extrabold text-gray-900 mb-1">Cuadro resumen</h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-emerald-700 text-xs font-black uppercase tracking-wide mb-2">
+            Ahora si: pronombres
+          </p>
+          <h1 className="text-3xl font-black text-gray-950 leading-tight mb-3">
+            Son palabras para saber quien habla
+          </h1>
+          <p className="text-gray-700 text-base font-semibold leading-relaxed">
+            Los pronombres nos dicen si hablo de mi, de ti, de otra persona, de una cosa o de un grupo.
+          </p>
+          <h1 className="hidden">Cuadro resumen</h1>
+          <p className="hidden">
             Repasa los 7 pronombres antes de practicar.
           </p>
         </div>
 
         <div className="px-5 flex-1">
+          <div className="bg-white border-2 border-emerald-100 rounded-3xl p-4 shadow-sm mb-4">
+            <p className="text-emerald-800 text-sm font-black uppercase tracking-wide mb-3">
+              Lamina 1: personas basicas
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {['i', 'you', 'he', 'she'].map((id) => {
+                const p = byId(id);
+                return (
+                  <div key={p.id} className="rounded-3xl bg-emerald-50 border border-emerald-100 p-4 min-h-[150px]">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-4xl" aria-hidden="true">{p.icon}</span>
+                      <span className="bg-white text-emerald-800 text-lg font-black px-3 py-1.5 rounded-full">
+                        {p.pron}
+                      </span>
+                    </div>
+                    <p className="text-gray-950 text-4xl font-black leading-none mt-3">{p.en}</p>
+                    <p className="text-gray-700 text-lg font-extrabold leading-snug mt-2">{p.translation ?? p.meaning}</p>
+                    <p className="text-emerald-800 text-sm font-black uppercase tracking-wide mt-3">
+                      Se dice: <span className="text-xl">{p.pron}</span>
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-white border-2 border-sky-100 rounded-3xl p-4 shadow-sm">
+            <p className="text-sky-900 text-sm font-black uppercase tracking-wide mb-3">
+              Lamina 2: cosas y grupos
+            </p>
+            <div className="grid grid-cols-1 gap-3">
+              {['it', 'we', 'they'].map((id) => {
+                const p = byId(id);
+                return (
+                  <div key={p.id} className="rounded-3xl bg-sky-50 border border-sky-100 p-4 flex items-center gap-4">
+                    <span className="text-5xl w-14 text-center shrink-0" aria-hidden="true">{p.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3">
+                        <p className="text-gray-950 text-4xl font-black leading-none">{p.en}</p>
+                        <span className="bg-white text-sky-900 text-lg font-black px-3 py-1.5 rounded-full">
+                          {p.pron}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 text-lg font-extrabold leading-snug mt-2">{p.translation ?? p.meaning}</p>
+                      <p className="text-sky-900 text-sm font-black uppercase tracking-wide mt-2">
+                        Se dice: <span className="text-xl">{p.pron}</span>
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden">
           <div className="bg-emerald-600 rounded-3xl p-5 mb-4 shadow-md">
             <p className="text-white text-xl font-extrabold leading-snug">
               Primero reconoce quién habla o de quién hablamos.
@@ -490,7 +588,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           </p>
         </div>
 
-        <div className="px-5 flex-1">
+        <div className="hidden">
           <div className="space-y-4">
             {guideGroups.map((group) => (
               <div key={group.title} className="bg-white border-2 border-emerald-100 rounded-3xl p-4 shadow-sm">
