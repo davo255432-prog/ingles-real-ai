@@ -85,6 +85,20 @@ export const CoachLessonScreen: React.FC<CoachLessonScreenProps> = ({
     setBuilt([]);
   }, [index]);
 
+  // Unidad 1 (Pronombres): usa el flujo nuevo completo, no los pasos antiguos.
+  if (lesson.title.toLowerCase().includes('pronombres')) {
+    const finalStepId = steps.find((s) => s.practice)?.id ?? steps[steps.length - 1]?.id;
+    return (
+      <PronounsPractice
+        onExit={onBack}
+        onUnitComplete={(score) =>
+          onStatus('completed', { lastStepId: finalStepId, lastScore: score, oralPending })
+        }
+        onBackToMap={onFinish}
+      />
+    );
+  }
+
   const goNext = (wasCorrect: boolean) => {
     if (wasCorrect) setCorrectCount((c) => c + 1);
     if (isLast) {
