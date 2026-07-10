@@ -58,8 +58,7 @@ export const LEVEL_1_UNITS: Unit[] = [
     levelId: 1,
     title: 'Verbos esenciales',
     description: 'need, want, have, go… los verbos que más vas a usar.',
-    lessonIds: [L1],          // conserva la lección car-keys (bloqueada por ahora)
-    comingSoon: true,
+    lessonIds: [L1],          // conserva la lección car-keys con ID estable.
   },
   {
     id: U_SENTENCE,
@@ -468,6 +467,7 @@ export function getBePhrase(id: string): BePhrase | undefined {
 
 /** ID estable de la lección de la Unidad 2 (lo usa ToBePractice para los pasos). */
 export const TO_BE_LESSON_ID = L_TO_BE;
+export const ESSENTIAL_VERBS_LESSON_ID = L1;
 
 // ── Unidad 2 · Lección "Verbo to be" ─────────────────────────────────────────
 // Toda la unidad (bienvenida, cuadro visual, bloques, oído, voz, diálogos,

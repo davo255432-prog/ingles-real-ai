@@ -3,7 +3,8 @@ import type { Lesson, LessonStatus, Piece, Step } from '../types';
 import { PronounsPractice } from './PronounsPractice';
 import { ToBePractice } from './ToBePractice';
 import { SpeakPractice } from './SpeakPractice';
-import { PRONOUNS_INFO, type PronounInfo } from '../data/curriculum';
+import { EssentialVerbsPractice } from './EssentialVerbsPractice';
+import { ESSENTIAL_VERBS_LESSON_ID, PRONOUNS_INFO, type PronounInfo } from '../data/curriculum';
 
 interface CoachLessonScreenProps {
   lesson: Lesson;
@@ -166,6 +167,17 @@ export const CoachLessonScreen: React.FC<CoachLessonScreenProps> = ({
           onStatus('completed', { lastStepId: step.id, lastScore: score })
         }
         onBackToMap={onFinish}
+      />
+    );
+  }
+
+  if (lesson.id === ESSENTIAL_VERBS_LESSON_ID) {
+    return (
+      <EssentialVerbsPractice
+        onExit={onBack}
+        onComplete={(score) =>
+          onStatus('completed', { lastStepId: step?.id, lastScore: score })
+        }
       />
     );
   }

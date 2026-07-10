@@ -49,12 +49,14 @@ type ReviewStep =
 
 interface EssentialVerbsPracticeProps {
   onExit: () => void;
+  onComplete?: (score: number) => void;
   startAtPhase2?: boolean;
   startAtPrepositions?: boolean;
 }
 
 export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({
   onExit,
+  onComplete,
   startAtPhase2 = false,
   startAtPrepositions = false,
 }) => {
@@ -162,13 +164,13 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({
             type="button"
             onClick={previous}
             className="w-11 h-11 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center text-gray-700"
-            aria-label={index === 0 ? 'Salir de la vista previa' : 'Paso anterior'}
+            aria-label={index === 0 ? 'Salir de Unidad 3' : 'Paso anterior'}
           >
             <span aria-hidden="true" className="text-2xl leading-none">‹</span>
           </button>
           <div className="flex-1">
             <div className="flex items-center justify-between gap-3 mb-2">
-              <span className="text-xs font-extrabold uppercase text-emerald-700">Unidad 3 · Vista previa</span>
+              <span className="text-xs font-extrabold uppercase text-emerald-700">Unidad 3</span>
               <span className="text-xs font-bold text-gray-500">{index + 1}/{steps.length}</span>
             </div>
             <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
@@ -258,7 +260,15 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({
         )}
         {step.kind === 'dialogue' && <DialogueStep onContinue={next} />}
         {step.kind === 'pre-challenge' && <PreChallengeStep onContinue={next} />}
-        {step.kind === 'complete' && <PreviewComplete onExit={onExit} result={bestResult} />}
+        {step.kind === 'complete' && (
+          <PreviewComplete
+            onExit={() => {
+              onComplete?.(bestResult?.overall ?? 100);
+              onExit();
+            }}
+            result={bestResult}
+          />
+        )}
       </main>
     </div>
   );
@@ -1445,7 +1455,7 @@ function PreviewComplete({ onExit, result }: { onExit: () => void; result: Unit3
         Lo que ya puedes hacer
       </p>
       <h1 className="text-3xl font-black text-gray-950 mb-4">
-        ¡Unidad 3 completada en la vista temporal!
+        ¡Unidad 3 completada!
       </h1>
       <div className="text-left bg-white border-2 border-emerald-200 rounded-2xl p-5 mb-4 space-y-2">
         {[
@@ -1472,9 +1482,9 @@ function PreviewComplete({ onExit, result }: { onExit: () => void; result: Unit3
         <p className="text-gray-700 font-semibold mt-1">Ya no dices palabras sueltas: conectas ideas reales.</p>
       </div>
       <p className="text-gray-600 text-sm font-semibold mb-5">
-        Este resultado vive solo en la vista temporal. Se integrará al progreso cuando la unidad sea aprobada.
+        Tu resultado queda registrado en esta unidad.
       </p>
-      <PrimaryButton onClick={onExit}>Cerrar por ahora</PrimaryButton>
+      <PrimaryButton onClick={onExit}>Volver al mapa</PrimaryButton>
     </section>
   );
 }
