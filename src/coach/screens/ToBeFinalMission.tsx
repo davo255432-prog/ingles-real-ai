@@ -282,7 +282,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
       });
 
       if (!mountedRef.current) return;
-      setEvaluation(aiEvaluation ?? buildFallbackEvaluation(transcript));
+      setEvaluation(calibrateSpeakingEvaluation(aiEvaluation, transcript));
       setMicState('idle');
     } catch {
       if (!mountedRef.current) return;
@@ -331,6 +331,7 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
   };
 
   const canFinish = !!evaluation && listenScore !== null;
+  const missionScore = canFinish ? Math.round(((evaluation?.score ?? 0) + (listenScore ?? 0)) / 2) : null;
   const isRecording = micState === 'recording';
   const micBusy = micState === 'requesting' || micState === 'transcribing' || micState === 'evaluating';
   const micLabel = isRecording
@@ -564,6 +565,24 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
           )}
         </section>
 
+        {canFinish && missionScore !== null && (
+          <section className="bg-gray-900 rounded-3xl p-5 shadow-md mb-4 text-white">
+            <p className="text-xs font-bold uppercase tracking-wide text-emerald-300 mb-2">Resultado de la mision</p>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-extrabold leading-tight">{missionScore}/100</h2>
+                <p className="text-gray-300 text-sm font-semibold mt-1">
+                  Repite la parte que quieras mejorar hasta acercarte a 100.
+                </p>
+              </div>
+              <div className="text-right text-sm font-bold leading-relaxed shrink-0">
+                <p>Habla: {evaluation.score}/100</p>
+                <p>Comprension: {listenScore}/100</p>
+              </div>
+            </div>
+          </section>
+        )}
+
         <div className="mt-auto flex flex-col gap-3">
           <button
             onClick={onComplete}
@@ -608,6 +627,45 @@ const WordList: React.FC<{ title: string; words: string[]; tone: 'red' | 'amber'
     </div>
   );
 };
+
+function calibrateSpeakingEvaluation(aiEvaluation: SpeakingEvaluation | null, transcript: string): MissionEvaluation {
+  const fallback = buildFallbackEvaluation(transcript);
+  if (!aiEvaluation) return fallback;
+
+  const expected = tokens(TO_BE_FINAL_MISSION.expectedEn);
+  const said = new Set(tokens(aiEvaluation.transcript || transcript));
+  const missingByText = Array.from(new Set(expected.filter((word) => !said.has(word))));
+  const missingWords = Array.from(new Set([...missingByText, ...aiEvaluation.missingWords]));
+  const textScore = scoreText(aiEvaluation.transcript || transcript, TO_BE_FINAL_MISSION.expectedEn);
+  const importantMissing = missingWords.filter((word) =>
+    ['i', 'am', 'is', 'are', 'she', 'we', 'my', 'name', 'job', 'driver', 'work', 'restaurant', 'busy', 'friends', 'ready'].includes(word),
+  );
+
+  let strictScore = Math.round((aiEvaluation.score * 0.45) + (textScore * 0.55));
+  if (textScore < 85) strictScore = Math.min(strictScore, textScore + 8);
+  if (importantMissing.length >= 4) strictScore = Math.min(strictScore, 72);
+  if (importantMissing.length >= 7) strictScore = Math.min(strictScore, 60);
+  if (missingWords.length >= Math.ceil(expected.length * 0.35)) strictScore = Math.min(strictScore, 70);
+  if (tokens(aiEvaluation.transcript || transcript).length < Math.ceil(expected.length * 0.45)) strictScore = Math.min(strictScore, 55);
+
+  return {
+    ...aiEvaluation,
+    transcript: aiEvaluation.transcript || transcript,
+    score: Math.max(0, Math.min(100, strictScore)),
+    missingWords,
+    coachNote:
+      strictScore >= 85
+        ? aiEvaluation.coachNote
+        : 'Vas bien, pero faltaron piezas importantes. Repite la historia completa: pronombre + am / is / are + lugar o estado.',
+    pronunciationFocus:
+      missingWords.length > 0
+        ? missingWords.slice(0, 2).map((word) => ({
+            word,
+            tip: 'Incluye esta palabra dentro de la frase completa.',
+          }))
+        : aiEvaluation.pronunciationFocus,
+  };
+}
 
 function buildFallbackEvaluation(transcript: string): MissionEvaluation {
   const score = scoreText(transcript, TO_BE_FINAL_MISSION.expectedEn);
