@@ -148,7 +148,7 @@ export const EssentialVerbsFinalMission: React.FC<EssentialVerbsFinalMissionProp
         situation: speakingStory.situation,
         pronunciationGuide: speakingStory.pronunciation,
       });
-      setEvaluation(result ?? localEvaluation(transcript, speakingStory.expected));
+      setEvaluation(calibrateSpeakingEvaluation(result, transcript, speakingStory.expected));
     } catch {
       setVoiceError('No se pudo analizar esta grabación. Puedes escucharla y repetir la misión.');
     } finally {
@@ -293,6 +293,24 @@ export const EssentialVerbsFinalMission: React.FC<EssentialVerbsFinalMissionProp
         </div>
       </section>
 
+      {evaluation && comprehension !== null && (
+        <section className="bg-gray-950 rounded-3xl p-5 shadow-sm mb-5 text-white">
+          <p className="text-emerald-300 text-xs font-black uppercase mb-2">Resultado de la misiÃ³n</p>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-4xl font-black">{overall}/100</p>
+              <p className="text-gray-300 text-sm font-bold mt-1">
+                Repite hasta acercarte a 100. Esa es la prÃ¡ctica real.
+              </p>
+            </div>
+            <div className="text-right text-sm font-black leading-relaxed shrink-0">
+              <p>Habla: {pronunciation}/100</p>
+              <p>ComprensiÃ³n: {comprehension}/100</p>
+            </div>
+          </div>
+        </section>
+      )}
+
       <button
         type="button"
         disabled={!evaluation || comprehension === null}
@@ -341,12 +359,63 @@ function scoreListening(answer: string, expected: string): number {
   return Math.round((matched / Math.max(expectedWords.length, 1)) * 100);
 }
 
+function calibrateSpeakingEvaluation(
+  aiEvaluation: SpeakingEvaluation | null,
+  transcript: string,
+  expected: string,
+): SpeakingEvaluation {
+  const fallback = localEvaluation(transcript, expected);
+  if (!aiEvaluation) return fallback;
+
+  const transcriptText = aiEvaluation.transcript || transcript;
+  const said = new Set(normalize(transcriptText));
+  const expectedWords = normalize(expected);
+  const missingByText = expectedWords.filter((word) => !said.has(word));
+  const missingWords = Array.from(new Set([...missingByText, ...aiEvaluation.missingWords]));
+  const textScore = localTextScore(transcriptText, expected);
+  const importantMissing = missingWords.filter((word) =>
+    ['i', 'you', 'we', 'they', 'need', 'have', 'want', 'go', 'to', 'and', 'but', 'because', 'also', 'water', 'food', 'help', 'work', 'home', 'ready', 'tired'].includes(word),
+  );
+
+  let strictScore = Math.round((aiEvaluation.score * 0.45) + (textScore * 0.55));
+  if (textScore < 85) strictScore = Math.min(strictScore, textScore + 8);
+  if (importantMissing.length >= 3) strictScore = Math.min(strictScore, 78);
+  if (importantMissing.length >= 5) strictScore = Math.min(strictScore, 68);
+  if (missingWords.length >= Math.ceil(expectedWords.length * 0.35)) strictScore = Math.min(strictScore, 70);
+  if (normalize(transcriptText).length < Math.ceil(expectedWords.length * 0.45)) strictScore = Math.min(strictScore, 55);
+
+  return {
+    ...aiEvaluation,
+    transcript: transcriptText,
+    score: Math.max(0, Math.min(100, strictScore)),
+    missingWords,
+    coachNote:
+      strictScore >= 85
+        ? aiEvaluation.coachNote
+        : 'Vas bien, pero faltaron piezas importantes. Repite usando verbo esencial + conector + idea completa.',
+    pronunciationFocus:
+      missingWords.length > 0
+        ? missingWords.slice(0, 2).map((word) => ({
+            word,
+            tip: 'Incluye esta palabra dentro de la frase completa.',
+          }))
+        : aiEvaluation.pronunciationFocus,
+  };
+}
+
+function localTextScore(actual: string, expected: string): number {
+  const said = new Set(normalize(actual));
+  const target = normalize(expected);
+  const matched = target.filter((word) => said.has(word)).length;
+  return Math.max(0, Math.round((matched / Math.max(target.length, 1)) * 100));
+}
+
 function localEvaluation(transcript: string, expected: string): SpeakingEvaluation {
   const said = normalize(transcript);
   const target = normalize(expected);
   const missing = target.filter((word) => !said.includes(word));
   const extra = said.filter((word) => !target.includes(word));
-  const score = Math.max(0, Math.round(((target.length - missing.length) / Math.max(target.length, 1)) * 100));
+  const score = localTextScore(transcript, expected);
   return {
     transcript,
     expectedPhrase: expected,
