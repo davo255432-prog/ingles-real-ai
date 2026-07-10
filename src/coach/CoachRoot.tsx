@@ -150,24 +150,33 @@ export const CoachRoot: React.FC<CoachRootProps> = ({ onExit }) => {
   //  · Sin lección en curso → muestra la estructura de unidades.
   //  · Con lección guardada → reanuda en el paso exacto.
   const handleContinue = () => {
-    const { currentUnitId, currentLessonId, currentStepId } = progress.position;
-    const currentLesson = currentLessonId ? getLesson(currentLessonId) : undefined;
-    const currentLessonProgress = currentLessonId ? progress.lessons[currentLessonId] : undefined;
+    const availableLessons = getUnitsForLevel(1).flatMap((unit) => {
+      if (unit.comingSoon) return [];
+      return unit.lessonIds.flatMap((lessonId) => {
+        const lesson = getLesson(lessonId);
+        return lesson ? [{ unitId: unit.id, lessonId }] : [];
+      });
+    });
 
-    if (currentLessonId && currentLesson && currentLessonProgress?.status !== 'completed') {
-      openLesson(currentUnitId ?? currentLesson.unitId ?? FIRST_UNIT_ID, currentLessonId, currentStepId ?? undefined);
+    const highestCompletedIndex = availableLessons.reduce((highest, item, index) => {
+      return progress.lessons[item.lessonId]?.status === 'completed' ? index : highest;
+    }, -1);
+
+    const nextInProgress = availableLessons.find((item, index) => {
+      return index > highestCompletedIndex && progress.lessons[item.lessonId]?.status === 'in-progress';
+    });
+
+    const nextNotCompleted = availableLessons.find((item, index) => {
+      return index > highestCompletedIndex && progress.lessons[item.lessonId]?.status !== 'completed';
+    });
+
+    const target = nextInProgress ?? nextNotCompleted;
+    if (!target) {
+      setCoachScreen('coach-units');
       return;
     }
 
-    const inProgress = Object.values(progress.lessons).find(
-      (lessonProgress) => lessonProgress.status === 'in-progress' && getLesson(lessonProgress.lessonId),
-    );
-    if (inProgress) {
-      const lesson = getLesson(inProgress.lessonId);
-      openLesson(lesson?.unitId ?? FIRST_UNIT_ID, inProgress.lessonId, inProgress.lastStepId);
-    } else {
-      setCoachScreen('coach-units');
-    }
+    openLesson(target.unitId ?? FIRST_UNIT_ID, target.lessonId, progress.lessons[target.lessonId]?.lastStepId);
   };
 
   // Guarda el paso exacto donde queda el usuario (capa de avance).

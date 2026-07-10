@@ -30,6 +30,11 @@ export const CoachUnitsScreen: React.FC<CoachUnitsScreenProps> = ({
     return u.comingSoon || !fl || !getLesson(fl);
   });
 
+  const highestCompletedUnitIndex = units.reduce((highest, unit, index) => {
+    const firstLessonId = unit.lessonIds[0];
+    return firstLessonId && progress.lessons[firstLessonId]?.status === 'completed' ? index : highest;
+  }, -1);
+
   if (selectedToBeUnit) {
     const lessonProgress = progress.lessons[TO_BE_LESSON_ID];
     const completed = lessonProgress?.status === 'completed';
@@ -90,8 +95,8 @@ export const CoachUnitsScreen: React.FC<CoachUnitsScreenProps> = ({
 
           // Estado de avance de la lección de la unidad (si la hay)
           const lessonProgress = firstLessonId ? progress.lessons[firstLessonId] : undefined;
-          const completed = lessonProgress?.status === 'completed';
-          const inProgress = lessonProgress?.status === 'in-progress';
+          const completed = lessonProgress?.status === 'completed' || index < highestCompletedUnitIndex;
+          const inProgress = !completed && lessonProgress?.status === 'in-progress';
           const oralPending = !!lessonProgress?.oralPending;
 
           return (
