@@ -49,12 +49,15 @@ import { CoachRoot } from './coach/CoachRoot';
 import { EssentialVerbsPractice } from './coach/screens/EssentialVerbsPractice';
 import { LearningCommitmentScreen } from './coach/screens/LearningCommitmentScreen';
 import { PronounsPractice } from './coach/screens/PronounsPractice';
+import { SentenceBuildingPractice } from './coach/screens/SentenceBuildingPractice';
 
 // Biblioteca (placeholder)
 import { BibliotecaScreen } from './screens/BibliotecaScreen';
 
 const UNIT_3_PREVIEW_PARAM = 'preview-unit-3';
 const UNIT_3_PREVIEW_KEY = 'familia-u3-2026';
+const UNIT_4_PREVIEW_PARAM = 'preview-unit-4';
+const UNIT_4_PREVIEW_KEY = 'familia-u4-2026';
 const UNIT_1_PREVIEW_PARAM = 'preview-unit-1';
 const UNIT_1_PREVIEW_KEY = 'familia-u1-2026';
 const LEARNING_COMMITMENT_KEY = 'unit-3-learning-commitment-seen';
@@ -66,6 +69,9 @@ function App() {
   const showUnit3Preview =
     new URLSearchParams(window.location.search).get(UNIT_3_PREVIEW_PARAM) ===
     UNIT_3_PREVIEW_KEY;
+  const showUnit4Preview =
+    new URLSearchParams(window.location.search).get(UNIT_4_PREVIEW_PARAM) ===
+    UNIT_4_PREVIEW_KEY;
   const startUnit3AtPhase2 =
     new URLSearchParams(window.location.search).get('unit3-section') === 'phase2';
   const startUnit3AtPrepositions =
@@ -112,6 +118,20 @@ function App() {
               }}
             />
           )}
+        </div>
+      </div>
+    );
+  }
+
+  if (showUnit4Preview) {
+    return (
+      <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
+        <div className="w-full max-w-[640px] min-h-screen bg-gray-50 shadow-[0_0_40px_rgba(0,0,0,0.12)]">
+          <SentenceBuildingPractice
+            onExit={() => {
+              window.location.href = window.location.pathname;
+            }}
+          />
         </div>
       </div>
     );
