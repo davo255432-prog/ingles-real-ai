@@ -275,7 +275,20 @@ function GrowingStep({ sentence, onContinue }: { sentence: GrowingSentence; onCo
 }
 
 function ErrorStep({ error, onContinue }: { error: CommonSentenceError; onContinue: () => void }) {
-  const [phase, setPhase] = useState<'question' | 'hint' | 'answer'>('question');
+  const answerPieces = error.correct.replace(/[.]/g, '').split(' ');
+  const distractors = error.wrong
+    .replace(/[.]/g, '')
+    .split(' ')
+    .filter((piece) => !answerPieces.includes(piece));
+  const pieces = [...answerPieces, ...distractors].filter(
+    (piece, itemIndex, list) => list.indexOf(piece) === itemIndex,
+  );
+  const [selected, setSelected] = useState<string[]>([]);
+  const [showHint, setShowHint] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const currentAnswer = selected.join(' ');
+  const expectedAnswer = answerPieces.join(' ');
+  const correct = normalizeAnswer(currentAnswer) === normalizeAnswer(expectedAnswer);
 
   return (
     <section className="pt-8 space-y-5">
@@ -289,35 +302,64 @@ function ErrorStep({ error, onContinue }: { error: CommonSentenceError; onContin
 
       <div className="rounded-[28px] bg-white border border-slate-100 shadow-sm p-5 space-y-4">
         <p className="text-lg font-black text-slate-950">{error.hintQuestion}</p>
-        {phase === 'question' && (
-          <div className="grid gap-3">
-            <button
-              type="button"
-              onClick={() => setPhase('hint')}
-              className="rounded-2xl border-2 border-amber-200 bg-amber-50 px-4 py-4 text-left font-black text-amber-900"
-            >
-              Ver pista
-            </button>
-            <button
-              type="button"
-              onClick={() => setPhase('answer')}
-              className="rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-4 py-4 text-left font-black text-emerald-900"
-            >
-              Ya lo pense. Ver correccion
-            </button>
+
+        <div className="rounded-2xl bg-emerald-50 border-2 border-emerald-100 min-h-[96px] p-4">
+          <p className="text-xs font-black uppercase text-emerald-700 mb-2">Tu correccion</p>
+          <div className="flex flex-wrap gap-2">
+            {selected.length === 0 ? (
+              <span className="font-bold text-emerald-700">Toca las palabras en el orden correcto...</span>
+            ) : (
+              selected.map((piece, itemIndex) => (
+                <button
+                  type="button"
+                  key={`${piece}-${itemIndex}`}
+                  onClick={() => {
+                    setSelected((current) => current.filter((_, i) => i !== itemIndex));
+                    setChecked(false);
+                  }}
+                  className="rounded-xl bg-emerald-600 text-white px-4 py-3 font-black shadow-sm"
+                >
+                  {piece}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {pieces.map((piece) => {
+            const used = selected.includes(piece);
+            return (
+              <button
+                type="button"
+                key={piece}
+                disabled={used || (checked && correct)}
+                onClick={() => {
+                  setSelected((current) => [...current, piece]);
+                  setChecked(false);
+                }}
+                className={`rounded-2xl border-2 px-4 py-4 text-left text-lg font-black ${
+                  used
+                    ? 'border-slate-100 bg-slate-100 text-slate-400'
+                    : 'border-sky-200 bg-sky-50 text-slate-950 active:scale-[0.98]'
+                }`}
+              >
+                {piece}
+              </button>
+            );
+          })}
+        </div>
+
+        {showHint && !correct && (
+          <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4">
+            <p className="text-sm font-black uppercase text-amber-800">Pista</p>
+            <p className="mt-1 text-lg font-bold text-amber-950">{error.explanation}</p>
           </div>
         )}
-        {phase === 'hint' && (
-          <>
-            <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4">
-              <p className="text-sm font-black uppercase text-amber-800">Pista</p>
-              <p className="mt-1 text-lg font-bold text-amber-950">{error.explanation}</p>
-            </div>
-            <PrimaryButton onClick={() => setPhase('answer')}>Ver respuesta correcta</PrimaryButton>
-          </>
-        )}
-        {phase === 'answer' && (
-          <>
+
+        {checked && correct && (
+          <div className="space-y-4">
+            <Achievement message="Excelente. Detectaste el error y lo corregiste." />
             <ExampleCard
               english={error.correct}
               spanish={error.explanation}
@@ -325,7 +367,41 @@ function ErrorStep({ error, onContinue }: { error: CommonSentenceError; onContin
               audioText={error.audioText}
               tone="emerald"
             />
-            <PrimaryButton onClick={onContinue}>Continuar</PrimaryButton>
+          </div>
+        )}
+
+        {checked && !correct && (
+          <div className="rounded-2xl bg-red-50 border border-red-200 p-4">
+            <p className="text-xl font-black text-red-700">Todavia no.</p>
+            <p className="font-bold text-red-900">Revisa el orden. Si fallas, empiezas de nuevo. Vamos, tu puedes.</p>
+          </div>
+        )}
+
+        {!checked ? (
+          <div className="grid sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setShowHint(true)}
+              className="rounded-2xl border-2 border-amber-200 bg-amber-50 px-4 py-4 text-left font-black text-amber-900"
+            >
+              Ver pista
+            </button>
+            <PrimaryButton onClick={() => setChecked(true)} disabled={selected.length !== answerPieces.length}>
+              Comprobar
+            </PrimaryButton>
+          </div>
+        ) : correct ? (
+          <PrimaryButton onClick={onContinue}>Continuar</PrimaryButton>
+        ) : (
+          <>
+            <PrimaryButton
+              onClick={() => {
+                setSelected([]);
+                setChecked(false);
+              }}
+            >
+              Intentar de nuevo
+            </PrimaryButton>
           </>
         )}
       </div>
