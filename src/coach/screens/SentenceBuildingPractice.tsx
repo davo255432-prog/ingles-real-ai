@@ -190,10 +190,13 @@ function ActivationStep({ onContinue }: { onContinue: () => void }) {
             <p className="text-xs font-black uppercase text-slate-500 mb-3">{group.title}</p>
             <div className="flex flex-wrap gap-2">
               {group.items.map((item) => (
-                <span key={item.id} className={chipClass(group.tone)}>
-                  <b>{item.english}</b>
-                  <span className="opacity-75">{item.spanish}</span>
-                </span>
+                <AudioChip
+                  key={item.id}
+                  text={item.english}
+                  title={item.english}
+                  subtitle={item.spanish}
+                  tone={group.tone}
+                />
               ))}
             </div>
           </div>
@@ -726,9 +729,13 @@ function PreChallengeStep({ onContinue }: { onContinue: () => void }) {
           <p className="text-xs font-black uppercase text-slate-500 mb-3">Palabras permitidas</p>
           <div className="flex flex-wrap gap-2">
             {PRE_CHALLENGE.words.map((word) => (
-              <span key={word.id} className="rounded-xl bg-slate-100 border border-slate-200 px-3 py-2 text-sm font-black text-slate-900">
-                {word.english} <span className="text-slate-500">· {word.spanish}</span>
-              </span>
+              <AudioChip
+                key={word.id}
+                text={word.english}
+                title={word.english}
+                subtitle={word.spanish}
+                tone="slate"
+              />
             ))}
           </div>
         </div>
@@ -741,6 +748,9 @@ function PreChallengeStep({ onContinue }: { onContinue: () => void }) {
                 <p className="font-black text-slate-950">{structure.title}</p>
                 <p className="mt-1 text-lg font-black text-emerald-800">{structure.example}</p>
                 <p className="font-bold text-sky-800">{structure.pronunciation}</p>
+                <div className="mt-3">
+                  <SmallAudioButton text={structure.audioText} label="Escuchar" />
+                </div>
               </div>
             ))}
           </div>
@@ -888,6 +898,39 @@ function SmallAudioButton({ text, label }: { text: string; label: string }) {
       className="shrink-0 rounded-2xl bg-sky-500 text-white px-4 py-3 font-black shadow-sm active:scale-[0.98] disabled:opacity-70"
     >
       {playing ? '...' : label}
+    </button>
+  );
+}
+
+function AudioChip(props: {
+  text: string;
+  title: string;
+  subtitle: string;
+  tone: string;
+}) {
+  const [playing, setPlaying] = useState(false);
+  const play = async () => {
+    setPlaying(true);
+    try {
+      await generateSpeech(props.text, 'normal');
+    } finally {
+      setPlaying(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={() => void play()}
+      disabled={playing}
+      className={`${chipClass(props.tone)} active:scale-[0.98] disabled:opacity-70`}
+      aria-label={`Escuchar ${props.title}`}
+    >
+      <span className="text-base">🔊</span>
+      <span>
+        <b>{props.title}</b>
+        <span className="opacity-75"> · {props.subtitle}</span>
+      </span>
     </button>
   );
 }
