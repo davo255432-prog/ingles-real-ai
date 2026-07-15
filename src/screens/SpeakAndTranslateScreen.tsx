@@ -112,7 +112,7 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
       // subida y la transcripción (sobre todo en celular con datos).
       const mr = new MediaRecorder(stream, {
         ...(mimeType ? { mimeType } : {}),
-        audioBitsPerSecond: 32000,
+        audioBitsPerSecond: 64000,
       });
       mediaRecorderRef.current = mr;
 
@@ -120,12 +120,11 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
 
-      const usesMobileRecording =
-        /Android/i.test(navigator.userAgent) ||
+      const usesIOSRecording =
         /iPad|iPhone|iPod/.test(navigator.userAgent) ||
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-      if (usesMobileRecording) {
+      if (usesIOSRecording) {
         mr.start();
         dataIntervalRef.current = setInterval(() => {
           if (mr.state === 'recording') mr.requestData();
@@ -159,6 +158,11 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
 
     await new Promise<void>((resolve) => {
       mr.addEventListener('stop', () => resolve(), { once: true });
+      try {
+        mr.requestData();
+      } catch {
+        // Algunos navegadores no permiten requestData justo antes de stop.
+      }
       mr.stop();
     });
 
