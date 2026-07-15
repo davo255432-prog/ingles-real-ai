@@ -27,7 +27,8 @@ import { AMERICAN_SOFT_T_RULE, applyCoachPronunciationRules } from '../data/pron
 
 type SentenceStep =
   | { kind: 'intro' }
-  | { kind: 'activation' }
+  | { kind: 'sound-rule' }
+  | { kind: 'activation'; page: 1 | 2 | 3 }
   | { kind: 'pattern'; item: SentencePattern }
   | { kind: 'growing'; item: GrowingSentence }
   | { kind: 'error'; item: CommonSentenceError }
@@ -46,7 +47,10 @@ export const SentenceBuildingPractice: React.FC<SentenceBuildingPracticeProps> =
   const steps = useMemo<SentenceStep[]>(
     () => [
       { kind: 'intro' },
-      { kind: 'activation' },
+      { kind: 'sound-rule' },
+      { kind: 'activation', page: 1 },
+      { kind: 'activation', page: 2 },
+      { kind: 'activation', page: 3 },
       ...SENTENCE_BUILDING_PATTERNS.map((item): SentenceStep => ({ kind: 'pattern', item })),
       ...GROWING_SENTENCES.map((item): SentenceStep => ({ kind: 'growing', item })),
       ...COMMON_SENTENCE_ERRORS.map((item): SentenceStep => ({ kind: 'error', item })),
@@ -106,7 +110,8 @@ export const SentenceBuildingPractice: React.FC<SentenceBuildingPracticeProps> =
 
       <main className="px-5 pb-10 max-w-xl mx-auto">
         {current.kind === 'intro' && <IntroStep onContinue={next} />}
-        {current.kind === 'activation' && <ActivationStep onContinue={next} />}
+        {current.kind === 'sound-rule' && <SoundRuleStep onContinue={next} />}
+        {current.kind === 'activation' && <ActivationStep page={current.page} onContinue={next} />}
         {current.kind === 'pattern' && <PatternStep pattern={current.item} onContinue={next} />}
         {current.kind === 'growing' && <GrowingStep sentence={current.item} onContinue={next} />}
         {current.kind === 'error' && <ErrorStep error={current.item} onContinue={next} />}
@@ -155,8 +160,36 @@ function IntroStep({ onContinue }: { onContinue: () => void }) {
   );
 }
 
-function ActivationStep({ onContinue }: { onContinue: () => void }) {
-  const pieceGroups = [
+function SoundRuleStep({ onContinue }: { onContinue: () => void }) {
+  return (
+    <section className="pt-8 space-y-5">
+      <p className="text-sm font-extrabold uppercase text-emerald-700">Antes de construir</p>
+      <h1 className="text-3xl sm:text-4xl font-black text-slate-950">Escucha como suena en la vida real</h1>
+      <p className="text-lg font-semibold text-slate-700">
+        Algunas letras cambian cuando las personas hablan rapido. Esta regla te ayuda a no confundirte.
+      </p>
+
+      <div className="rounded-[28px] border-2 border-sky-200 bg-sky-50 p-5">
+        <p className="text-sm font-black uppercase text-sky-700">{AMERICAN_SOFT_T_RULE.title}</p>
+        <p className="mt-2 text-lg font-black text-slate-950">{AMERICAN_SOFT_T_RULE.shortText}</p>
+        <div className="mt-4 grid gap-3">
+          {AMERICAN_SOFT_T_RULE.examples.map((example) => (
+            <div key={example.word} className="rounded-2xl bg-white border border-sky-100 p-4">
+              <p className="text-2xl font-black text-slate-950">{example.word}</p>
+              <p className="mt-1 text-sm font-bold text-slate-500 line-through">{example.oldSound}</p>
+              <p className="text-xl font-black text-sky-800">mejor: {example.naturalSound}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <PrimaryButton onClick={onContinue}>Ver piezas</PrimaryButton>
+    </section>
+  );
+}
+
+function ActivationStep({ page, onContinue }: { page: 1 | 2 | 3; onContinue: () => void }) {
+  const allGroups = [
     {
       title: 'Persona',
       helper: 'Quien hace la accion',
@@ -194,31 +227,32 @@ function ActivationStep({ onContinue }: { onContinue: () => void }) {
       tone: 'slate',
     },
   ];
+  const pageGroups = {
+    1: allGroups.slice(0, 2),
+    2: allGroups.slice(2, 4),
+    3: allGroups.slice(4, 6),
+  }[page];
+  const titles = {
+    1: 'Primero: quien habla y como esta',
+    2: 'Luego: accion y lugar',
+    3: 'Ahora: une y completa la idea',
+  };
+  const buttonLabels = {
+    1: 'Ver acciones',
+    2: 'Ver conectores',
+    3: 'Ver patrones',
+  };
 
   return (
     <section className="pt-8 space-y-5">
       <p className="text-sm font-extrabold uppercase text-emerald-700">Activacion visual</p>
-      <h1 className="text-3xl sm:text-4xl font-black text-slate-950">Las piezas ya estan en tu mano</h1>
+      <h1 className="text-3xl sm:text-4xl font-black text-slate-950">{titles[page]}</h1>
       <p className="text-lg font-semibold text-slate-700">
         Ahora no se trata de aprender muchas palabras nuevas. Se trata de ordenar mejor las que ya conoces.
       </p>
-      <div className="rounded-[24px] border border-sky-200 bg-sky-50 p-4">
-        <p className="text-sm font-black uppercase text-sky-700">{AMERICAN_SOFT_T_RULE.title}</p>
-        <p className="mt-1 text-base font-bold text-slate-900">{AMERICAN_SOFT_T_RULE.shortText}</p>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          {AMERICAN_SOFT_T_RULE.examples.map((example) => (
-            <div key={example.word} className="rounded-2xl bg-white/80 border border-sky-100 p-3">
-              <p className="text-lg font-black text-slate-950">{example.word}</p>
-              <p className="text-sm font-bold text-slate-700">
-                mejor: <span className="text-sky-800">{example.naturalSound}</span>
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
 
       <div className="grid gap-4">
-        {pieceGroups.map((group) => (
+        {pageGroups.map((group) => (
           <div key={group.title} className="bg-white rounded-[26px] border border-slate-100 shadow-sm p-4">
             <div className="mb-3">
               <p className="text-xs font-black uppercase tracking-wide text-slate-500">{group.title}</p>
@@ -240,14 +274,16 @@ function ActivationStep({ onContinue }: { onContinue: () => void }) {
         ))}
       </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-[24px] p-4">
-        <p className="text-lg font-black text-amber-900">Idea clave</p>
-        <p className="mt-1 text-base font-bold text-amber-900">
-          Una frase completa necesita piezas en orden: persona + accion + complemento.
-        </p>
-      </div>
+      {page === 3 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-[24px] p-4">
+          <p className="text-lg font-black text-amber-900">Idea clave</p>
+          <p className="mt-1 text-base font-bold text-amber-900">
+            Una frase completa necesita piezas en orden: persona + accion + complemento.
+          </p>
+        </div>
+      )}
 
-      <PrimaryButton onClick={onContinue}>Ver patrones</PrimaryButton>
+      <PrimaryButton onClick={onContinue}>{buttonLabels[page]}</PrimaryButton>
     </section>
   );
 }
