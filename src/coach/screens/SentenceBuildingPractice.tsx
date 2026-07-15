@@ -868,10 +868,14 @@ function Achievement({ message }: { message: string }) {
 
 function SmallAudioButton({ text, label }: { text: string; label: string }) {
   const [playing, setPlaying] = useState(false);
+  const [failed, setFailed] = useState(false);
   const play = async () => {
     setPlaying(true);
+    setFailed(false);
     try {
       await generateSpeech(text, 'normal');
+    } catch {
+      setFailed(true);
     } finally {
       setPlaying(false);
     }
@@ -882,9 +886,11 @@ function SmallAudioButton({ text, label }: { text: string; label: string }) {
       type="button"
       onClick={() => void play()}
       disabled={playing}
-      className="shrink-0 rounded-2xl bg-sky-500 text-white px-4 py-3 font-black shadow-sm active:scale-[0.98] disabled:opacity-70"
+      className={`shrink-0 rounded-2xl px-4 py-3 font-black shadow-sm active:scale-[0.98] disabled:opacity-70 ${
+        failed ? 'bg-red-500 text-white' : 'bg-sky-500 text-white'
+      }`}
     >
-      {playing ? '...' : label}
+      {playing ? 'Cargando...' : failed ? 'Reintentar' : label}
     </button>
   );
 }
@@ -896,10 +902,14 @@ function AudioChip(props: {
   tone: string;
 }) {
   const [playing, setPlaying] = useState(false);
+  const [failed, setFailed] = useState(false);
   const play = async () => {
     setPlaying(true);
+    setFailed(false);
     try {
       await generateSpeech(props.text, 'normal');
+    } catch {
+      setFailed(true);
     } finally {
       setPlaying(false);
     }
@@ -910,12 +920,12 @@ function AudioChip(props: {
       type="button"
       onClick={() => void play()}
       disabled={playing}
-      className={`${chipClass(props.tone)} active:scale-[0.98] disabled:opacity-70`}
+      className={`${failed ? 'bg-red-50 border-red-200 text-red-900' : chipClass(props.tone)} active:scale-[0.98] disabled:opacity-70`}
       aria-label={`Escuchar ${props.title}`}
     >
       <span className="text-base">🔊</span>
       <span>
-        <b>{props.title}</b>
+        <b>{playing ? 'Cargando...' : failed ? 'Reintentar' : props.title}</b>
         <span className="opacity-75"> · {props.subtitle}</span>
       </span>
     </button>
