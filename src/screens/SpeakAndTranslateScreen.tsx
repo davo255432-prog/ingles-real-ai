@@ -696,17 +696,16 @@ const ReplyInEnglish: React.FC = () => {
         ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4'].find((t) =>
           MediaRecorder.isTypeSupported(t),
         ) ?? '';
-      const mr = new MediaRecorder(stream, { ...(mimeType ? { mimeType } : {}), audioBitsPerSecond: 32000 });
+      const mr = new MediaRecorder(stream, { ...(mimeType ? { mimeType } : {}), audioBitsPerSecond: 64000 });
       mrRef.current = mr;
       mr.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
-      const usesMobileRecording =
-        /Android/i.test(navigator.userAgent) ||
+      const usesIOSRecording =
         /iPad|iPhone|iPod/.test(navigator.userAgent) ||
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-      if (usesMobileRecording) {
+      if (usesIOSRecording) {
         mr.start();
         intervalRef.current = setInterval(() => {
           if (mr.state === 'recording') mr.requestData();
@@ -732,6 +731,11 @@ const ReplyInEnglish: React.FC = () => {
     setState('processing');
     await new Promise<void>((resolve) => {
       mr.addEventListener('stop', () => resolve(), { once: true });
+      try {
+        mr.requestData();
+      } catch {
+        // Algunos navegadores no permiten requestData justo antes de stop.
+      }
       mr.stop();
     });
     streamRef.current?.getTracks().forEach((t) => t.stop());
