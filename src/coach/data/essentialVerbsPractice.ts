@@ -176,17 +176,17 @@ export const ESSENTIAL_VERBS: EssentialVerbCard[] = [
     id: 'go-to',
     label: 'go to',
     spanish: 'ir a',
-    pronunciation: 'gou tu',
+    pronunciation: 'gou ru',
     miniRule: 'Aprende go to como un bloque para hablar de un destino.',
     realUse: {
       situation: 'Estás listo y vas al trabajo.',
       english: 'I am ready. I go to work.',
       spanish: 'Estoy listo. Voy al trabajo.',
-      pronunciation: 'ai am re-di. ai gou tu uerk',
+      pronunciation: 'ai am re-di. ai gou ru uerk',
     },
     examples: [
-      { english: 'I go to work.', spanish: 'Voy al trabajo.', pronunciation: 'ai gou tu uerk' },
-      { english: 'We go to school.', spanish: 'Vamos a la escuela.', pronunciation: 'wi gou tu skul' },
+      { english: 'I go to work.', spanish: 'Voy al trabajo.', pronunciation: 'ai gou ru uerk' },
+      { english: 'We go to school.', spanish: 'Vamos a la escuela.', pronunciation: 'wi gou ru skul' },
     ],
     exercise: {
       prompt: 'Completa: We ___ school.',
@@ -419,7 +419,7 @@ export const UNIT_3_SPEAKING_PRACTICES: Unit3SpeakingPractice[] = [
     id: 'go-work',
     situation: 'Estás aquí, pero vas al trabajo.',
     expected: 'I am here, but I go to work.',
-    pronunciation: 'ai am jir, bat ai gou tu uerk',
+    pronunciation: 'ai am jir, bat ai gou ru uerk',
   },
 ];
 
@@ -447,7 +447,7 @@ export const UNIT_3_SPEAKING_STORIES: Unit3MissionStory[] = [
     id: 'mission-school',
     situation: 'Estás listo. Quieres agua y comida, pero vas a la escuela.',
     expected: 'I am ready. I want water and food, but I go to school.',
-    pronunciation: 'ai am re-di. ai uant uo-ter and fud, bat ai gou tu skul',
+    pronunciation: 'ai am re-di. ai uant uo-ter and fud, bat ai gou ru skul',
   },
 ];
 
@@ -468,7 +468,7 @@ export const UNIT_3_LISTENING_STORIES: Unit3MissionStory[] = [
     id: 'listen-school',
     situation: 'Escucha una historia sobre una persona que va a la escuela.',
     expected: 'I am here. I have the phone and the keys. I go to school.',
-    pronunciation: 'ai am jir. ai jav de foun and de kis. ai gou tu skul',
+    pronunciation: 'ai am jir. ai jav de foun and de kis. ai gou ru skul',
   },
 ];
 
