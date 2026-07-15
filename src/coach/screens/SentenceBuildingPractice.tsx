@@ -365,6 +365,7 @@ function ErrorStep({ error, onContinue }: { error: CommonSentenceError; onContin
   const currentAnswer = selected.join(' ');
   const expectedAnswer = answerPieces.join(' ');
   const correct = normalizeAnswer(currentAnswer) === normalizeAnswer(expectedAnswer);
+  const missingCount = Math.max(answerPieces.length - selected.length, 0);
 
   return (
     <section className="pt-8 space-y-5">
@@ -378,12 +379,25 @@ function ErrorStep({ error, onContinue }: { error: CommonSentenceError; onContin
 
       <div className="rounded-[28px] bg-white border border-slate-100 shadow-sm p-5 space-y-4">
         <p className="text-lg font-black text-slate-950">{error.hintQuestion}</p>
+        <div className="rounded-2xl bg-sky-50 border border-sky-100 p-4">
+          <p className="text-xs font-black uppercase text-sky-700">Como hacerlo</p>
+          <div className="mt-2 grid gap-2 text-sm font-black text-slate-900">
+            <p><span className="text-sky-700">1.</span> Toca las palabras de abajo.</p>
+            <p><span className="text-sky-700">2.</span> Arriba se arma tu frase.</p>
+            <p><span className="text-sky-700">3.</span> Si te equivocas, toca una palabra arriba para quitarla.</p>
+          </div>
+        </div>
 
-        <div className="rounded-2xl bg-emerald-50 border-2 border-emerald-100 min-h-[96px] p-4">
-          <p className="text-xs font-black uppercase text-emerald-700 mb-2">Tu correccion</p>
+        <div className="rounded-2xl bg-emerald-50 border-2 border-emerald-200 min-h-[112px] p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="text-xs font-black uppercase text-emerald-700">Arma aqui la frase correcta</p>
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-emerald-800">
+              {selected.length}/{answerPieces.length}
+            </span>
+          </div>
           <div className="flex flex-wrap gap-2">
             {selected.length === 0 ? (
-              <span className="font-bold text-emerald-700">Toca las palabras en el orden correcto...</span>
+              <span className="font-bold text-emerald-700">Tu respuesta aparecera aqui...</span>
             ) : (
               selected.map((piece, itemIndex) => (
                 <button
@@ -425,6 +439,9 @@ function ErrorStep({ error, onContinue }: { error: CommonSentenceError; onContin
             );
           })}
         </div>
+        <p className="text-center text-sm font-bold text-slate-500">
+          Toca {answerPieces.length} palabras en orden para formar la frase.
+        </p>
 
         {showHint && !correct && (
           <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4">
@@ -463,7 +480,7 @@ function ErrorStep({ error, onContinue }: { error: CommonSentenceError; onContin
               Ver pista
             </button>
             <PrimaryButton onClick={() => setChecked(true)} disabled={selected.length !== answerPieces.length}>
-              Comprobar
+              {missingCount > 0 ? `Faltan ${missingCount}` : 'Comprobar'}
             </PrimaryButton>
           </div>
         ) : correct ? (

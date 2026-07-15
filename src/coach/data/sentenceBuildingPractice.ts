@@ -310,7 +310,7 @@ export const COMMON_SENTENCE_ERRORS: CommonSentenceError[] = [
   {
     id: 'water-need-order',
     wrong: 'I water need.',
-    hintQuestion: 'Quien va primero y donde va la accion?',
+    hintQuestion: 'Ordena la frase: persona + acción + cosa.',
     correct: 'I need water.',
     explanation: 'Primero va la persona, despues el verbo y luego la cosa.',
     pronunciation: 'ai nid uo-ter',
@@ -319,16 +319,16 @@ export const COMMON_SENTENCE_ERRORS: CommonSentenceError[] = [
   {
     id: 'missing-at-work',
     wrong: 'I am work.',
-    hintQuestion: 'Que palabra falta antes del lugar?',
+    hintQuestion: 'Para decir "estoy en el trabajo", falta una palabra pequeña.',
     correct: 'I am at work.',
-    explanation: 'Para decir que estas en el trabajo usamos at work.',
+    explanation: 'Para decir "en el trabajo" usamos at work.',
     pronunciation: 'ai am at uerk',
     audioText: 'I am at work.',
   },
   {
     id: 'missing-to-work',
     wrong: 'I go work.',
-    hintQuestion: 'Que bloque usamos para decir ir a un lugar?',
+    hintQuestion: 'Para decir que vas a un lugar, falta el bloque go to.',
     correct: 'I go to work.',
     explanation: 'Go to funciona como bloque para hablar de destino.',
     pronunciation: 'ai gou ru uerk',
@@ -337,7 +337,7 @@ export const COMMON_SENTENCE_ERRORS: CommonSentenceError[] = [
   {
     id: 'tired-am-order',
     wrong: 'I tired am.',
-    hintQuestion: 'Donde debe ir am?',
+    hintQuestion: 'Ordena la frase: I + am + estado.',
     correct: 'I am tired.',
     explanation: 'Con I usamos am antes del estado.',
     pronunciation: 'ai am tai-erd',
@@ -346,7 +346,7 @@ export const COMMON_SENTENCE_ERRORS: CommonSentenceError[] = [
   {
     id: 'because-order',
     wrong: 'I need because help I am tired.',
-    hintQuestion: 'Cual es la idea principal y cual explica la razon?',
+    hintQuestion: 'Primero va la idea principal. Después va la razón con because.',
     correct: 'I need help because I am tired.',
     explanation: 'Primero di la idea principal. Despues usa because para explicar la razon.',
     pronunciation: 'ai nid jelp bi-kos ai am tai-erd',
