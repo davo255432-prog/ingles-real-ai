@@ -4,6 +4,7 @@ const AMERICAN_SOFT_T_REPLACEMENTS: Array<[RegExp, string]> = [
   [/\bwo-ter\b/g, 'ua-rer'],
   [/\bbe-ter\b/g, 'be-rer'],
   [/\bsi-ti\b/g, 'si-ri'],
+  [/\bgou tu\b/g, 'gou ru'],
 ];
 
 export const AMERICAN_SOFT_T_RULE = {
@@ -11,6 +12,7 @@ export const AMERICAN_SOFT_T_RULE = {
   shortText: 'En inglés americano, algunas T suenan suave, casi como una R rápida.',
   examples: [
     { word: 'water', oldSound: 'uo-ter', naturalSound: 'ua-rer' },
+    { word: 'go to', oldSound: 'gou tu', naturalSound: 'gou ru' },
     { word: 'better', oldSound: 'be-ter', naturalSound: 'be-rer' },
   ],
 };
