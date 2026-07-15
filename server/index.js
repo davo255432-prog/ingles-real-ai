@@ -1180,7 +1180,7 @@ app.post('/api/translate-speech', upload.single('audio'), async (req, res) => {
 
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
-      model: 'gpt-4o-mini-transcribe',
+      model: 'whisper-1',
       language: 'es',
     });
 
@@ -1252,7 +1252,7 @@ app.post('/api/understand-english', upload.single('audio'), async (req, res) => 
 
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
-      model: 'gpt-4o-mini-transcribe',
+      model: 'whisper-1',
     });
 
     const english = (transcription.text ?? '').trim();
