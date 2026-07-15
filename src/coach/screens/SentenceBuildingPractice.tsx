@@ -156,12 +156,42 @@ function IntroStep({ onContinue }: { onContinue: () => void }) {
 
 function ActivationStep({ onContinue }: { onContinue: () => void }) {
   const pieceGroups = [
-    { title: 'Persona', items: SENTENCE_BUILDING_PRONOUNS.slice(0, 4), tone: 'sky' },
-    { title: 'To Be', items: SENTENCE_BUILDING_TO_BE, tone: 'violet' },
-    { title: 'Verbo', items: SENTENCE_BUILDING_VERBS, tone: 'emerald' },
-    { title: 'Lugar', items: SENTENCE_BUILDING_PREPOSITIONS, tone: 'amber' },
-    { title: 'Conector', items: SENTENCE_BUILDING_CONNECTORS, tone: 'orange' },
-    { title: 'Palabras', items: SENTENCE_BUILDING_VOCABULARY.slice(0, 6), tone: 'slate' },
+    {
+      title: 'Persona',
+      helper: 'Quien hace la accion',
+      items: SENTENCE_BUILDING_PRONOUNS.slice(0, 4),
+      tone: 'sky',
+    },
+    {
+      title: 'To Be',
+      helper: 'Para decir quien eres, como estas o donde estas',
+      items: SENTENCE_BUILDING_TO_BE,
+      tone: 'violet',
+    },
+    {
+      title: 'Verbo',
+      helper: 'La accion principal de la frase',
+      items: SENTENCE_BUILDING_VERBS,
+      tone: 'emerald',
+    },
+    {
+      title: 'Lugar',
+      helper: 'Para decir en donde estas o a donde vas',
+      items: SENTENCE_BUILDING_PREPOSITIONS,
+      tone: 'amber',
+    },
+    {
+      title: 'Conector',
+      helper: 'Para unir dos ideas',
+      items: SENTENCE_BUILDING_CONNECTORS,
+      tone: 'orange',
+    },
+    {
+      title: 'Palabras',
+      helper: 'Cosas utiles para completar la idea',
+      items: SENTENCE_BUILDING_VOCABULARY.slice(0, 6),
+      tone: 'slate',
+    },
   ];
 
   return (
@@ -174,15 +204,19 @@ function ActivationStep({ onContinue }: { onContinue: () => void }) {
 
       <div className="grid gap-4">
         {pieceGroups.map((group) => (
-          <div key={group.title} className="bg-white rounded-[24px] border border-slate-100 shadow-sm p-4">
-            <p className="text-xs font-black uppercase text-slate-500 mb-3">{group.title}</p>
-            <div className="flex flex-wrap gap-2">
+          <div key={group.title} className="bg-white rounded-[26px] border border-slate-100 shadow-sm p-4">
+            <div className="mb-3">
+              <p className="text-xs font-black uppercase tracking-wide text-slate-500">{group.title}</p>
+              <p className="text-sm font-bold text-slate-700">{group.helper}</p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
               {group.items.map((item) => (
-                <AudioChip
+                <VocabularyReviewCard
                   key={item.id}
                   text={item.english}
                   title={item.english}
                   subtitle={item.spanish}
+                  pronunciation={item.pronunciation}
                   tone={group.tone}
                 />
               ))}
@@ -938,6 +972,52 @@ function AudioChip(props: {
   );
 }
 
+function VocabularyReviewCard(props: {
+  text: string;
+  title: string;
+  subtitle: string;
+  pronunciation: string;
+  tone: string;
+}) {
+  const [playing, setPlaying] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  const play = async () => {
+    setPlaying(true);
+    setFailed(false);
+    try {
+      await generateSpeech(props.text, 'normal');
+    } catch {
+      setFailed(true);
+    } finally {
+      setPlaying(false);
+    }
+  };
+
+  return (
+    <div className={`${reviewCardClass(props.tone)} rounded-2xl border p-3`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xl font-black leading-tight text-slate-950">{props.title}</p>
+          <p className="text-sm font-bold text-slate-700">{props.subtitle}</p>
+          <p className="mt-1 text-sm font-black text-slate-900">Se dice: {props.pronunciation}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => void play()}
+          disabled={playing}
+          className={`shrink-0 rounded-xl px-3 py-2 text-sm font-black active:scale-[0.98] disabled:opacity-70 ${
+            failed ? 'bg-red-100 text-red-800' : 'bg-white/85 text-slate-900 shadow-sm'
+          }`}
+          aria-label={`Escuchar ${props.title}`}
+        >
+          {playing ? '...' : failed ? 'Audio' : '🔊'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function PrimaryButton(props: {
   children: React.ReactNode;
   onClick: () => void;
@@ -965,6 +1045,18 @@ function chipClass(tone: string) {
     slate: 'bg-slate-50 border-slate-200 text-slate-950',
   };
   return `rounded-xl border px-3 py-2 text-sm font-bold flex items-center gap-2 ${tones[tone] ?? tones.slate}`;
+}
+
+function reviewCardClass(tone: string) {
+  const tones: Record<string, string> = {
+    sky: 'bg-sky-50 border-sky-200',
+    violet: 'bg-violet-50 border-violet-200',
+    emerald: 'bg-emerald-50 border-emerald-200',
+    amber: 'bg-amber-50 border-amber-200',
+    orange: 'bg-orange-50 border-orange-200',
+    slate: 'bg-slate-50 border-slate-200',
+  };
+  return tones[tone] ?? tones.slate;
 }
 
 function normalizeAnswer(value: string) {
