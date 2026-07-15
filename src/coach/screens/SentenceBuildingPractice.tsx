@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { generateSpeech, prefetchSpeech, stopSpeech } from '../../services/speechApi';
+import { generateSpeech, stopSpeech } from '../../services/speechApi';
 import {
   COMMON_SENTENCE_ERRORS,
   CONTROLLED_DIALOGUES,
@@ -62,19 +62,6 @@ export const SentenceBuildingPractice: React.FC<SentenceBuildingPracticeProps> =
     window.scrollTo({ top: 0, behavior: 'smooth' });
     stopSpeech();
   }, [index]);
-
-  useEffect(() => {
-    const audioItems = [
-      ...SENTENCE_BUILDING_PATTERNS.map((item) => item.audioText),
-      ...GROWING_SENTENCES.flatMap((item) => item.steps.map((step) => step.audioText)),
-      ...COMMON_SENTENCE_ERRORS.map((item) => item.audioText),
-      ...SENTENCE_BUILDING_EXERCISES.flatMap((item) => (item.audioText ? [item.audioText] : [])),
-      ...GUIDED_CONSTRUCTIONS.map((item) => item.audioText),
-      ...CONTROLLED_DIALOGUES.flatMap((item) => [item.slowAudioText, item.normalAudioText]),
-      ...PRE_CHALLENGE.examples.map((item) => item.audioText),
-    ];
-    audioItems.forEach((text) => void prefetchSpeech(text, 'normal'));
-  }, []);
 
   const current = steps[index];
   const progress = Math.round(((index + 1) / steps.length) * 100);
