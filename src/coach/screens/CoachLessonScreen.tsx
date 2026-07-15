@@ -4,7 +4,13 @@ import { PronounsPractice } from './PronounsPractice';
 import { ToBePractice } from './ToBePractice';
 import { SpeakPractice } from './SpeakPractice';
 import { EssentialVerbsPractice } from './EssentialVerbsPractice';
-import { ESSENTIAL_VERBS_LESSON_ID, PRONOUNS_INFO, type PronounInfo } from '../data/curriculum';
+import { SentenceBuildingPractice } from './SentenceBuildingPractice';
+import {
+  ESSENTIAL_VERBS_LESSON_ID,
+  PRONOUNS_INFO,
+  SENTENCE_BUILDING_LESSON_ID,
+  type PronounInfo,
+} from '../data/curriculum';
 
 interface CoachLessonScreenProps {
   lesson: Lesson;
@@ -174,6 +180,17 @@ export const CoachLessonScreen: React.FC<CoachLessonScreenProps> = ({
   if (lesson.id === ESSENTIAL_VERBS_LESSON_ID) {
     return (
       <EssentialVerbsPractice
+        onExit={onBack}
+        onComplete={(score) =>
+          onStatus('completed', { lastStepId: step?.id, lastScore: score })
+        }
+      />
+    );
+  }
+
+  if (lesson.id === SENTENCE_BUILDING_LESSON_ID || step?.sentenceBuilding) {
+    return (
+      <SentenceBuildingPractice
         onExit={onBack}
         onComplete={(score) =>
           onStatus('completed', { lastStepId: step?.id, lastScore: score })

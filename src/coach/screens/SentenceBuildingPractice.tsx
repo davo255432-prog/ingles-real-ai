@@ -38,9 +38,10 @@ type SentenceStep =
 
 interface SentenceBuildingPracticeProps {
   onExit: () => void;
+  onComplete?: (score: number) => void;
 }
 
-export const SentenceBuildingPractice: React.FC<SentenceBuildingPracticeProps> = ({ onExit }) => {
+export const SentenceBuildingPractice: React.FC<SentenceBuildingPracticeProps> = ({ onExit, onComplete }) => {
   const steps = useMemo<SentenceStep[]>(
     () => [
       { kind: 'intro' },
@@ -89,7 +90,7 @@ export const SentenceBuildingPractice: React.FC<SentenceBuildingPracticeProps> =
           </button>
           <div className="flex-1">
             <div className="flex items-center justify-between gap-3 mb-2">
-              <span className="text-xs font-extrabold uppercase text-emerald-700">Unidad 4 · Vista previa</span>
+              <span className="text-xs font-extrabold uppercase text-emerald-700">Unidad 4</span>
               <span className="text-xs font-bold text-gray-500">{index + 1}/{steps.length}</span>
             </div>
             <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
@@ -112,7 +113,7 @@ export const SentenceBuildingPractice: React.FC<SentenceBuildingPracticeProps> =
         {current.kind === 'guided' && <GuidedStep construction={current.item} onContinue={next} />}
         {current.kind === 'dialogue' && <DialogueStep dialogue={current.item} onContinue={next} />}
         {current.kind === 'pre-challenge' && <PreChallengeStep onContinue={next} />}
-        {current.kind === 'complete' && <CompleteStep onExit={onExit} />}
+        {current.kind === 'complete' && <CompleteStep onExit={onExit} onComplete={onComplete} />}
       </main>
     </div>
   );
@@ -760,24 +761,29 @@ function PreChallengeStep({ onContinue }: { onContinue: () => void }) {
         </div>
       </div>
 
-      <PrimaryButton onClick={onContinue}>Cerrar Fase 2</PrimaryButton>
+      <PrimaryButton onClick={onContinue}>Cerrar unidad</PrimaryButton>
     </section>
   );
 }
 
-function CompleteStep({ onExit }: { onExit: () => void }) {
+function CompleteStep({ onExit, onComplete }: { onExit: () => void; onComplete?: (score: number) => void }) {
+  const finish = () => {
+    onComplete?.(100);
+    onExit();
+  };
+
   return (
     <section className="pt-16 space-y-6 text-center">
       <div className="text-4xl">🎈 ⭐ 🎈</div>
       <div className="mx-auto w-20 h-20 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-5xl text-emerald-700">
         ✓
       </div>
-      <p className="text-sm font-extrabold uppercase text-emerald-700">Fase 2 lista</p>
+      <p className="text-sm font-extrabold uppercase text-emerald-700">Unidad completada</p>
       <h1 className="text-4xl font-black text-slate-950">Ya puedes ordenar y construir frases completas.</h1>
       <div className="bg-white rounded-[28px] border border-slate-100 shadow-sm p-5 text-left space-y-3">
-        <p className="text-sm font-black uppercase text-slate-500">Lo siguiente sera</p>
+        <p className="text-sm font-black uppercase text-slate-500">Lo que viene después</p>
         <div className="grid gap-3">
-          {['Dialogo real completo.', 'Practica hablada.', 'Mision final con puntuacion.'].map((item) => (
+          {['Diálogo real completo.', 'Práctica hablada.', 'Misión final con puntuación.'].map((item) => (
             <div key={item} className="rounded-2xl bg-emerald-50 border border-emerald-100 p-4 font-black text-slate-950">
               {item}
             </div>
@@ -792,7 +798,7 @@ function CompleteStep({ onExit }: { onExit: () => void }) {
           ))}
         </ul>
       </div>
-      <PrimaryButton onClick={onExit}>Cerrar vista previa</PrimaryButton>
+      <PrimaryButton onClick={finish}>Finalizar Unidad 4</PrimaryButton>
     </section>
   );
 }
