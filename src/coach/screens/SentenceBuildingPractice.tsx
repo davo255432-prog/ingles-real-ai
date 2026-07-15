@@ -23,6 +23,7 @@ import {
   type SentenceExercise,
   type SentencePattern,
 } from '../data/sentenceBuildingPractice';
+import { AMERICAN_SOFT_T_RULE, applyCoachPronunciationRules } from '../data/pronunciationRules';
 
 type SentenceStep =
   | { kind: 'intro' }
@@ -201,6 +202,20 @@ function ActivationStep({ onContinue }: { onContinue: () => void }) {
       <p className="text-lg font-semibold text-slate-700">
         Ahora no se trata de aprender muchas palabras nuevas. Se trata de ordenar mejor las que ya conoces.
       </p>
+      <div className="rounded-[24px] border border-sky-200 bg-sky-50 p-4">
+        <p className="text-sm font-black uppercase text-sky-700">{AMERICAN_SOFT_T_RULE.title}</p>
+        <p className="mt-1 text-base font-bold text-slate-900">{AMERICAN_SOFT_T_RULE.shortText}</p>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          {AMERICAN_SOFT_T_RULE.examples.map((example) => (
+            <div key={example.word} className="rounded-2xl bg-white/80 border border-sky-100 p-3">
+              <p className="text-lg font-black text-slate-950">{example.word}</p>
+              <p className="text-sm font-bold text-slate-700">
+                mejor: <span className="text-sky-800">{example.naturalSound}</span>
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="grid gap-4">
         {pieceGroups.map((group) => (
@@ -216,7 +231,7 @@ function ActivationStep({ onContinue }: { onContinue: () => void }) {
                   text={item.english}
                   title={item.english}
                   subtitle={item.spanish}
-                  pronunciation={item.pronunciation}
+                  pronunciation={formatPronunciation(item.pronunciation)}
                   tone={group.tone}
                 />
               ))}
@@ -249,7 +264,7 @@ function PatternStep({ pattern, onContinue }: { pattern: SentencePattern; onCont
         <ExampleCard
           english={pattern.example}
           spanish={pattern.spanish}
-          pronunciation={pattern.pronunciation}
+          pronunciation={formatPronunciation(pattern.pronunciation)}
           audioText={pattern.audioText}
         />
       </div>
@@ -279,7 +294,7 @@ function GrowingStep({ sentence, onContinue }: { sentence: GrowingSentence; onCo
                 <p className="text-xs font-black uppercase text-sky-700">Paso {itemIndex + 1}</p>
                 <p className="mt-1 text-2xl font-black text-slate-950">{step.text}</p>
                 <p className="font-semibold text-slate-600">{step.spanish}</p>
-                <p className="mt-2 text-lg font-black text-sky-800">{step.pronunciation}</p>
+                <p className="mt-2 text-lg font-black text-sky-800">{formatPronunciation(step.pronunciation)}</p>
               </div>
               <SmallAudioButton text={step.audioText} label="Audio" />
             </div>
@@ -388,7 +403,7 @@ function ErrorStep({ error, onContinue }: { error: CommonSentenceError; onContin
             <ExampleCard
               english={error.correct}
               spanish={error.explanation}
-              pronunciation={error.pronunciation}
+              pronunciation={formatPronunciation(error.pronunciation)}
               audioText={error.audioText}
               tone="emerald"
             />
@@ -558,7 +573,7 @@ function ExerciseStep({ exercise, onContinue }: { exercise: SentenceExercise; on
               <ExampleCard
                 english={expectedAnswer}
                 spanish={exercise.explanation}
-                pronunciation={exercise.pronunciation ?? ''}
+                pronunciation={formatPronunciation(exercise.pronunciation ?? '')}
                 audioText={exercise.audioText ?? expectedAnswer}
                 tone="emerald"
               />
@@ -660,7 +675,7 @@ function GuidedStep({ construction, onContinue }: { construction: GuidedConstruc
               <ExampleCard
                 english={construction.expected}
                 spanish={construction.spanish}
-                pronunciation={construction.pronunciation}
+                pronunciation={formatPronunciation(construction.pronunciation)}
                 audioText={construction.audioText}
                 tone="sky"
               />
@@ -714,7 +729,7 @@ function DialogueStep({ dialogue, onContinue }: { dialogue: ControlledDialogue; 
             <p className="text-xs font-black uppercase text-slate-500">Persona {line.speaker}</p>
             <p className="mt-1 text-2xl font-black text-slate-950">{line.english}</p>
             <p className="font-semibold text-slate-600">{line.spanish}</p>
-            <p className="mt-2 text-lg font-black text-sky-800">{line.pronunciation}</p>
+            <p className="mt-2 text-lg font-black text-sky-800">{formatPronunciation(line.pronunciation)}</p>
           </div>
         ))}
         <div className="grid grid-cols-2 gap-3">
@@ -769,7 +784,7 @@ function PreChallengeStep({ onContinue }: { onContinue: () => void }) {
               <div key={structure.id} className="rounded-2xl bg-emerald-50 border border-emerald-100 p-4">
                 <p className="font-black text-slate-950">{structure.title}</p>
                 <p className="mt-1 text-lg font-black text-emerald-800">{structure.example}</p>
-                <p className="font-bold text-sky-800">{structure.pronunciation}</p>
+                <p className="font-bold text-sky-800">{formatPronunciation(structure.pronunciation)}</p>
                 <div className="mt-3">
                   <SmallAudioButton text={structure.audioText} label="Escuchar" />
                 </div>
@@ -786,7 +801,7 @@ function PreChallengeStep({ onContinue }: { onContinue: () => void }) {
                 key={example.id}
                 english={example.english}
                 spanish={example.spanish}
-                pronunciation={example.pronunciation}
+                pronunciation={formatPronunciation(example.pronunciation)}
                 audioText={example.audioText}
                 tone="amber"
               />
@@ -1065,4 +1080,8 @@ function normalizeAnswer(value: string) {
     .replace(/[.,]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function formatPronunciation(pronunciation: string) {
+  return applyCoachPronunciationRules(pronunciation);
 }
