@@ -6,17 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google" content="notranslate" />
     <title>Inglés Real AI</title>
-    <script type="module" crossorigin src="/assets/index-Dbmcdzpl.js"></script>
+    <script type="module" crossorigin src="/assets/index-tfUtP9Aw.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-Dmj1gvuI.css">
   </head>
   <body translate="no" class="notranslate">
+    <div id="review-boot" style="padding:24px;font-family:sans-serif">Cargando revisión…</div>
     <div id="root"></div>
     <script>
       window.addEventListener('error', function (event) {
-        document.body.textContent = 'REVIEW_ERROR: ' + (event.message || 'Unknown error');
+        document.getElementById('review-boot').textContent =
+          'REVIEW_ERROR: ' + (event.message || 'Unknown error');
       });
       window.addEventListener('unhandledrejection', function (event) {
-        document.body.textContent = 'REVIEW_REJECTION: ' + String(event.reason || 'Unknown rejection');
+        document.getElementById('review-boot').textContent =
+          'REVIEW_REJECTION: ' + String(event.reason || 'Unknown rejection');
       });
     </script>
   </body>
