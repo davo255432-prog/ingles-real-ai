@@ -1033,6 +1033,76 @@ app.post('/api/speech', async (req, res) => {
 
 // ── Multer (audio uploads) ─────────────────────────────────────────────────
 
+const REVIEW_VOICES = new Set(['echo', 'cedar', 'marin', 'coral']);
+const REVIEW_VOICE_TEXT = 'I. You. He. She. We. They. It.';
+
+app.post('/api/speech-preview', async (req, res) => {
+  const { voice } = req.body;
+  if (!REVIEW_VOICES.has(voice)) {
+    return res.status(400).json({ error: 'Voz de prueba no permitida.' });
+  }
+  try {
+    const mp3 = await openai.audio.speech.create({
+      model: 'tts-1',
+      voice,
+      input: REVIEW_VOICE_TEXT,
+      speed: 0.88,
+      response_format: 'mp3',
+    });
+    const buffer = Buffer.from(await mp3.arrayBuffer());
+    res.set({
+      'Content-Type': 'audio/mpeg',
+      'Content-Length': buffer.length,
+      'Cache-Control': 'public, max-age=3600',
+    });
+    res.send(buffer);
+  } catch (error) {
+    console.error('[speech-preview] Error:', error.message);
+    res.status(500).json({ error: 'No se pudo generar esta voz.' });
+  }
+});
+
+app.get('/voice-preview', (_req, res) => {
+  res.type('html').send(`<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prueba de voces</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#e2e8f0;color:#0f172a;font-family:Arial,sans-serif}
+main{max-width:430px;min-height:100vh;margin:auto;padding:28px 20px;background:#f8fafc}
+h1{font-size:28px;margin:0 0 8px}p{color:#475569;line-height:1.5}
+.phrase{margin:22px 0;padding:18px;border-radius:18px;background:#ecfdf5;color:#065f46;font-size:20px;font-weight:800;text-align:center}
+.voice{margin:12px 0;padding:18px;border:1px solid #dbe3ea;border-radius:18px;background:white;box-shadow:0 3px 10px #0f172a12}
+.voice strong{display:block;font-size:21px;margin-bottom:4px}.voice span{color:#64748b}
+button{width:100%;margin-top:12px;padding:14px;border:0;border-radius:14px;background:#10b981;color:white;font-size:17px;font-weight:800}
+button:disabled{opacity:.55}.status{min-height:22px;margin-top:10px;color:#b91c1c;font-weight:700}
+</style></head><body><main>
+<h1>Elige la voz oficial</h1>
+<p>Escucha la misma frase con cuatro voces.</p>
+<div class="phrase">I · you · he · she · we · they · it</div>
+<div id="voices"></div>
+</main><script>
+const voices=[['echo','Echo','Voz actual'],['cedar','Cedar','Clara y natural'],['marin','Marin','Cálida y natural'],['coral','Coral','Femenina y amable']];
+const container=document.getElementById('voices');let audio;
+voices.forEach(([id,name,description])=>{
+ const card=document.createElement('section');card.className='voice';
+ card.innerHTML='<strong>'+name+'</strong><span>'+description+'</span><button>Escuchar</button><div class="status"></div>';
+ const button=card.querySelector('button');const status=card.querySelector('.status');
+ button.onclick=async()=>{
+  button.disabled=true;button.textContent='Preparando…';status.textContent='';
+  try{
+   if(audio)audio.pause();
+   const response=await fetch('/api/speech-preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({voice:id})});
+   if(!response.ok)throw new Error('Error '+response.status);
+   const url=URL.createObjectURL(await response.blob());audio=new Audio(url);
+   audio.onended=()=>URL.revokeObjectURL(url);await audio.play();
+  }catch(error){status.textContent='No se pudo reproducir. Toca para reintentar.'}
+  finally{button.disabled=false;button.textContent='Escuchar otra vez'}
+ };container.appendChild(card);
+});
+</script></body></html>`);
+});
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
