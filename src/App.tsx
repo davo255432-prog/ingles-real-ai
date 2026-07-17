@@ -330,7 +330,6 @@ function App() {
     new URLSearchParams(window.location.search).get('preview') === 'unit1-pronouns';
 
   if (isUnit1Preview) {
-    document.getElementById('review-boot')?.remove();
     return (
       <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
         <div className="w-full max-w-[430px] min-h-screen bg-gray-50 relative flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.12)]" translate="no">

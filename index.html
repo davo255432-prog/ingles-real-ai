@@ -8,18 +8,7 @@
     <title>Inglés Real AI</title>
   </head>
   <body translate="no" class="notranslate">
-    <div id="review-boot" style="padding:24px;font-family:sans-serif">Cargando revisión…</div>
     <div id="root"></div>
-    <script>
-      window.addEventListener('error', function (event) {
-        document.getElementById('review-boot').textContent =
-          'REVIEW_ERROR: ' + (event.message || 'Unknown error');
-      });
-      window.addEventListener('unhandledrejection', function (event) {
-        document.getElementById('review-boot').textContent =
-          'REVIEW_REJECTION: ' + String(event.reason || 'Unknown rejection');
-      });
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
