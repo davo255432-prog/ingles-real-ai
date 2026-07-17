@@ -18,6 +18,7 @@ app.use(cors({
     const allowed = [
       'http://localhost:5173',
       'http://localhost:4173',
+      'https://ingles-real-ai-api-unit1-review.up.railway.app',
     ];
     // En desarrollo, Vite puede usar cualquier puerto libre (5174, 5178, …),
     // así que aceptamos cualquier localhost/127.0.0.1 sin importar el puerto.
