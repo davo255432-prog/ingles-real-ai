@@ -4,6 +4,7 @@ import { PronounsPractice } from './PronounsPractice';
 import { ToBePractice } from './ToBePractice';
 import { SpeakPractice } from './SpeakPractice';
 import { PRONOUNS_INFO, type PronounInfo } from '../data/curriculum';
+import { getPronounVisual, handleVisualError } from '../visual-library';
 
 interface CoachLessonScreenProps {
   lesson: Lesson;
@@ -21,6 +22,7 @@ interface CoachLessonScreenProps {
   ) => void;
   /** Terminar la lección y volver (al panel / unidades). */
   onFinish: () => void;
+  isReview?: boolean;
 }
 
 /**
@@ -36,6 +38,7 @@ export const CoachLessonScreen: React.FC<CoachLessonScreenProps> = ({
   onStepChange,
   onStatus,
   onFinish,
+  isReview = false,
 }) => {
   const steps = lesson.steps;
 
@@ -59,6 +62,7 @@ export const CoachLessonScreen: React.FC<CoachLessonScreenProps> = ({
 
   // Al montar: marca la lección como en progreso.
   useEffect(() => {
+    if (isReview) return;
     onStatus('in-progress', { lastStepId: steps[initialIndex]?.id });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -81,6 +85,20 @@ export const CoachLessonScreen: React.FC<CoachLessonScreenProps> = ({
     setChecked(false);
     setBuilt([]);
   }, [index]);
+
+  // Unidad 1 (Pronombres): usa el flujo pedagógico completo y autónomo.
+  if (lesson.title.toLowerCase().includes('pronombres')) {
+    const finalStepId = steps.find((candidate) => candidate.practice)?.id ?? steps[steps.length - 1]?.id;
+    return (
+      <PronounsPractice
+        onExit={onBack}
+        onUnitComplete={(score) =>
+          onStatus('completed', { lastStepId: finalStepId, lastScore: score, oralPending })
+        }
+        onBackToMap={onFinish}
+      />
+    );
+  }
 
   const goNext = (wasCorrect: boolean) => {
     if (wasCorrect) setCorrectCount((c) => c + 1);
@@ -314,6 +332,7 @@ function renderCoachIntro(userName: string | undefined, onContinue: () => void, 
 
 // Pasos de enseñanza (teach / listen sin audio en esta fase)
 function renderTeach(step: Step, ctx: StepCtx) {
+  const pronounVisual = step.english ? getPronounVisual(step.english) : undefined;
   return (
     <>
       <div className="pt-4 pb-6 flex-1">
@@ -333,7 +352,16 @@ function renderTeach(step: Step, ctx: StepCtx) {
         {/* Frase / palabra objetivo (con icono y figura simple) */}
         {step.english && (
           <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100 mb-4 text-center">
-            {step.icon && <div className="text-5xl mb-3">{step.icon}</div>}
+            {pronounVisual ? (
+              <img
+                src={pronounVisual.src}
+                alt={pronounVisual.alt}
+                onError={(event) => handleVisualError(event, pronounVisual)}
+                className="w-full max-w-sm h-52 sm:h-64 object-contain mx-auto mb-4 rounded-2xl bg-emerald-50"
+              />
+            ) : (
+              step.icon && <div className="text-5xl mb-3">{step.icon}</div>
+            )}
             <p className="text-3xl font-extrabold text-gray-900 leading-tight mb-1">
               {step.english}
             </p>

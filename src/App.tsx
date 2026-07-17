@@ -46,11 +46,12 @@ import { KitchenProgressScreen } from './screens/KitchenProgressScreen';
 
 // Coach IA — módulo aislado (gestiona su propia navegación interna)
 import { CoachRoot } from './coach/CoachRoot';
+import { Unit1PronounsPreview } from './coach/Unit1PronounsPreview';
 
 // Biblioteca (placeholder)
 import { BibliotecaScreen } from './screens/BibliotecaScreen';
 
-function App() {
+function MainApp() {
   const [screen, setScreen] = useState<Screen>('home');
 
   // Mantiene el servidor despierto: ping al abrir y cada 4 min mientras la app
@@ -112,8 +113,8 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-200 flex justify-center items-start">
-    <div className="w-full max-w-[430px] min-h-screen bg-gray-50 relative flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.12)]">
+    <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
+    <div className="w-full max-w-[430px] min-h-screen bg-gray-50 relative flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.12)]" translate="no">
 
       {/* ── Home ── */}
       {screen === 'home' && (
@@ -322,6 +323,24 @@ function App() {
     </div>
     </div>
   );
+}
+
+function App() {
+  const isUnit1Preview =
+    import.meta.env.DEV &&
+    new URLSearchParams(window.location.search).get('preview') === 'unit1-pronouns';
+
+  if (isUnit1Preview) {
+    return (
+      <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
+        <div className="w-full max-w-[430px] min-h-screen bg-gray-50 relative flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.12)]" translate="no">
+          <Unit1PronounsPreview onExit={() => window.location.assign('/')} />
+        </div>
+      </div>
+    );
+  }
+
+  return <MainApp />;
 }
 
 export default App;

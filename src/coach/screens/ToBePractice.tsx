@@ -12,6 +12,49 @@ import {
 } from '../data/curriculum';
 import { generateSpeech, stopSpeech } from '../../services/speechApi';
 import { transcribeAudio } from '../../services/voiceApi';
+import { ToBeFinalPractice } from './ToBeFinalPractice';
+import { ToBeFinalMission } from './ToBeFinalMission';
+import {
+  TO_BE_FINAL_MISSION_STEP_SLUG,
+  TO_BE_FINAL_PRACTICE_STEP_SLUG,
+  TO_BE_FINAL_VOCAB_STEP_SLUG,
+  TO_BE_FINAL_VOCABULARY,
+  TO_BE_CONNECTOR_CHUNKS,
+  TO_BE_USEFUL_CHUNKS,
+} from '../data/toBeFinalPractice';
+
+interface BrowserSpeechRecognitionEvent {
+  resultIndex: number;
+  results: {
+    length: number;
+    [index: number]: {
+      isFinal: boolean;
+      [index: number]: { transcript: string };
+    };
+  };
+}
+
+interface BrowserSpeechRecognition {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  maxAlternatives: number;
+  onresult: ((event: BrowserSpeechRecognitionEvent) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+}
+
+type BrowserSpeechRecognitionWindow = Window & {
+  SpeechRecognition?: new () => BrowserSpeechRecognition;
+  webkitSpeechRecognition?: new () => BrowserSpeechRecognition;
+};
+
+function shouldUseBrowserSpeechFallback(): boolean {
+  return !/Android/i.test(navigator.userAgent);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Unidad 2 — Verbo "to be" (am / is / are). Pantalla autónoma, al estilo de
@@ -107,7 +150,10 @@ type ToBeStep =
   | { id: string; kind: 'order'; prompt: string; words: string[]; answer: string; coach: string }
   | { id: string; kind: 'speak'; phrase: BePhrase; label: string }
   | { id: string; kind: 'dialogue'; dlg: BeDialogue }
-  | { id: string; kind: 'summary' };
+  | { id: string; kind: 'summary' }
+  | { id: string; kind: 'final-vocab' }
+  | { id: string; kind: 'final-practice' }
+  | { id: string; kind: 'final-mission' };
 
 // Genera la frase con un hueco "___" para los ejercicios de elegir verbo.
 function gap(phrase: BePhrase): string {
@@ -272,6 +318,10 @@ function buildSteps(): ToBeStep[] {
     coach: 'they → are. La cosa/personas van primero.',
   });
 
+  steps.push({ id: sid(TO_BE_FINAL_VOCAB_STEP_SLUG), kind: 'final-vocab' });
+  steps.push({ id: sid(TO_BE_FINAL_PRACTICE_STEP_SLUG), kind: 'final-practice' });
+  steps.push({ id: sid(TO_BE_FINAL_MISSION_STEP_SLUG), kind: 'final-mission' });
+
   return steps;
 }
 
@@ -403,6 +453,14 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
 
   const progressPct = Math.round((index / total) * 100);
 
+  if (step.kind === 'final-practice') {
+    return <ToBeFinalPractice onExit={onExit} onComplete={() => advance()} completeLabel="Ir a la Mision Final" />;
+  }
+
+  if (step.kind === 'final-mission') {
+    return <ToBeFinalMission onExit={onExit} onComplete={() => advance()} />;
+  }
+
   return (
     <Shell onExit={onExit} progressPct={progressPct} counter={`${index + 1}/${total}`}>
       {step.kind === 'welcome' && <Welcome userName={userName} onNext={() => advance()} />}
@@ -430,6 +488,7 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
       )}
       {step.kind === 'dialogue' && <DialogueCard key={step.id} dlg={step.dlg} onNext={() => advance()} />}
       {step.kind === 'summary' && <Summary onNext={() => advance()} />}
+      {step.kind === 'final-vocab' && <FinalVocab onNext={() => advance()} />}
     </Shell>
   );
 };
@@ -866,7 +925,16 @@ const DialogueCard: React.FC<{ dlg: BeDialogue; onNext: () => void }> = ({ dlg, 
           <p className="text-gray-400 text-xs font-bold mb-1">A</p>
           <p className="text-xl font-extrabold text-gray-900">{dlg.aEn}</p>
           <p className="text-gray-500">{dlg.aEs}</p>
-          <p className="text-emerald-700 text-sm font-semibold mt-1">🗣️ {dlg.aPron}</p>
+          <div className="flex items-center justify-between gap-3 mt-2">
+            <p className="text-emerald-700 text-sm font-semibold">🗣️ {dlg.aPron}</p>
+            <button
+              onClick={() => void audio.play(dlg.aEn)}
+              disabled={audio.state === 'loading'}
+              className="shrink-0 bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold px-3 py-2 rounded-xl active:scale-95 disabled:opacity-60"
+            >
+              Escuchar A
+            </button>
+          </div>
         </div>
 
         {/* Línea B */}
@@ -874,10 +942,20 @@ const DialogueCard: React.FC<{ dlg: BeDialogue; onNext: () => void }> = ({ dlg, 
           <p className="text-emerald-600 text-xs font-bold mb-1">B</p>
           <p className="text-xl font-extrabold text-gray-900">{dlg.bEn}</p>
           <p className="text-gray-500">{dlg.bEs}</p>
-          <p className="text-emerald-700 text-sm font-semibold mt-1">🗣️ {dlg.bPron}</p>
+          <div className="flex items-center justify-between gap-3 mt-2">
+            <p className="text-emerald-700 text-sm font-semibold">🗣️ {dlg.bPron}</p>
+            <button
+              onClick={() => void audio.play(dlg.bEn)}
+              disabled={audio.state === 'loading'}
+              className="shrink-0 bg-white border border-emerald-100 text-emerald-700 text-xs font-bold px-3 py-2 rounded-xl active:scale-95 disabled:opacity-60"
+            >
+              Escuchar B
+            </button>
+          </div>
         </div>
 
-        <div className="flex justify-center mt-5">
+        <div className="flex flex-col items-center mt-5">
+          <p className="text-gray-400 text-xs font-semibold mb-2">Escucha el dialogo completo</p>
           <AudioButton
             state={audio.state}
             onPlay={async () => {
@@ -921,6 +999,98 @@ const Summary: React.FC<{ onNext: () => void }> = ({ onNext }) => (
 );
 
 // ── Repetición con voz (reutiliza transcribeAudio + MediaRecorder) ───────────
+const FinalVocab: React.FC<{ onNext: () => void }> = ({ onNext }) => (
+  <>
+    <div className="pt-2 pb-4 flex-1">
+      <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-2">
+        Alto: antes de practicar
+      </p>
+      <h1 className="text-3xl font-extrabold text-gray-900 leading-tight mb-3">
+        Primero revisa esto
+      </h1>
+      <div className="bg-emerald-600 rounded-3xl p-5 mb-5 shadow-md">
+        <p className="text-white text-xl font-extrabold leading-snug">
+          Estas piezas son tu mapa para hablar sin bloquearte.
+        </p>
+        <p className="text-emerald-50 text-base font-semibold leading-relaxed mt-3">
+          Lee en voz baja, escucha mentalmente y luego habla frase por frase. No estas adivinando: estas construyendo tu historia real.
+        </p>
+      </div>
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5">
+        <p className="text-amber-900 text-lg font-extrabold leading-snug">
+          Recomendacion del Coach
+        </p>
+        <p className="text-amber-800 text-sm font-bold leading-relaxed mt-2">
+          No saltes esta parte. Aqui aparecen las palabras que usaras en la practica y en la Mision Final.
+        </p>
+      </div>
+
+      <h2 className="text-gray-900 text-xl font-extrabold mb-3">Palabras que veras</h2>
+      <div className="flex flex-col gap-3">
+        {TO_BE_FINAL_VOCABULARY.map((item) => (
+          <div key={item.id} className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-gray-950 text-2xl font-extrabold leading-tight break-words">{item.en}</p>
+                <p className="text-gray-700 text-base font-bold leading-snug mt-1">{item.es}</p>
+              </div>
+              <span className="shrink-0 bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-extrabold uppercase tracking-wide px-2.5 py-1 rounded-full">
+                vocab
+              </span>
+            </div>
+            <div className="mt-3 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+              <p className="text-emerald-900 text-sm font-extrabold leading-snug">
+                Se dice: <span className="text-base">{item.pronunciation}</span>
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <h2 className="text-gray-900 text-xl font-extrabold mt-6 mb-3">Conectores que usaras</h2>
+      <div className="flex flex-col gap-3">
+        {TO_BE_CONNECTOR_CHUNKS.map((item) => (
+          <div key={item.id} className="bg-white rounded-2xl border border-emerald-200 p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-gray-950 text-2xl font-extrabold leading-tight break-words">{item.en}</p>
+                <p className="text-gray-700 text-base font-bold leading-snug mt-1">{item.es}</p>
+              </div>
+              <span className="text-xs font-extrabold uppercase tracking-wide bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full shrink-0">
+                {item.en.startsWith('at') ? 'at' : item.en.startsWith('in') ? 'in' : item.en.startsWith('a ') ? 'a' : 'chunk'}
+              </span>
+            </div>
+            <div className="mt-3 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+              <p className="text-emerald-900 text-sm font-extrabold leading-snug">
+                Se dice: <span className="text-base">{item.pronunciation}</span>
+              </p>
+            </div>
+            <p className="text-gray-600 text-sm font-semibold leading-snug mt-2">{item.note}</p>
+          </div>
+        ))}
+      </div>
+
+      <h2 className="text-gray-900 text-xl font-extrabold mt-6 mb-3">Piezas utiles</h2>
+      <div className="flex flex-col gap-3">
+        {TO_BE_USEFUL_CHUNKS.map((item) => (
+          <div key={item.id} className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+            <p className="text-gray-950 text-xl font-extrabold leading-tight break-words">{item.en}</p>
+            <p className="text-gray-700 text-base font-bold leading-snug mt-1">{item.es}</p>
+            <div className="mt-3 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+              <p className="text-emerald-900 text-sm font-extrabold leading-snug">
+                Se dice: <span className="text-base">{item.pronunciation}</span>
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div className="mt-auto">
+      <PrimaryButton onClick={onNext}>Estoy listo para practicar</PrimaryButton>
+    </div>
+  </>
+);
+
 type MicState = 'idle' | 'requesting' | 'recording' | 'transcribing';
 
 const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => void }> = ({ phrase, label, onNext }) => {
@@ -928,11 +1098,14 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
   const [mic, setMic] = useState<MicState>('idle');
   const [verdict, setVerdict] = useState<VoiceVerdict | null>(null);
   const [micBlocked, setMicBlocked] = useState(false);
+  const [heardText, setHeardText] = useState('');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
+  const browserTranscriptRef = useRef('');
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -948,16 +1121,72 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
     return () => {
       mountedRef.current = false;
       stopSpeech();
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop();
+      recognitionRef.current?.abort();
       streamRef.current?.getTracks().forEach((t) => t.stop());
+      mediaRecorderRef.current = null;
+      recognitionRef.current = null;
+      streamRef.current = null;
     };
   }, []);
+
+  const startBrowserRecognition = () => {
+    if (!shouldUseBrowserSpeechFallback()) return;
+    const SpeechRecognition =
+      (window as BrowserSpeechRecognitionWindow).SpeechRecognition ??
+      (window as BrowserSpeechRecognitionWindow).webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = true;
+      recognition.continuous = true;
+      recognition.maxAlternatives = 1;
+      recognition.onresult = (event) => {
+        let text = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          text += event.results[i][0].transcript;
+        }
+        if (text.trim()) browserTranscriptRef.current = text.trim();
+      };
+      recognition.onerror = () => undefined;
+      recognition.onend = () => undefined;
+      recognition.start();
+      recognitionRef.current = recognition;
+    } catch {
+      recognitionRef.current = null;
+    }
+  };
+
+  const stopBrowserRecognition = () => {
+    try {
+      recognitionRef.current?.stop();
+    } catch {
+      recognitionRef.current?.abort();
+    } finally {
+      recognitionRef.current = null;
+    }
+  };
 
   const startRecording = async () => {
     stopSpeech();
     setVerdict(null);
+    setHeardText('');
     chunksRef.current = [];
+    browserTranscriptRef.current = '';
+    stopBrowserRecognition();
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    mediaRecorderRef.current = null;
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
       setMicBlocked(true);
       return;
@@ -979,9 +1208,12 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
       intervalRef.current = setInterval(() => {
         if (mr.state === 'recording') mr.requestData();
       }, 500);
+      startBrowserRecognition();
       setMic('recording');
     } catch {
       streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      mediaRecorderRef.current = null;
       setMicBlocked(true);
       setMic('idle');
     }
@@ -994,12 +1226,15 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    stopBrowserRecognition();
     setMic('transcribing');
     await new Promise<void>((resolve) => {
       mr.addEventListener('stop', () => resolve(), { once: true });
       mr.stop();
     });
     streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    mediaRecorderRef.current = null;
 
     const chunks = chunksRef.current;
     if (chunks.length === 0) {
@@ -1011,11 +1246,20 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
     }
     const blob = new Blob(chunks, { type: mr.mimeType || 'audio/webm' });
     try {
-      const transcript = await transcribeAudio(blob);
+      let transcript = await transcribeAudio(blob);
+      if (!transcript.trim() && browserTranscriptRef.current.trim()) {
+        transcript = browserTranscriptRef.current;
+      }
       if (!mountedRef.current) return;
+      setHeardText(transcript.trim());
       setVerdict(evaluatePhrase(transcript, phrase.en));
     } catch {
-      if (mountedRef.current) setVerdict({ kind: 'none' });
+      if (mountedRef.current && browserTranscriptRef.current.trim()) {
+        setHeardText(browserTranscriptRef.current.trim());
+        setVerdict(evaluatePhrase(browserTranscriptRef.current, phrase.en));
+      } else if (mountedRef.current) {
+        setVerdict({ kind: 'none' });
+      }
     } finally {
       if (mountedRef.current) setMic('idle');
     }
@@ -1063,6 +1307,12 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
         {verdict?.kind === 'none' && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
             <p className="text-red-600 font-bold">No pude escucharte. Inténtalo de nuevo.</p>
+          </div>
+        )}
+        {heardText && (
+          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-4">
+            <p className="text-blue-400 text-xs font-bold uppercase tracking-wide mb-1">Escuche</p>
+            <p className="text-gray-700 text-sm font-semibold leading-snug">"{heardText}"</p>
           </div>
         )}
 

@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { PRONOUNS_INFO, type PronounInfo } from '../data/curriculum';
 import { generateSpeech, stopSpeech } from '../../services/speechApi';
+import { getPronounVisual, handleVisualError } from '../visual-library';
 
 interface PronounsPracticeProps {
   /** Salir de la práctica (volver atrás). */
@@ -47,6 +48,47 @@ function buildOptions(correct: string, pool: string[], n = 4): string[] {
 }
 
 const byId = (id: string): PronounInfo => PRONOUNS_INFO.find((p) => p.id === id)!;
+
+const PronounVisual: React.FC<{ pronounId: string; className?: string }> = ({
+  pronounId,
+  className = 'w-full h-auto rounded-2xl',
+}) => {
+  const visual = getPronounVisual(pronounId);
+  if (!visual) return null;
+
+  return (
+    <img
+      src={visual.src}
+      alt={visual.alt}
+      onError={(event) => handleVisualError(event, visual)}
+      className={className}
+    />
+  );
+};
+
+const CorrectPronounCard: React.FC<{ pronoun: PronounInfo }> = ({ pronoun }) => (
+  <div className="bg-white border border-emerald-100 rounded-3xl p-5 mb-4 text-center shadow-sm">
+    <PronounVisual pronounId={pronoun.id} className="w-full h-auto rounded-2xl mb-4" />
+    <p className="text-gray-950 text-5xl font-black leading-none">{pronoun.en}</p>
+    <p className="text-gray-700 text-xl font-extrabold mt-3">{pronoun.translation ?? pronoun.meaning}</p>
+    <div className="mt-4 inline-flex items-center justify-center rounded-2xl bg-emerald-100 px-4 py-2">
+      <span className="text-emerald-900 text-lg font-black">Se dice: {pronoun.pron}</span>
+    </div>
+  </div>
+);
+
+const AchievementCard: React.FC<{ title: string; subtitle: string; scoreLabel?: string }> = ({ title, subtitle, scoreLabel }) => (
+  <div className="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-5 mb-4 text-center shadow-sm">
+    <div className="text-3xl mb-2" aria-hidden="true">⭐ ⭐ ⭐</div>
+    <p className="text-emerald-800 text-xl font-black leading-tight">{title}</p>
+    <p className="text-gray-900 font-extrabold mt-1">{subtitle}</p>
+      {scoreLabel && (
+      <p className="mt-3 inline-flex rounded-2xl bg-white px-4 py-2 text-emerald-800 text-base font-black border border-emerald-200">
+        {scoreLabel}
+      </p>
+    )}
+  </div>
+);
 
 // ── Generador del set de práctica (cambia en cada ronda) ──────────────────────
 function generatePractice(): PracticeQ[] {
@@ -134,11 +176,11 @@ function generatePractice(): PracticeQ[] {
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
-type Phase = 'summary' | 'exercises' | 'done';
+type Phase = 'intro' | 'scoreIntro' | 'summary' | 'guide' | 'memory' | 'realUse' | 'exercises' | 'done';
 type Stage = 'answer' | 'firstError' | 'teachCard';
 
 export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUnitComplete, onBackToMap }) => {
-  const [phase, setPhase] = useState<Phase>('summary');
+  const [phase, setPhase] = useState<Phase>('intro');
   const [round, setRound] = useState(0); // fuerza regeneración en "Practicar otra vez"
   const questions = useMemo(() => generatePractice(), [round]);
 
@@ -146,7 +188,8 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   const [selected, setSelected] = useState<string | null>(null);
   const [stage, setStage] = useState<Stage>('answer');
   const [attempts, setAttempts] = useState(0);
-  const [correctCount, setCorrectCount] = useState(0);
+  const scorePointsRef = useRef(0);
+  const [finalScore, setFinalScore] = useState<number | null>(null);
   // Estado del audio de la práctica de oído.
   //  idle    → aún no se ha reproducido en esta pregunta
   //  loading → solicitando/reproduciendo la voz
@@ -154,8 +197,19 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   //  error   → la voz falló (muestra reintentar)
   const [audioState, setAudioState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const [audioError, setAudioError] = useState<string | null>(null);
+  const [selectedMemoryPronoun, setSelectedMemoryPronoun] = useState<string | null>(null);
+  const [matchedPronouns, setMatchedPronouns] = useState<string[]>([]);
+  const [memoryError, setMemoryError] = useState<string | null>(null);
+  const [realUseIndex, setRealUseIndex] = useState(0);
+  const [selectedRealUse, setSelectedRealUse] = useState<string | null>(null);
+  const [realUseCorrect, setRealUseCorrect] = useState(false);
+  const achievementRef = useRef<HTMLDivElement | null>(null);
 
   const q = questions[qIndex];
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [phase, qIndex, realUseIndex]);
 
   const resetQuestion = () => {
     stopSpeech(); // corta cualquier audio anterior antes de cambiar de muestra
@@ -168,18 +222,40 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
   const startPractice = () => {
     setQIndex(0);
-    setCorrectCount(0);
+    scorePointsRef.current = 0;
+    setFinalScore(null);
     resetQuestion();
     setPhase('exercises');
+  };
+
+  const startMemory = () => {
+    setSelectedMemoryPronoun(null);
+    setMatchedPronouns([]);
+    setMemoryError(null);
+    setPhase('memory');
+  };
+
+  const startRealUse = () => {
+    setRealUseIndex(0);
+    setSelectedRealUse(null);
+    setRealUseCorrect(false);
+    setPhase('realUse');
   };
 
   const playAgain = () => {
     stopSpeech();
     setRound((r) => r + 1);
     setQIndex(0);
-    setCorrectCount(0);
+    scorePointsRef.current = 0;
+    setFinalScore(null);
+    setSelectedMemoryPronoun(null);
+    setMatchedPronouns([]);
+    setMemoryError(null);
+    setRealUseIndex(0);
+    setSelectedRealUse(null);
+    setRealUseCorrect(false);
     resetQuestion();
-    setPhase('summary');
+    setPhase('intro');
   };
 
   const playAudio = async (text: string) => {
@@ -202,7 +278,8 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
       setQIndex((i) => i + 1);
       resetQuestion();
     } else {
-      const score = Math.round((correctCount / questions.length) * 100);
+      const score = Math.round((scorePointsRef.current / questions.length) * 100);
+      setFinalScore(score);
       stopSpeech();
       setPhase('done');
       onUnitComplete(score); // marca completada (sin navegar; la pantalla final decide)
@@ -216,8 +293,8 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
     // …ni una pregunta de oído cuyo audio no se haya reproducido todavía.
     if (q.kind === 'listen' && audioState !== 'ready') return;
     if (selected === q.answer) {
-      // Acierto: cuenta como correcto si es el primer intento sin errores.
-      if (attempts === 0) setCorrectCount((c) => c + 1);
+      // Acierto: primer intento vale mas; reintento suma, pero no llega a 100.
+      scorePointsRef.current += attempts === 0 ? 1 : 0.7;
       setStage('answer'); // mostraremos feedback de acierto por bandera aparte
       advanceAfterCorrect();
     } else {
@@ -230,6 +307,18 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
   // Mostramos un breve "¡Correcto!" antes de avanzar.
   const [showCorrect, setShowCorrect] = useState(false);
+
+  useEffect(() => {
+    if (showCorrect) achievementRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [showCorrect]);
+
+  useEffect(() => {
+    if (realUseCorrect) achievementRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [realUseCorrect]);
+
+  useEffect(() => {
+    if (matchedPronouns.length > 0) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [matchedPronouns.length]);
   const advanceAfterCorrect = () => {
     setShowCorrect(true);
   };
@@ -246,12 +335,220 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
   const continueFromTeachCard = () => {
     // Tras repasar la tarjeta, seguimos a la siguiente pregunta (no al inicio).
+    // Esta pregunta no suma puntos: puede repetir para subir su nota.
     advance();
+  };
+
+  const handleMemoryMeaning = (pronounId: string) => {
+    if (!selectedMemoryPronoun || matchedPronouns.includes(pronounId)) return;
+    if (selectedMemoryPronoun === pronounId) {
+      setMatchedPronouns((current) => [...current, pronounId]);
+      setSelectedMemoryPronoun(null);
+      setMemoryError(null);
+    } else {
+      setMemoryError('Míralo otra vez. Si fallas, empiezas de nuevo. Vamos, tú puedes.');
+      setSelectedMemoryPronoun(null);
+    }
+  };
+
+  const realUseScenarios = [
+    { icon: '👨', label: 'David', hint: 'Hablamos de un hombre.', answer: 'he', options: ['he', 'she', 'it'] },
+    { icon: '👩', label: 'Ana', hint: 'Hablamos de una mujer.', answer: 'she', options: ['he', 'she', 'it'] },
+    { icon: '📱', label: 'un teléfono', hint: 'Hablamos de una cosa.', answer: 'it', options: ['he', 'she', 'it'] },
+    { icon: '🤝', label: 'tú y yo', hint: 'Tú estás dentro del grupo.', answer: 'we', options: ['we', 'they', 'you'] },
+    { icon: '👥', label: 'ellos sin mí', hint: 'Yo no estoy dentro del grupo.', answer: 'they', options: ['we', 'they', 'you'] },
+  ];
+
+  const currentRealUse = realUseScenarios[realUseIndex];
+  const realUseComplete = realUseIndex >= realUseScenarios.length;
+
+  const handleRealUseChoice = (choice: string) => {
+    if (!currentRealUse || realUseCorrect) return;
+    setSelectedRealUse(choice);
+    setRealUseCorrect(choice === currentRealUse.answer);
+  };
+
+  const nextRealUse = () => {
+    setSelectedRealUse(null);
+    setRealUseCorrect(false);
+    setRealUseIndex((index) => index + 1);
   };
 
   // ─────────────────────────────────────────────────────────────────────────
   // FASE: Cuadro resumen
   // ─────────────────────────────────────────────────────────────────────────
+  if (phase === 'intro') {
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
+        <div className="flex items-center gap-3 px-5 pt-12 pb-2">
+          <button
+            onClick={onExit}
+            className="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-500"
+            aria-label="Volver"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <span className="text-gray-400 text-sm font-medium">Unidad 1 · Pronombres</span>
+        </div>
+
+        <div className="px-6 pt-8 pb-4 flex-1 flex flex-col items-center justify-center text-center">
+          <div className="w-24 h-24 rounded-full bg-emerald-100 border-2 border-emerald-300 flex items-center justify-center mb-7">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-3">
+            Aqui empieza tu meta
+          </p>
+          <h1 className="text-4xl font-black text-gray-950 leading-tight mb-5">
+            Tu progreso depende de ti
+          </h1>
+          <p className="text-gray-700 text-xl font-extrabold leading-relaxed max-w-md">
+            Esta app te muestra el camino, pero nadie puede aprender por ti.
+          </p>
+          <div className="grid grid-cols-3 gap-3 w-full mt-8">
+            {['Estudia', 'Habla', 'Practica'].map((item, index) => (
+              <div key={item} className="bg-white border-2 border-emerald-100 rounded-2xl p-4 shadow-sm">
+                <div className="mx-auto mb-2 w-9 h-9 rounded-full bg-emerald-500 text-white flex items-center justify-center text-lg font-black">
+                  {index + 1}
+                </div>
+                <p className="text-gray-950 text-base font-black">{item}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-gray-950 text-xl font-black leading-relaxed mt-8">
+            No necesitas hacerlo perfecto. Necesitas seguir intentandolo.
+          </p>
+          <p className="text-emerald-800 text-xl font-black leading-relaxed mt-5">
+            Cada practica te acerca a tu meta.
+          </p>
+        </div>
+
+        <div className="hidden">
+          <p className="text-emerald-700 text-xs font-black uppercase tracking-wide mb-2">
+            Aquí empieza tu meta
+          </p>
+          <h1 className="text-4xl font-black text-gray-950 leading-tight mb-4">
+            Tu primera base para hablar inglés
+          </h1>
+          <div className="bg-emerald-600 rounded-3xl p-5 shadow-md mb-5">
+            <p className="text-white text-xl font-extrabold leading-snug">
+              Hoy no vas a memorizar palabras sueltas.
+            </p>
+            <p className="text-emerald-50 text-base font-bold leading-relaxed mt-3">
+              Vas a aprender quién habla, de quién hablamos y cómo empezar a formar frases reales.
+            </p>
+          </div>
+          <div className="bg-white border-2 border-emerald-100 rounded-3xl p-4 shadow-sm">
+            <p className="text-gray-950 text-lg font-black leading-snug">
+              Los pronombres son el primer paso.
+            </p>
+            <p className="text-gray-600 text-sm font-semibold leading-relaxed mt-2">
+              Sin ellos no sabemos quién hace la acción. Por eso empezamos aquí.
+            </p>
+          </div>
+        </div>
+
+        <div className="hidden">
+          <div className="grid grid-cols-2 gap-3">
+            {PRONOUNS_INFO.map((p) => (
+              <div
+                key={p.id}
+                className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-4 min-h-[132px]"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <PronounVisual pronounId={p.id} className="w-16 h-14 object-cover rounded-xl" />
+                  <span className="bg-emerald-50 text-emerald-700 text-base font-black px-3 py-1.5 rounded-full">
+                    {p.pron}
+                  </span>
+                </div>
+                <p className="text-gray-950 text-3xl font-black leading-none mt-3">{p.en}</p>
+                <p className="text-gray-600 text-sm font-bold leading-snug mt-2">{p.translation ?? p.meaning}</p>
+                <p className="text-emerald-800 text-sm font-black uppercase tracking-wide mt-3">
+                  se dice: <span className="text-lg">{p.pron}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
+          <button
+            onClick={() => setPhase('scoreIntro')}
+            className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
+          >
+            Estoy listo para aprender
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'scoreIntro') {
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
+        <div className="flex items-center gap-3 px-5 pt-12 pb-2">
+          <button
+            onClick={() => setPhase('intro')}
+            className="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-500"
+            aria-label="Volver"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <span className="text-gray-400 text-sm font-medium">Metodo de puntuacion</span>
+        </div>
+
+        <div className="px-6 pt-8 pb-4 flex-1 flex flex-col justify-center text-center">
+          <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-3">Antes de practicar</p>
+          <h1 className="text-4xl font-black text-gray-950 leading-tight mb-4">Asi ganas tu nota</h1>
+          <p className="text-gray-700 text-lg font-bold leading-relaxed mb-7">
+            La meta es mejorar. Puedes fallar, corregir y repetir hasta llegar a 100.
+          </p>
+
+          <div className="space-y-3 text-left">
+            <div className="bg-white border-2 border-emerald-200 rounded-3xl p-5 shadow-sm flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl font-black text-emerald-800">+100</div>
+              <div>
+                <p className="text-gray-950 text-xl font-black">Aciertas a la primera</p>
+                <p className="text-gray-600 text-base font-bold">Demuestras que ya lo tienes claro.</p>
+              </div>
+            </div>
+            <div className="bg-white border-2 border-sky-200 rounded-3xl p-5 shadow-sm flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-sky-100 flex items-center justify-center text-2xl font-black text-sky-800">+70</div>
+              <div>
+                <p className="text-gray-950 text-xl font-black">Fallas y corriges</p>
+                <p className="text-gray-600 text-base font-bold">Tambien cuenta, porque estas aprendiendo.</p>
+              </div>
+            </div>
+            <div className="bg-white border-2 border-amber-200 rounded-3xl p-5 shadow-sm flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center text-3xl" aria-hidden="true">100</div>
+              <div>
+                <p className="text-gray-950 text-xl font-black">Repite hasta 100</p>
+                <p className="text-gray-600 text-base font-bold">No es castigo. Es practica real.</p>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-emerald-800 text-xl font-black leading-relaxed mt-7">
+            No necesitas hacerlo perfecto al inicio. Necesitas seguir intentando.
+          </p>
+        </div>
+
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
+          <button
+            onClick={() => setPhase('summary')}
+            className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
+          >
+            Empezar unidad
+          </button>
+        </div>
+      </div>
+    );
+  }
   if (phase === 'summary') {
     return (
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
@@ -269,20 +566,93 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
         </div>
 
         <div className="px-6 pt-4 pb-2">
-          <h1 className="text-2xl font-extrabold text-gray-900 mb-1">Cuadro resumen</h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-emerald-700 text-xs font-black uppercase tracking-wide mb-2">
+            Ahora si: pronombres
+          </p>
+          <h1 className="text-3xl font-black text-gray-950 leading-tight mb-3">
+            Son palabras para saber quien habla
+          </h1>
+          <p className="text-gray-700 text-base font-semibold leading-relaxed">
+            Los pronombres nos dicen si hablo de mi, de ti, de otra persona, de una cosa o de un grupo.
+          </p>
+          <h1 className="hidden">Cuadro resumen</h1>
+          <p className="hidden">
             Repasa los 7 pronombres antes de practicar.
           </p>
         </div>
 
         <div className="px-5 flex-1">
+          <div className="bg-white border-2 border-emerald-100 rounded-3xl p-4 shadow-sm mb-4">
+            <p className="text-emerald-800 text-sm font-black uppercase tracking-wide mb-3">
+              Lamina 1: personas basicas
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {['i', 'you', 'he', 'she'].map((id) => {
+                const p = byId(id);
+                return (
+                  <div key={p.id} className="rounded-3xl bg-emerald-50 border border-emerald-100 p-4 min-h-[150px]">
+                    <div className="flex items-start justify-between gap-2">
+                      <PronounVisual pronounId={p.id} className="w-full h-auto rounded-xl mb-2" />
+                      <span className="bg-white text-emerald-800 text-lg font-black px-3 py-1.5 rounded-full">
+                        {p.pron}
+                      </span>
+                    </div>
+                    <p className="text-gray-950 text-4xl font-black leading-none mt-3">{p.en}</p>
+                    <p className="text-gray-700 text-lg font-extrabold leading-snug mt-2">{p.translation ?? p.meaning}</p>
+                    <p className="text-emerald-800 text-sm font-black uppercase tracking-wide mt-3">
+                      Se dice: <span className="text-xl">{p.pron}</span>
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-white border-2 border-sky-100 rounded-3xl p-4 shadow-sm">
+            <p className="text-sky-900 text-sm font-black uppercase tracking-wide mb-3">
+              Lamina 2: cosas y grupos
+            </p>
+            <div className="grid grid-cols-1 gap-3">
+              {['it', 'we', 'they'].map((id) => {
+                const p = byId(id);
+                return (
+                  <div key={p.id} className="rounded-3xl bg-sky-50 border border-sky-100 p-4 flex items-center gap-4">
+                    <PronounVisual pronounId={p.id} className="w-24 h-20 object-cover rounded-xl shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3">
+                        <p className="text-gray-950 text-4xl font-black leading-none">{p.en}</p>
+                        <span className="bg-white text-sky-900 text-lg font-black px-3 py-1.5 rounded-full">
+                          {p.pron}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 text-lg font-extrabold leading-snug mt-2">{p.translation ?? p.meaning}</p>
+                      <p className="text-sky-900 text-sm font-black uppercase tracking-wide mt-2">
+                        Se dice: <span className="text-xl">{p.pron}</span>
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden">
+          <div className="bg-emerald-600 rounded-3xl p-5 mb-4 shadow-md">
+            <p className="text-white text-xl font-extrabold leading-snug">
+              Primero reconoce quién habla o de quién hablamos.
+            </p>
+            <p className="text-emerald-50 text-sm font-bold leading-relaxed mt-2">
+              Si fallas, repasas y vuelves. Así se construye la base.
+            </p>
+          </div>
           <div className="flex flex-col gap-2.5">
             {PRONOUNS_INFO.map((p) => (
               <div
                 key={p.id}
                 className="bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100 flex items-center gap-3"
               >
-                <span className="text-2xl w-8 text-center shrink-0">{p.icon}</span>
+                <PronounVisual pronounId={p.id} className="w-16 h-14 object-cover rounded-xl shrink-0" />
                 <div className="w-14 shrink-0">
                   <span className="text-gray-900 text-lg font-extrabold">{p.en}</span>
                 </div>
@@ -297,12 +667,12 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           </div>
         </div>
 
-        <div className="px-5 py-8">
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
           <button
-            onClick={startPractice}
+            onClick={() => setPhase('guide')}
             className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
           >
-            Empezar la práctica
+            Entender como se usan
           </button>
         </div>
       </div>
@@ -312,24 +682,401 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   // ─────────────────────────────────────────────────────────────────────────
   // FASE: Pantalla final de unidad completada
   // ─────────────────────────────────────────────────────────────────────────
+  if (phase === 'guide') {
+    const guideGroups = [
+      {
+        title: 'Personas en la conversacion',
+        note: 'Cuando hablas de ti o de la persona que tienes enfrente.',
+        ids: ['i', 'you'],
+      },
+      {
+        title: 'Una persona, cosa o animal',
+        note: 'Cuando hablas de alguien o algo que no eres tu.',
+        ids: ['he', 'she', 'it'],
+      },
+      {
+        title: 'Grupos',
+        note: 'Cuando hablas de varias personas.',
+        ids: ['we', 'they'],
+      },
+    ];
+
+    const guideExamples = [
+      { icon: '👨', label: 'David', answer: 'he', text: 'David es una persona hombre.' },
+      { icon: '👩', label: 'Ana', answer: 'she', text: 'Ana es una persona mujer.' },
+      { icon: '📱', label: 'teléfono', answer: 'it', text: 'Una cosa o un objeto se representa con it.' },
+      { icon: '🐶', label: 'perro', answer: 'it', text: 'Un animal también se representa con it.' },
+      { icon: '🧑‍🤝‍🧑', label: 'tú y yo', answer: 'we', text: 'Si tu estas dentro del grupo, usa we.' },
+      { icon: '👥', label: 'ellos sin mí', answer: 'they', text: 'Si tú no estás dentro del grupo, usa they.' },
+    ];
+
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
+        <div className="flex items-center gap-3 px-5 pt-12 pb-2">
+          <button
+            onClick={() => setPhase('summary')}
+            className="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-500"
+            aria-label="Volver"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <span className="text-gray-400 text-sm font-medium">Pronombres · Guia</span>
+        </div>
+
+        <div className="px-6 pt-4 pb-2">
+          <p className="text-emerald-700 text-xs font-black uppercase tracking-wide mb-2">Antes de practicar</p>
+          <h1 className="text-3xl font-black text-gray-950 leading-tight mb-2">Primero entiende cada pronombre</h1>
+          <p className="text-gray-700 text-base font-semibold leading-relaxed">
+            No los memorices como lista. Mira a quien representa cada palabra.
+          </p>
+        </div>
+
+        <div className="px-5 flex-1">
+          <div className="space-y-4">
+            {guideGroups.map((group) => (
+              <div key={group.title} className="bg-white border-2 border-emerald-100 rounded-3xl p-4 shadow-sm">
+                <p className="text-emerald-800 text-sm font-black uppercase tracking-wide mb-1">{group.title}</p>
+                <p className="text-gray-700 text-sm font-bold leading-relaxed mb-3">{group.note}</p>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {group.ids.map((id) => {
+                    const p = byId(id);
+                    return (
+                      <div key={p.id} className="rounded-2xl bg-emerald-50 border border-emerald-100 p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <PronounVisual pronounId={p.id} className="w-full h-auto rounded-xl mb-2" />
+                          <span className="rounded-full bg-white px-3 py-1 text-emerald-800 text-sm font-black">{p.pron}</span>
+                        </div>
+                        <p className="text-gray-950 text-3xl font-black leading-none mt-2">{p.en}</p>
+                        <p className="text-gray-700 text-base font-extrabold mt-1">{p.translation ?? p.meaning}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-sky-50 border-2 border-sky-200 rounded-3xl p-4 mt-5 shadow-sm">
+            <p className="text-sky-900 text-sm font-black uppercase tracking-wide mb-3">Ejemplos rapidos</p>
+            <div className="space-y-2.5">
+              {guideExamples.map((item) => {
+                const p = byId(item.answer);
+                return (
+                  <div key={item.label} className="bg-white rounded-2xl border border-sky-100 p-3 flex items-center gap-3">
+                    <PronounVisual pronounId={p.id} className="w-20 h-16 object-cover rounded-xl shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-gray-950 text-base font-black">{item.label} → <span className="text-sky-800">{p.en}</span></p>
+                      <p className="text-gray-600 text-sm font-semibold leading-snug">{item.text}</p>
+                    </div>
+                    <span className="bg-sky-100 text-sky-900 rounded-full px-3 py-1 text-sm font-black">{p.pron}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-3xl p-4 mt-5 text-center">
+            <p className="text-amber-900 text-lg font-black leading-snug">Ahora si: vamos a reforzar.</p>
+            <p className="text-amber-800 text-sm font-bold leading-relaxed mt-1">
+              Primero estudias, despues refuerzas, y luego practicas.
+            </p>
+          </div>
+        </div>
+
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
+          <button
+            onClick={startMemory}
+            className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
+          >
+            Reforzar memoria
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'memory') {
+    const memoryComplete = matchedPronouns.length === PRONOUNS_INFO.length;
+
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
+        <div className="flex items-center gap-3 px-5 pt-12 pb-2">
+          <button
+            onClick={() => setPhase('summary')}
+            className="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-500"
+            aria-label="Volver"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <span className="text-gray-400 text-sm font-medium">Pronombres · Memoria</span>
+        </div>
+
+        <div className="px-6 pt-4 pb-2">
+          <p className="text-emerald-700 text-xs font-black uppercase tracking-wide mb-2">Reto de memoria</p>
+          <h1 className="text-3xl font-black text-gray-950 leading-tight mb-2">Une cada pronombre</h1>
+          <p className="text-gray-700 text-base font-semibold leading-relaxed">
+            Toca un pronombre y luego toca su significado. Asi lo guardas en la memoria.
+          </p>
+        </div>
+
+        <div className="px-5 flex-1">
+          <div className="bg-white border-2 border-emerald-100 rounded-3xl p-4 shadow-sm mb-4">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <p className="text-gray-900 text-sm font-black uppercase tracking-wide">Pronombres</p>
+              <p className="text-emerald-700 text-sm font-black">{matchedPronouns.length}/{PRONOUNS_INFO.length}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              {PRONOUNS_INFO.map((p) => {
+                const isDone = matchedPronouns.includes(p.id);
+                const isSelected = selectedMemoryPronoun === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      if (isDone) return;
+                      setSelectedMemoryPronoun(p.id);
+                      setMemoryError(null);
+                    }}
+                    className={
+                      isDone
+                        ? 'rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-3 py-3 text-left opacity-80'
+                        : isSelected
+                          ? 'rounded-2xl border-2 border-emerald-500 bg-emerald-100 px-3 py-3 text-left shadow-md scale-[1.01]'
+                          : 'rounded-2xl border-2 border-gray-100 bg-white px-3 py-3 text-left shadow-sm active:scale-[0.98]'
+                    }
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <PronounVisual pronounId={p.id} className="w-16 h-14 object-cover rounded-xl" />
+                      <span className="text-emerald-700 text-sm font-black">{p.pron}</span>
+                    </div>
+                    <p className="text-gray-950 text-2xl font-black leading-none mt-2">{p.en}</p>
+                    {isDone && <p className="text-emerald-700 text-sm font-black mt-2">Listo</p>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-white border-2 border-sky-100 rounded-3xl p-4 shadow-sm">
+            <p className="text-gray-900 text-sm font-black uppercase tracking-wide mb-3">Significados</p>
+            <div className="grid grid-cols-1 gap-2.5">
+              {PRONOUNS_INFO.map((p) => {
+                const isDone = matchedPronouns.includes(p.id);
+                return (
+                  <button
+                    key={p.id}
+                    disabled={isDone || !selectedMemoryPronoun}
+                    onClick={() => handleMemoryMeaning(p.id)}
+                    className={
+                      isDone
+                        ? 'rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-4 py-3 text-left'
+                        : selectedMemoryPronoun
+                          ? 'rounded-2xl border-2 border-sky-300 bg-sky-50 px-4 py-3 text-left active:scale-[0.98]'
+                          : 'rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3 text-left'
+                    }
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-gray-950 text-lg font-black">{p.translation ?? p.meaning}</span>
+                      {isDone && <span className="text-emerald-700 text-xl font-black">✓</span>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {memoryError && (
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-3xl p-4 mt-4 text-center">
+              <p className="text-amber-800 text-base font-black leading-relaxed">{memoryError}</p>
+            </div>
+          )}
+
+          {memoryComplete && (
+            <div className="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-5 mt-4 text-center shadow-sm">
+              <div className="text-3xl mb-2" aria-hidden="true">⭐ ⭐ ⭐</div>
+              <p className="text-emerald-800 text-xl font-black">¡Memoria activada!</p>
+              <p className="text-gray-900 font-extrabold mt-1">Ya estas listo para reconocerlos en practica.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
+          <button
+            onClick={memoryComplete ? startRealUse : undefined}
+            disabled={!memoryComplete}
+            className={
+              memoryComplete
+                ? 'relative w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-transparent text-base font-bold rounded-2xl py-4 transition-all duration-200'
+                : 'relative w-full bg-gray-200 text-transparent text-base font-bold rounded-2xl py-4 cursor-not-allowed'
+            }
+          >
+            <span className={memoryComplete ? 'absolute inset-0 flex items-center justify-center text-white' : 'absolute inset-0 flex items-center justify-center text-gray-400'}>
+              Reforzar uso real
+            </span>
+            Empezar la práctica
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'realUse') {
+    if (realUseComplete) {
+      return (
+        <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
+          <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+            <div className="text-4xl mb-4" aria-hidden="true">⭐ ⭐ ⭐</div>
+            <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mb-6">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-2">Uso real reforzado</p>
+            <h1 className="text-3xl font-black text-gray-950 leading-tight mb-3">Ya sabes escoger mejor</h1>
+            <p className="text-gray-700 text-lg font-bold leading-relaxed">
+              Ahora si pasamos a la practica mezclada.
+            </p>
+          </div>
+          <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
+            <button
+              onClick={startPractice}
+              className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
+            >
+              Empezar practica final
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    const expected = byId(currentRealUse.answer);
+
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
+        <div className="flex items-center gap-3 px-5 pt-12 pb-2">
+          <button
+            onClick={() => setPhase('memory')}
+            className="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-500"
+            aria-label="Volver"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <span className="text-gray-400 text-sm font-medium">Pronombres · Uso real</span>
+        </div>
+
+        <div className="px-6 pt-4 pb-2">
+          <p className="text-emerald-700 text-xs font-black uppercase tracking-wide mb-2">
+            Refuerzo 2
+          </p>
+          <h1 className="text-3xl font-black text-gray-950 leading-tight mb-2">
+            Elige el pronombre correcto
+          </h1>
+          <p className="text-gray-700 text-base font-semibold leading-relaxed">
+            Mira la situación y decide qué palabra usar.
+          </p>
+        </div>
+
+        <div className="px-5 flex-1 pb-24">
+          <div className="bg-white border-2 border-emerald-100 rounded-3xl p-4 shadow-sm text-center mb-3">
+            <PronounVisual pronounId={currentRealUse.answer} className="w-full h-auto rounded-2xl mb-3" />
+            <p className="text-gray-950 text-3xl font-black leading-tight">{currentRealUse.label}</p>
+            <p className="text-gray-600 text-base font-bold leading-relaxed mt-2">{currentRealUse.hint}</p>
+          </div>
+
+          {realUseCorrect && (
+            <div ref={achievementRef} className="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-3 mb-3 text-center shadow-sm">
+              <div className="text-2xl mb-1" aria-hidden="true">⭐ ⭐ ⭐</div>
+              <p className="text-emerald-800 text-xl font-black">Muy bien</p>
+              <p className="text-gray-900 font-extrabold mt-1">{expected.en} es correcto aquí.</p>
+            </div>
+          )}
+
+          <div className="space-y-2.5">
+            {currentRealUse.options.map((option) => {
+              const isSelected = selectedRealUse === option;
+              const isAnswer = option === currentRealUse.answer;
+              const showCorrect = realUseCorrect && isAnswer;
+              const showWrong = isSelected && !isAnswer;
+              return (
+                <button
+                  key={option}
+                  onClick={() => handleRealUseChoice(option)}
+                  className={
+                    showCorrect
+                      ? 'w-full rounded-2xl border-2 border-emerald-400 bg-emerald-50 px-5 py-3.5 text-left shadow-sm'
+                      : showWrong
+                        ? 'w-full rounded-2xl border-2 border-amber-300 bg-amber-50 px-5 py-3.5 text-left shadow-sm'
+                        : 'w-full rounded-2xl border-2 border-gray-100 bg-white px-5 py-3.5 text-left shadow-sm active:scale-[0.98]'
+                  }
+                >
+                  <span className="text-gray-950 text-2xl font-black">{byId(option).en}</span>
+                  <span className="ml-3 text-gray-600 text-base font-bold">{byId(option).translation ?? byId(option).meaning}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedRealUse && !realUseCorrect && (
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-3xl p-4 mt-4 text-center">
+              <p className="text-amber-900 text-base font-black">Mira la situación otra vez. Tú puedes.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
+          <button
+            onClick={realUseCorrect ? nextRealUse : undefined}
+            disabled={!realUseCorrect}
+            className={
+              realUseCorrect
+                ? 'w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200'
+                : 'w-full bg-gray-200 text-gray-400 text-base font-bold rounded-2xl py-4 cursor-not-allowed'
+            }
+          >
+            Continuar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (phase === 'done') {
+    const achievedScore = finalScore ?? 0;
+    const scoreMessage = achievedScore === 100
+      ? 'Perfecto. Llegaste a 100 porque dominaste la unidad.'
+      : achievedScore >= 80
+        ? 'Muy buen avance. Repite la unidad para acercarte al 100.'
+        : 'Vas por buen camino. Repite, practica y sube tu nota.';
     return (
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
         <div className="flex items-center gap-3 px-5 pt-12 pb-2">
           <span className="text-gray-400 text-sm font-medium">Coach IA</span>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+          <div className="text-4xl mb-3" aria-hidden="true">🎈 ⭐ 🎈</div>
           <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mb-6">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
+          <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-2">Primera base lograda</p>
           <h1 className="text-3xl font-extrabold text-gray-900 mb-3">Unidad Pronombres completada</h1>
+          <div className="w-full max-w-sm bg-white border-2 border-emerald-200 rounded-3xl p-5 mb-5 shadow-sm">
+            <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-1">Tu nota</p>
+            <p className="text-5xl font-black text-gray-900 leading-none">{achievedScore}<span className="text-2xl text-gray-400">/100</span></p>
+            <p className="text-gray-700 text-base font-bold mt-3">{scoreMessage}</p>
+          </div>
           <p className="text-gray-600 leading-relaxed mb-8">
-            Ya puedes reconocer los pronombres personales y distinguir quién realiza la acción.
+            Ya puedes reconocer los pronombres personales y distinguir quien realiza la accion.
           </p>
         </div>
-        <div className="px-5 pb-8 flex flex-col gap-3">
+        <div className="sticky bottom-0 z-10 px-5 py-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent flex flex-col gap-3">
           <button
             onClick={onBackToMap}
             className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-base font-bold rounded-2xl py-4 transition-all duration-200"
@@ -340,7 +1087,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
             onClick={playAgain}
             className="w-full bg-white border border-gray-200 text-gray-700 text-base font-bold rounded-2xl py-4 hover:bg-gray-50 transition-all"
           >
-            Practicar otra vez
+            Repetir para subir a 100
           </button>
         </div>
       </div>
@@ -388,11 +1135,11 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
         {/* Enunciado */}
         <h2 className="text-xl font-extrabold text-gray-900 leading-snug mb-4">{q.prompt}</h2>
 
-        {/* Figura (reconocimiento visual / escena) */}
-        {q.icon && (
+        {/* Imagen oficial del pronombre evaluado */}
+        {q.pronounId && (
           <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100 mb-5 text-center">
-            <div className="text-6xl mb-1">{q.icon}</div>
-            {q.subText && <p className="text-gray-500 font-medium">{q.subText}</p>}
+            <PronounVisual pronounId={q.pronounId} className="w-full h-auto rounded-2xl" />
+            {q.subText && <p className="text-gray-500 font-medium mt-3">{q.subText}</p>}
           </div>
         )}
 
@@ -458,8 +1205,13 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
         {/* Feedback: acierto */}
         {showCorrect && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-4">
-            <p className="text-emerald-700 font-bold">¡Correcto! 🎉</p>
+          <div ref={achievementRef}>
+          <AchievementCard
+            title="¡Muy bien!"
+            subtitle="Ya reconoces quién hace la acción."
+          scoreLabel={attempts === 0 ? "+100 por acertar a la primera" : "+70 por corregir y aprender"}
+          />
+          <CorrectPronounCard pronoun={info} />
           </div>
         )}
 
@@ -484,7 +1236,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
               Repasa esta tarjeta y luego sigue con la práctica:
             </p>
             <div className="bg-white rounded-3xl p-6 shadow-md border border-emerald-100 text-center">
-              <div className="text-5xl mb-3">{info.icon}</div>
+              <PronounVisual pronounId={info.id} className="w-full h-auto rounded-2xl mb-4" />
               <p className="text-3xl font-extrabold text-gray-900 mb-1">{info.en}</p>
               <p className="text-gray-500 text-lg mb-3">{info.meaning}</p>
               <span className="inline-block bg-emerald-50 text-emerald-700 text-sm font-semibold px-3 py-1.5 rounded-full">
@@ -541,3 +1293,5 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
     </div>
   );
 };
+
+

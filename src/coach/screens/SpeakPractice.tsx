@@ -30,11 +30,11 @@ type Verdict = 'none' | 'got-it' | 'almost' | 'not-heard';
 // No es puntuación fonética: solo evita falsos negativos en la comparación.
 const ACCEPTED: Record<string, string[]> = {
   i: ['i', 'eye', 'ay', 'aye', 'hi'],
-  you: ['you', 'u', 'yu', 'ya'],
-  he: ['he', 'hee', 'hey'],
+  you: ['you', 'u', 'yu', 'iu', 'ya'],
+  he: ['he', 'hee', 'hey', 'ji'],
   she: ['she', 'shi', 'shee'],
-  we: ['we', 'wee', 'oui'],
-  they: ['they', 'thay', 'dey', 'day'],
+  we: ['we', 'wee', 'wi', 'oui'],
+  they: ['they', 'thay', 'dey', 'dei', 'day'],
   it: ['it', 'eat', 'id'],
 };
 
@@ -89,9 +89,14 @@ export const SpeakPractice: React.FC<SpeakPracticeProps> = ({
     return () => {
       mountedRef.current = false;
       stopSpeech();
-      if (dataIntervalRef.current) clearInterval(dataIntervalRef.current);
+      if (dataIntervalRef.current) {
+        clearInterval(dataIntervalRef.current);
+        dataIntervalRef.current = null;
+      }
       if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop();
       streamRef.current?.getTracks().forEach((t) => t.stop());
+      mediaRecorderRef.current = null;
+      streamRef.current = null;
     };
   }, []);
 
@@ -109,6 +114,13 @@ export const SpeakPractice: React.FC<SpeakPracticeProps> = ({
     stopSpeech();
     setVerdict('none');
     audioChunksRef.current = [];
+    if (dataIntervalRef.current) {
+      clearInterval(dataIntervalRef.current);
+      dataIntervalRef.current = null;
+    }
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    mediaRecorderRef.current = null;
 
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
       setMicBlocked(true);
@@ -143,6 +155,8 @@ export const SpeakPractice: React.FC<SpeakPracticeProps> = ({
       setMicState('recording');
     } catch {
       streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      mediaRecorderRef.current = null;
       setMicBlocked(true);
       setMicState('idle');
     }
@@ -163,6 +177,8 @@ export const SpeakPractice: React.FC<SpeakPracticeProps> = ({
       mr.stop();
     });
     streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    mediaRecorderRef.current = null;
 
     const chunks = audioChunksRef.current;
     if (chunks.length === 0) {
