@@ -9,7 +9,10 @@ export default defineConfig({
       name: 'railway-review-same-origin-assets',
       transformIndexHtml: {
         order: 'post',
-        handler: (html) => html.replaceAll(' crossorigin', ''),
+        handler: (html) =>
+          html
+            .replaceAll(' crossorigin', '')
+            .replaceAll('type="module"', 'defer'),
       },
     },
   ],
