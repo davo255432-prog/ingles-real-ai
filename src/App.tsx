@@ -327,7 +327,6 @@ function MainApp() {
 
 function App() {
   const isUnit1Preview =
-    import.meta.env.DEV &&
     new URLSearchParams(window.location.search).get('preview') === 'unit1-pronouns';
 
   if (isUnit1Preview) {
