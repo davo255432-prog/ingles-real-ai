@@ -11,6 +11,7 @@ import {
   SENTENCE_BUILDING_LESSON_ID,
   type PronounInfo,
 } from '../data/curriculum';
+import { getPronounVisual, handleVisualError } from '../visual-library';
 
 interface CoachLessonScreenProps {
   lesson: Lesson;
@@ -92,9 +93,9 @@ export const CoachLessonScreen: React.FC<CoachLessonScreenProps> = ({
     setBuilt([]);
   }, [index]);
 
-  // Unidad 1 (Pronombres): usa el flujo nuevo completo, no los pasos antiguos.
+  // Unidad 1 (Pronombres): usa el flujo pedagógico completo y autónomo.
   if (lesson.title.toLowerCase().includes('pronombres')) {
-    const finalStepId = steps.find((s) => s.practice)?.id ?? steps[steps.length - 1]?.id;
+    const finalStepId = steps.find((candidate) => candidate.practice)?.id ?? steps[steps.length - 1]?.id;
     return (
       <PronounsPractice
         onExit={onBack}
@@ -360,6 +361,7 @@ function renderCoachIntro(userName: string | undefined, onContinue: () => void, 
 
 // Pasos de enseñanza (teach / listen sin audio en esta fase)
 function renderTeach(step: Step, ctx: StepCtx) {
+  const pronounVisual = step.english ? getPronounVisual(step.english) : undefined;
   return (
     <>
       <div className="pt-4 pb-6 flex-1">
@@ -379,7 +381,16 @@ function renderTeach(step: Step, ctx: StepCtx) {
         {/* Frase / palabra objetivo (con icono y figura simple) */}
         {step.english && (
           <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100 mb-4 text-center">
-            {step.icon && <div className="text-5xl mb-3">{step.icon}</div>}
+            {pronounVisual ? (
+              <img
+                src={pronounVisual.src}
+                alt={pronounVisual.alt}
+                onError={(event) => handleVisualError(event, pronounVisual)}
+                className="w-full max-w-sm h-52 sm:h-64 object-contain mx-auto mb-4 rounded-2xl bg-emerald-50"
+              />
+            ) : (
+              step.icon && <div className="text-5xl mb-3">{step.icon}</div>
+            )}
             <p className="text-3xl font-extrabold text-gray-900 leading-tight mb-1">
               {step.english}
             </p>

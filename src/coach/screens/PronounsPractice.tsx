@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { PRONOUNS_INFO, type PronounInfo } from '../data/curriculum';
 import { generateSpeech, stopSpeech } from '../../services/speechApi';
+import { getPronounVisual, handleVisualError } from '../visual-library';
 
 interface PronounsPracticeProps {
   /** Salir de la práctica (volver atrás). */
@@ -48,9 +49,26 @@ function buildOptions(correct: string, pool: string[], n = 4): string[] {
 
 const byId = (id: string): PronounInfo => PRONOUNS_INFO.find((p) => p.id === id)!;
 
+const PronounVisual: React.FC<{ pronounId: string; className?: string }> = ({
+  pronounId,
+  className = 'w-full h-auto rounded-2xl',
+}) => {
+  const visual = getPronounVisual(pronounId);
+  if (!visual) return null;
+
+  return (
+    <img
+      src={visual.src}
+      alt={visual.alt}
+      onError={(event) => handleVisualError(event, visual)}
+      className={className}
+    />
+  );
+};
+
 const CorrectPronounCard: React.FC<{ pronoun: PronounInfo }> = ({ pronoun }) => (
   <div className="bg-white border border-emerald-100 rounded-3xl p-5 mb-4 text-center shadow-sm">
-    <div className="text-6xl mb-2" aria-hidden="true">{pronoun.icon}</div>
+    <PronounVisual pronounId={pronoun.id} className="w-full h-auto rounded-2xl mb-4" />
     <p className="text-gray-950 text-5xl font-black leading-none">{pronoun.en}</p>
     <p className="text-gray-700 text-xl font-extrabold mt-3">{pronoun.translation ?? pronoun.meaning}</p>
     <div className="mt-4 inline-flex items-center justify-center rounded-2xl bg-emerald-100 px-4 py-2">
@@ -336,9 +354,9 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   const realUseScenarios = [
     { icon: '👨', label: 'David', hint: 'Hablamos de un hombre.', answer: 'he', options: ['he', 'she', 'it'] },
     { icon: '👩', label: 'Ana', hint: 'Hablamos de una mujer.', answer: 'she', options: ['he', 'she', 'it'] },
-    { icon: '📱', label: 'un tel�fono', hint: 'Hablamos de una cosa.', answer: 'it', options: ['he', 'she', 'it'] },
-    { icon: '🤝', label: 't� y yo', hint: 'T� est�s dentro del grupo.', answer: 'we', options: ['we', 'they', 'you'] },
-    { icon: '👥', label: 'ellos sin m�', hint: 'Yo no estoy dentro del grupo.', answer: 'they', options: ['we', 'they', 'you'] },
+    { icon: '📱', label: 'un teléfono', hint: 'Hablamos de una cosa.', answer: 'it', options: ['he', 'she', 'it'] },
+    { icon: '🤝', label: 'tú y yo', hint: 'Tú estás dentro del grupo.', answer: 'we', options: ['we', 'they', 'you'] },
+    { icon: '👥', label: 'ellos sin mí', hint: 'Yo no estoy dentro del grupo.', answer: 'they', options: ['we', 'they', 'you'] },
   ];
 
   const currentRealUse = realUseScenarios[realUseIndex];
@@ -441,7 +459,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
                 className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-4 min-h-[132px]"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-3xl" aria-hidden="true">{p.icon}</span>
+                  <PronounVisual pronounId={p.id} className="w-16 h-14 object-cover rounded-xl" />
                   <span className="bg-emerald-50 text-emerald-700 text-base font-black px-3 py-1.5 rounded-full">
                     {p.pron}
                   </span>
@@ -574,7 +592,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
                 return (
                   <div key={p.id} className="rounded-3xl bg-emerald-50 border border-emerald-100 p-4 min-h-[150px]">
                     <div className="flex items-start justify-between gap-2">
-                      <span className="text-4xl" aria-hidden="true">{p.icon}</span>
+                      <PronounVisual pronounId={p.id} className="w-full h-auto rounded-xl mb-2" />
                       <span className="bg-white text-emerald-800 text-lg font-black px-3 py-1.5 rounded-full">
                         {p.pron}
                       </span>
@@ -599,7 +617,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
                 const p = byId(id);
                 return (
                   <div key={p.id} className="rounded-3xl bg-sky-50 border border-sky-100 p-4 flex items-center gap-4">
-                    <span className="text-5xl w-14 text-center shrink-0" aria-hidden="true">{p.icon}</span>
+                    <PronounVisual pronounId={p.id} className="w-24 h-20 object-cover rounded-xl shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3">
                         <p className="text-gray-950 text-4xl font-black leading-none">{p.en}</p>
@@ -634,7 +652,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
                 key={p.id}
                 className="bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100 flex items-center gap-3"
               >
-                <span className="text-2xl w-8 text-center shrink-0">{p.icon}</span>
+                <PronounVisual pronounId={p.id} className="w-16 h-14 object-cover rounded-xl shrink-0" />
                 <div className="w-14 shrink-0">
                   <span className="text-gray-900 text-lg font-extrabold">{p.en}</span>
                 </div>
@@ -686,9 +704,10 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
     const guideExamples = [
       { icon: '👨', label: 'David', answer: 'he', text: 'David es una persona hombre.' },
       { icon: '👩', label: 'Ana', answer: 'she', text: 'Ana es una persona mujer.' },
-      { icon: '📱', label: 'tel�fono', answer: 'it', text: 'Un objeto no es he ni she.' },
-      { icon: '🧑‍🤝‍🧑', label: 't� y yo', answer: 'we', text: 'Si tu estas dentro del grupo, usa we.' },
-      { icon: '👥', label: 'ellos sin m�', answer: 'they', text: 'Si t� no est�s dentro del grupo, usa they.' },
+      { icon: '📱', label: 'teléfono', answer: 'it', text: 'Una cosa o un objeto se representa con it.' },
+      { icon: '🐶', label: 'perro', answer: 'it', text: 'Un animal también se representa con it.' },
+      { icon: '🧑‍🤝‍🧑', label: 'tú y yo', answer: 'we', text: 'Si tu estas dentro del grupo, usa we.' },
+      { icon: '👥', label: 'ellos sin mí', answer: 'they', text: 'Si tú no estás dentro del grupo, usa they.' },
     ];
 
     return (
@@ -726,7 +745,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
                     return (
                       <div key={p.id} className="rounded-2xl bg-emerald-50 border border-emerald-100 p-3">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-3xl" aria-hidden="true">{p.icon}</span>
+                          <PronounVisual pronounId={p.id} className="w-full h-auto rounded-xl mb-2" />
                           <span className="rounded-full bg-white px-3 py-1 text-emerald-800 text-sm font-black">{p.pron}</span>
                         </div>
                         <p className="text-gray-950 text-3xl font-black leading-none mt-2">{p.en}</p>
@@ -746,7 +765,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
                 const p = byId(item.answer);
                 return (
                   <div key={item.label} className="bg-white rounded-2xl border border-sky-100 p-3 flex items-center gap-3">
-                    <span className="text-3xl w-10 text-center" aria-hidden="true">{item.icon}</span>
+                    <PronounVisual pronounId={p.id} className="w-20 h-16 object-cover rounded-xl shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-gray-950 text-base font-black">{item.label} → <span className="text-sky-800">{p.en}</span></p>
                       <p className="text-gray-600 text-sm font-semibold leading-snug">{item.text}</p>
@@ -831,7 +850,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
                     }
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-2xl" aria-hidden="true">{p.icon}</span>
+                      <PronounVisual pronounId={p.id} className="w-16 h-14 object-cover rounded-xl" />
                       <span className="text-emerald-700 text-sm font-black">{p.pron}</span>
                     </div>
                     <p className="text-gray-950 text-2xl font-black leading-none mt-2">{p.en}</p>
@@ -965,7 +984,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
 
         <div className="px-5 flex-1 pb-24">
           <div className="bg-white border-2 border-emerald-100 rounded-3xl p-4 shadow-sm text-center mb-3">
-            <div className="text-5xl mb-2" aria-hidden="true">{currentRealUse.icon}</div>
+            <PronounVisual pronounId={currentRealUse.answer} className="w-full h-auto rounded-2xl mb-3" />
             <p className="text-gray-950 text-3xl font-black leading-tight">{currentRealUse.label}</p>
             <p className="text-gray-600 text-base font-bold leading-relaxed mt-2">{currentRealUse.hint}</p>
           </div>
@@ -1116,11 +1135,11 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
         {/* Enunciado */}
         <h2 className="text-xl font-extrabold text-gray-900 leading-snug mb-4">{q.prompt}</h2>
 
-        {/* Figura (reconocimiento visual / escena) */}
-        {q.icon && (
+        {/* Imagen oficial del pronombre evaluado */}
+        {q.pronounId && (
           <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100 mb-5 text-center">
-            <div className="text-6xl mb-1">{q.icon}</div>
-            {q.subText && <p className="text-gray-500 font-medium">{q.subText}</p>}
+            <PronounVisual pronounId={q.pronounId} className="w-full h-auto rounded-2xl" />
+            {q.subText && <p className="text-gray-500 font-medium mt-3">{q.subText}</p>}
           </div>
         )}
 
@@ -1217,7 +1236,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
               Repasa esta tarjeta y luego sigue con la práctica:
             </p>
             <div className="bg-white rounded-3xl p-6 shadow-md border border-emerald-100 text-center">
-              <div className="text-5xl mb-3">{info.icon}</div>
+              <PronounVisual pronounId={info.id} className="w-full h-auto rounded-2xl mb-4" />
               <p className="text-3xl font-extrabold text-gray-900 mb-1">{info.en}</p>
               <p className="text-gray-500 text-lg mb-3">{info.meaning}</p>
               <span className="inline-block bg-emerald-50 text-emerald-700 text-sm font-semibold px-3 py-1.5 rounded-full">
