@@ -11,5 +11,13 @@
   </head>
   <body translate="no" class="notranslate">
     <div id="root"></div>
+    <script>
+      window.addEventListener('error', function (event) {
+        document.body.textContent = 'REVIEW_ERROR: ' + (event.message || 'Unknown error');
+      });
+      window.addEventListener('unhandledrejection', function (event) {
+        document.body.textContent = 'REVIEW_REJECTION: ' + String(event.reason || 'Unknown rejection');
+      });
+    </script>
   </body>
 </html>
