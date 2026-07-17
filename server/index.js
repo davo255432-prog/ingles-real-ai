@@ -1043,7 +1043,7 @@ app.post('/api/speech-preview', async (req, res) => {
   }
   try {
     const mp3 = await openai.audio.speech.create({
-      model: 'tts-1',
+      model: 'gpt-4o-mini-tts',
       voice,
       input: REVIEW_VOICE_TEXT,
       speed: 0.88,
