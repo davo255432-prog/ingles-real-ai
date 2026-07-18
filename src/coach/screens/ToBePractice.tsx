@@ -14,6 +14,8 @@ import { generateSpeech, stopSpeech } from '../../services/speechApi';
 import { transcribeAudio } from '../../services/voiceApi';
 import { ToBeFinalPractice } from './ToBeFinalPractice';
 import { ToBeFinalMission } from './ToBeFinalMission';
+import { TO_BE_VISUAL_SCENES, type ToBeVisualScene } from '../data/toBeVisualScenes';
+import { getVisual, handleVisualError } from '../visual-library';
 import {
   TO_BE_FINAL_MISSION_STEP_SLUG,
   TO_BE_FINAL_PRACTICE_STEP_SLUG,
@@ -150,6 +152,7 @@ type ToBeStep =
   | { id: string; kind: 'order'; prompt: string; words: string[]; answer: string; coach: string }
   | { id: string; kind: 'speak'; phrase: BePhrase; label: string }
   | { id: string; kind: 'dialogue'; dlg: BeDialogue }
+  | { id: string; kind: 'visual-scene'; scene: ToBeVisualScene; first: boolean }
   | { id: string; kind: 'summary' }
   | { id: string; kind: 'final-vocab' }
   | { id: string; kind: 'final-practice' }
@@ -214,6 +217,15 @@ function buildSteps(): ToBeStep[] {
   }
 
   // ── Ejercicios variados ──
+  TO_BE_VISUAL_SCENES.forEach((scene, index) => {
+    steps.push({
+      id: sid(`visual-${scene.id}`),
+      kind: 'visual-scene',
+      scene,
+      first: index === 0,
+    });
+  });
+
   steps.push({
     id: sid('ex-match'),
     kind: 'exercise',
@@ -487,6 +499,9 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
         <VoiceRepeat key={step.id} phrase={step.phrase} label={step.label} onNext={() => advance()} />
       )}
       {step.kind === 'dialogue' && <DialogueCard key={step.id} dlg={step.dlg} onNext={() => advance()} />}
+      {step.kind === 'visual-scene' && (
+        <VisualSceneCard key={step.id} scene={step.scene} first={step.first} onNext={() => advance()} />
+      )}
       {step.kind === 'summary' && <Summary onNext={() => advance()} />}
       {step.kind === 'final-vocab' && <FinalVocab onNext={() => advance()} />}
     </Shell>
@@ -697,6 +712,53 @@ const PhraseCard: React.FC<{
 };
 
 // ── Tarjeta de ejercicio de opciones ─────────────────────────────────────────
+const VisualSceneCard: React.FC<{
+  scene: ToBeVisualScene;
+  first: boolean;
+  onNext: () => void;
+}> = ({ scene, first, onNext }) => {
+  const visual = getVisual(scene.visualId);
+  const audio = useAudio();
+  const s = FORM_STYLE[scene.form];
+
+  useEffect(() => {
+    void audio.play(scene.en);
+    return () => audio.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene.id]);
+
+  return (
+    <>
+      <div className="pt-2 pb-4 flex-1">
+        {first && (
+          <div className="bg-white rounded-2xl rounded-tl-md p-4 shadow-sm border border-emerald-100 mb-4">
+            <p className="text-gray-900 font-extrabold mb-1">Ahora úsalo en situaciones reales</p>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Mira la escena y conecta directamente a la persona con am, is o are.
+            </p>
+          </div>
+        )}
+
+        <div className={`bg-white rounded-3xl p-4 shadow-md border ${s.ring} mb-4 text-center`}>
+          <img
+            src={visual.src}
+            alt={visual.alt}
+            onError={(event) => handleVisualError(event, visual)}
+            className="w-full max-h-[22rem] object-contain mx-auto rounded-2xl bg-emerald-50 mb-4"
+          />
+          <p className="text-3xl font-extrabold text-gray-900 leading-tight mb-1">{scene.en}</p>
+          <p className="text-gray-500 text-lg mb-1">{scene.es}</p>
+          <p className={`text-sm font-semibold mb-3 ${s.accent}`}>Cómo decirlo: {scene.pron}</p>
+          <AudioButton state={audio.state} onPlay={() => void audio.play(scene.en)} />
+        </div>
+      </div>
+      <div className="mt-auto">
+        <PrimaryButton onClick={onNext}>Continuar</PrimaryButton>
+      </div>
+    </>
+  );
+};
+
 const ExerciseCard: React.FC<{ ex: OptionExercise; onDone: (correct: boolean) => void }> = ({ ex, onDone }) => {
   const [selected, setSelected] = useState<string | null>(null);
   const [stage, setStage] = useState<'answer' | 'wrong' | 'right'>('answer');

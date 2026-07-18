@@ -47,6 +47,7 @@ import { KitchenProgressScreen } from './screens/KitchenProgressScreen';
 // Coach IA — módulo aislado (gestiona su propia navegación interna)
 import { CoachRoot } from './coach/CoachRoot';
 import { Unit1PronounsPreview } from './coach/Unit1PronounsPreview';
+import { ToBePractice } from './coach/screens/ToBePractice';
 
 // Biblioteca (placeholder)
 import { BibliotecaScreen } from './screens/BibliotecaScreen';
@@ -326,14 +327,31 @@ function MainApp() {
 }
 
 function App() {
-  const isUnit1Preview =
-    new URLSearchParams(window.location.search).get('preview') === 'unit1-pronouns';
+  const preview = new URLSearchParams(window.location.search).get('preview');
+  const isUnit1Preview = preview === 'unit1-pronouns';
+  const isUnit2Preview = preview === 'unit2-to-be';
 
   if (isUnit1Preview) {
     return (
       <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
         <div className="w-full max-w-[430px] min-h-screen bg-gray-50 relative flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.12)]" translate="no">
           <Unit1PronounsPreview onExit={() => window.location.assign('/')} />
+        </div>
+      </div>
+    );
+  }
+
+  if (isUnit2Preview) {
+    return (
+      <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
+        <div className="w-full max-w-[430px] min-h-screen bg-gray-50 relative flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.12)]" translate="no">
+          <ToBePractice
+            userName="David"
+            onExit={() => window.location.assign('/')}
+            onStepChange={() => undefined}
+            onComplete={() => undefined}
+            onBackToMap={() => window.location.assign('/')}
+          />
         </div>
       </div>
     );
