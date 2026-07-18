@@ -171,8 +171,7 @@ function buildSteps(): ToBeStep[] {
   steps.push({ id: sid('score-intro'), kind: 'score-intro' });
   steps.push({ id: sid('overview'), kind: 'overview' });
 
-  // Biblioteca Visual: situaciones reales inmediatamente después de la regla.
-  // Así el alumno ve y usa am/is antes de entrar a la práctica tradicional.
+  // Biblioteca Visual: después de presentar am, is y are.
   TO_BE_VISUAL_SCENES.forEach((scene, sceneIndex) => {
     steps.push({
       id: sid(`visual-${scene.id}`),
@@ -776,6 +775,30 @@ const Overview: React.FC<{ onNext: () => void }> = ({ onNext }) => (
             </div>
           );
         })}
+      </div>
+
+      <div className="mt-5 rounded-3xl border-2 border-emerald-200 bg-white p-4 shadow-sm">
+        <p className="text-emerald-700 text-xs font-black uppercase tracking-wide">Situaciones reales</p>
+        <p className="mt-1 text-gray-950 text-lg font-black">Estas son las imágenes que vas a practicar</p>
+        <p className="mt-1 text-gray-500 text-sm font-bold">Desliza para verlas todas.</p>
+        <div className="mt-3 flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory">
+          {TO_BE_VISUAL_SCENES.map((scene) => {
+            const visual = getVisual(scene.visualId);
+            return (
+              <div key={scene.id} className="w-32 shrink-0 snap-start">
+                <div className="h-24 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
+                  <img
+                    src={visual.src}
+                    alt={visual.alt}
+                    className="h-full w-full object-cover"
+                    onError={(event) => handleVisualError(event, visual)}
+                  />
+                </div>
+                <p className="mt-2 text-center text-xs font-black leading-tight text-gray-800">{scene.en}</p>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
     <div className="mt-auto">
