@@ -171,6 +171,17 @@ function buildSteps(): ToBeStep[] {
   steps.push({ id: sid('score-intro'), kind: 'score-intro' });
   steps.push({ id: sid('overview'), kind: 'overview' });
 
+  // Biblioteca Visual: situaciones reales inmediatamente después de la regla.
+  // Así el alumno ve y usa am/is antes de entrar a la práctica tradicional.
+  TO_BE_VISUAL_SCENES.forEach((scene, sceneIndex) => {
+    steps.push({
+      id: sid(`visual-${scene.id}`),
+      kind: 'visual-scene',
+      scene,
+      first: sceneIndex === 0,
+    });
+  });
+
   // ── Bloques: enseñar → ejercicio corto → oído → voz ──
   for (const block of TO_BE_BLOCKS) {
     block.phrases.forEach((phrase, i) => {
@@ -217,15 +228,6 @@ function buildSteps(): ToBeStep[] {
       });
     }
   }
-
-  TO_BE_VISUAL_SCENES.forEach((scene, sceneIndex) => {
-    steps.push({
-      id: sid(`visual-${scene.id}`),
-      kind: 'visual-scene',
-      scene,
-      first: sceneIndex === 0,
-    });
-  });
 
   // ── Ejercicios variados ──
   steps.push({
