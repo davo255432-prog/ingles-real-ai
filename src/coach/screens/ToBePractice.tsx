@@ -778,9 +778,9 @@ const Overview: React.FC<{ onNext: () => void }> = ({ onNext }) => (
       </div>
 
       <div className="mt-5 rounded-3xl border-2 border-emerald-200 bg-white p-4 shadow-sm">
-        <p className="text-emerald-700 text-xs font-black uppercase tracking-wide">Situaciones reales</p>
-        <p className="mt-1 text-gray-950 text-lg font-black">Estas son las imágenes que vas a practicar</p>
-        <p className="mt-1 text-gray-500 text-sm font-bold">Desliza para verlas todas.</p>
+        <p className="text-emerald-700 text-xs font-black uppercase tracking-wide">Inglés para la vida real</p>
+        <p className="mt-1 text-gray-950 text-lg font-black">Situaciones que vas a practicar</p>
+        <p className="mt-1 text-gray-500 text-sm font-bold">Mira cada situación y piensa qué frase usarías. Desliza para verlas todas.</p>
         <div className="mt-3 flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory">
           {TO_BE_VISUAL_SCENES.map((scene) => {
             const visual = getVisual(scene.visualId);
