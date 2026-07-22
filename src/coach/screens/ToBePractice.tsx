@@ -15,7 +15,7 @@ import { transcribeAudio } from '../../services/voiceApi';
 import { ToBeFinalPractice } from './ToBeFinalPractice';
 import { ToBeFinalMission } from './ToBeFinalMission';
 import { TO_BE_VISUAL_SCENES, type ToBeVisualScene } from '../data/toBeVisualScenes';
-import { getVisual, handleVisualError } from '../visual-library';
+import { getVisual, handleVisualError, type VisualId } from '../visual-library';
 import {
   TO_BE_FINAL_MISSION_STEP_SLUG,
   TO_BE_FINAL_PRACTICE_STEP_SLUG,
@@ -101,6 +101,24 @@ function sample<T>(arr: T[], n: number): T[] {
   return shuffle(arr).slice(0, n);
 }
 const sid = (slug: string): string => `${TO_BE_LESSON_ID}.s-${slug}`;
+
+// Imágenes oficiales para las tarjetas de enseñanza de la segunda fase.
+// El contenido pedagógico permanece intacto; solo sustituye la figura genérica.
+const BE_PHRASE_VISUAL_IDS: Partial<Record<BePhrase['id'], VisualId>> = {
+  'am-david': 'unit2.to-be.david-at-work',
+  'am-ready': 'unit2.to-be.david-ready',
+  'is-tired': 'unit2.to-be.david-tired',
+  'is-happy': 'unit2.to-be.maria-happy',
+  'is-open': 'unit2.to-be.ana-ready',
+  'are-here': 'unit1.pronouns.you',
+  'are-ready': 'unit1.pronouns.we',
+  'are-outside': 'unit1.pronouns.they',
+};
+
+function getBePhraseVisual(phrase: BePhrase) {
+  const visualId = BE_PHRASE_VISUAL_IDS[phrase.id];
+  return visualId ? getVisual(visualId) : undefined;
+}
 
 // Normaliza texto a tokens en minúscula (para comparar la voz).
 function tokens(text: string): string[] {
@@ -815,6 +833,7 @@ const PhraseCard: React.FC<{
   const { phrase, blockIntro, blockTitle } = step;
   const audio = useAudio();
   const s = FORM_STYLE[phrase.form];
+  const visual = getBePhraseVisual(phrase);
 
   // Reproduce la frase al entrar en la tarjeta.
   useEffect(() => {
@@ -840,7 +859,16 @@ const PhraseCard: React.FC<{
 
         {/* Figura / escena + frase + traducción + pronunciación */}
         <div className={`bg-white rounded-3xl p-6 shadow-md border-2 ${s.ring} mb-4 text-center`}>
-          <div className="text-6xl mb-3">{phrase.icon}</div>
+          {visual ? (
+            <img
+              src={visual.src}
+              alt={visual.alt}
+              className="mb-4 h-52 w-full rounded-2xl object-cover sm:h-64"
+              onError={(event) => handleVisualError(event, visual)}
+            />
+          ) : (
+            <div className="text-6xl mb-3">{phrase.icon}</div>
+          )}
           <p className="text-4xl font-black text-gray-950 leading-tight mb-2">{phrase.en}</p>
           <p className="text-gray-600 text-xl font-bold mb-3">{phrase.es}</p>
           <div className={`inline-flex rounded-2xl bg-gray-50 px-4 py-2 mb-4 ${s.accent}`}>
@@ -1333,6 +1361,7 @@ type MicState = 'idle' | 'requesting' | 'recording' | 'transcribing';
 
 const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => void }> = ({ phrase, label, onNext }) => {
   const audio = useAudio();
+  const visual = getBePhraseVisual(phrase);
   const [mic, setMic] = useState<MicState>('idle');
   const [verdict, setVerdict] = useState<VoiceVerdict | null>(null);
   const [micBlocked, setMicBlocked] = useState(false);
@@ -1526,7 +1555,16 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
         <h2 className="text-xl font-extrabold text-gray-900 leading-snug mb-4">{label}</h2>
 
         <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100 mb-5 text-center">
-          <div className="text-5xl mb-2">{phrase.icon}</div>
+          {visual ? (
+            <img
+              src={visual.src}
+              alt={visual.alt}
+              className="mb-4 h-48 w-full rounded-2xl object-cover sm:h-60"
+              onError={(event) => handleVisualError(event, visual)}
+            />
+          ) : (
+            <div className="text-5xl mb-2">{phrase.icon}</div>
+          )}
           <p className="text-3xl font-extrabold text-gray-900 mb-1">{phrase.en}</p>
           <p className="text-gray-500 mb-1">{phrase.es}</p>
           <p className="text-emerald-700 text-sm font-semibold mb-3">{phrase.pron}</p>
