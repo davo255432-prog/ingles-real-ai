@@ -37,6 +37,7 @@ const L_TO_BE = lessonKey(U_TO_BE, 'to-be-basics');
 // L1: lección existente "I need the car keys." — ID y contenido INALTERADOS.
 //     Se conserva dentro de la Unidad 3 (Verbos esenciales) para más adelante.
 const L1 = lessonKey(U_ESSENTIALS, 'car-keys');
+const L_SENTENCE = lessonKey(U_SENTENCE, 'sentence-building-basics');
 
 export const LEVEL_1_UNITS: Unit[] = [
   {
@@ -58,16 +59,14 @@ export const LEVEL_1_UNITS: Unit[] = [
     levelId: 1,
     title: 'Verbos esenciales',
     description: 'need, want, have, go… los verbos que más vas a usar.',
-    lessonIds: [L1],          // conserva la lección car-keys (bloqueada por ahora)
-    comingSoon: true,
+    lessonIds: [L1],          // conserva la lección car-keys con ID estable.
   },
   {
     id: U_SENTENCE,
     levelId: 1,
     title: 'Construcción de frases',
     description: 'Une las piezas: sujeto + verbo + complemento.',
-    lessonIds: [],
-    comingSoon: true,
+    lessonIds: [L_SENTENCE],
   },
   {
     id: U_ARTICLES,
@@ -468,6 +467,8 @@ export function getBePhrase(id: string): BePhrase | undefined {
 
 /** ID estable de la lección de la Unidad 2 (lo usa ToBePractice para los pasos). */
 export const TO_BE_LESSON_ID = L_TO_BE;
+export const ESSENTIAL_VERBS_LESSON_ID = L1;
+export const SENTENCE_BUILDING_LESSON_ID = L_SENTENCE;
 
 // ── Unidad 2 · Lección "Verbo to be" ─────────────────────────────────────────
 // Toda la unidad (bienvenida, cuadro visual, bloques, oído, voz, diálogos,
@@ -483,6 +484,21 @@ const LESSON_TO_BE: Lesson = {
       id: stepKey(L_TO_BE, 'unit'),
       type: 'exercise',
       toBe: true,
+    },
+  ],
+};
+
+const LESSON_SENTENCE_BUILDING: Lesson = {
+  id: L_SENTENCE,
+  unitId: U_SENTENCE,
+  title: 'Construcción de frases',
+  goalPhrase: 'I need water.',
+  goalSpanish: 'Necesito agua.',
+  steps: [
+    {
+      id: stepKey(L_SENTENCE, 'unit'),
+      type: 'exercise',
+      sentenceBuilding: true,
     },
   ],
 };
@@ -578,6 +594,7 @@ export const LESSONS: Record<string, Lesson> = {
   [LESSON_PRONOUNS.id]: LESSON_PRONOUNS,
   [LESSON_TO_BE.id]: LESSON_TO_BE, // Unidad 2 — Verbo to be
   [LESSON_1.id]: LESSON_1, // car-keys: conservada (ID/contenido/progreso intactos)
+  [LESSON_SENTENCE_BUILDING.id]: LESSON_SENTENCE_BUILDING, // Unidad 4 — Construcción de frases
 };
 
 /** Total de lecciones disponibles (para porcentajes dinámicos). */

@@ -46,11 +46,99 @@ import { KitchenProgressScreen } from './screens/KitchenProgressScreen';
 
 // Coach IA — módulo aislado (gestiona su propia navegación interna)
 import { CoachRoot } from './coach/CoachRoot';
-import { Unit1PronounsPreview } from './coach/Unit1PronounsPreview';
-import { ToBePractice } from './coach/screens/ToBePractice';
+import { EssentialVerbsPractice } from './coach/screens/EssentialVerbsPractice';
+import { LearningCommitmentScreen } from './coach/screens/LearningCommitmentScreen';
+import { PronounsPractice } from './coach/screens/PronounsPractice';
+import { SentenceBuildingPractice } from './coach/screens/SentenceBuildingPractice';
 
 // Biblioteca (placeholder)
 import { BibliotecaScreen } from './screens/BibliotecaScreen';
+
+const UNIT_3_PREVIEW_PARAM = 'preview-unit-3';
+const UNIT_3_PREVIEW_KEY = 'familia-u3-2026';
+const UNIT_4_PREVIEW_PARAM = 'preview-unit-4';
+const UNIT_4_PREVIEW_KEY = 'familia-u4-2026';
+const UNIT_1_PREVIEW_PARAM = 'preview-unit-1';
+const UNIT_1_PREVIEW_KEY = 'familia-u1-2026';
+const LEARNING_COMMITMENT_KEY = 'unit-3-learning-commitment-seen';
+
+function App() {
+  const showUnit1Preview =
+    new URLSearchParams(window.location.search).get(UNIT_1_PREVIEW_PARAM) ===
+    UNIT_1_PREVIEW_KEY;
+  const showUnit3Preview =
+    new URLSearchParams(window.location.search).get(UNIT_3_PREVIEW_PARAM) ===
+    UNIT_3_PREVIEW_KEY;
+  const showUnit4Preview =
+    new URLSearchParams(window.location.search).get(UNIT_4_PREVIEW_PARAM) ===
+    UNIT_4_PREVIEW_KEY;
+  const startUnit3AtPhase2 =
+    new URLSearchParams(window.location.search).get('unit3-section') === 'phase2';
+  const startUnit3AtPrepositions =
+    new URLSearchParams(window.location.search).get('unit3-section') === 'prepositions';
+  const [showLearningCommitment, setShowLearningCommitment] = useState(
+    () => sessionStorage.getItem(LEARNING_COMMITMENT_KEY) !== 'yes',
+  );
+
+  if (showUnit1Preview) {
+    return (
+      <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
+        <div className="w-full max-w-[640px] min-h-screen bg-gray-50 shadow-[0_0_40px_rgba(0,0,0,0.12)]">
+          <PronounsPractice
+            onExit={() => {
+              window.location.href = window.location.pathname;
+            }}
+            onUnitComplete={() => undefined}
+            onBackToMap={() => {
+              window.location.href = window.location.pathname;
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (showUnit3Preview) {
+    return (
+      <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
+        <div className="w-full max-w-[640px] min-h-screen bg-gray-50 shadow-[0_0_40px_rgba(0,0,0,0.12)]">
+          {showLearningCommitment ? (
+            <LearningCommitmentScreen
+              onContinue={() => {
+                sessionStorage.setItem(LEARNING_COMMITMENT_KEY, 'yes');
+                setShowLearningCommitment(false);
+              }}
+            />
+          ) : (
+            <EssentialVerbsPractice
+              startAtPhase2={startUnit3AtPhase2}
+              startAtPrepositions={startUnit3AtPrepositions}
+              onExit={() => {
+                window.location.href = window.location.pathname;
+              }}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (showUnit4Preview) {
+    return (
+      <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
+        <div className="w-full max-w-[640px] min-h-screen bg-gray-50 shadow-[0_0_40px_rgba(0,0,0,0.12)]">
+          <SentenceBuildingPractice
+            onExit={() => {
+              window.location.href = window.location.pathname;
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return <MainApp />;
+}
 
 function MainApp() {
   const [screen, setScreen] = useState<Screen>('home');
@@ -115,7 +203,12 @@ function MainApp() {
 
   return (
     <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
-    <div className="w-full max-w-[430px] min-h-screen bg-gray-50 relative flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.12)]" translate="no">
+    <div
+      className={`w-full min-h-screen bg-gray-50 relative flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.12)] ${
+        screen === 'home' ? 'max-w-[960px]' : 'max-w-[640px]'
+      }`}
+      translate="no"
+    >
 
       {/* ── Home ── */}
       {screen === 'home' && (
@@ -324,40 +417,6 @@ function MainApp() {
     </div>
     </div>
   );
-}
-
-function App() {
-  const preview = new URLSearchParams(window.location.search).get('preview');
-  const isUnit1Preview = preview === 'unit1-pronouns';
-  const isUnit2Preview = preview === 'unit2-to-be';
-
-  if (isUnit1Preview) {
-    return (
-      <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
-        <div className="w-full max-w-[430px] min-h-screen bg-gray-50 relative flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.12)]" translate="no">
-          <Unit1PronounsPreview onExit={() => window.location.assign('/')} />
-        </div>
-      </div>
-    );
-  }
-
-  if (isUnit2Preview) {
-    return (
-      <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
-        <div className="w-full max-w-[430px] min-h-screen bg-gray-50 relative flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.12)]" translate="no">
-          <ToBePractice
-            userName="David"
-            onExit={() => window.location.assign('/')}
-            onStepChange={() => undefined}
-            onComplete={() => undefined}
-            onBackToMap={() => window.location.assign('/')}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  return <MainApp />;
 }
 
 export default App;

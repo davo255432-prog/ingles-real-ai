@@ -11,7 +11,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartFlow, onSpeakTran
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-orange-50 to-gray-50">
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 pt-12 pb-2">
+      <div className="flex items-center justify-between px-5 sm:px-8 pt-10 sm:pt-12 pb-2">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
             <span className="text-white text-base font-bold">I</span>
@@ -21,21 +21,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartFlow, onSpeakTran
       </div>
 
       {/* Hero */}
-      <div className="px-6 pt-10 pb-8">
-        <h1 className="text-4xl font-extrabold text-gray-900 leading-tight mb-3">
+      <div className="px-6 sm:px-10 pt-8 sm:pt-10 pb-7 sm:pb-8">
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight mb-3">
           Inglés Real <span className="text-orange-500">AI</span>
         </h1>
-        <p className="text-gray-500 text-lg leading-relaxed">
+        <p className="text-gray-500 text-lg leading-relaxed max-w-2xl">
           Practica inglés en situaciones reales de trabajo y vida diaria.
         </p>
       </div>
 
       {/* Main buttons */}
-      <div className="px-5 flex flex-col gap-4 flex-1">
+      <div className="px-5 sm:px-8 grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 md:items-stretch">
         {/* Aprende a decirlo */}
         <button
           onClick={onStartFlow}
-          className="w-full bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white rounded-3xl p-6 text-left shadow-lg shadow-orange-200 transition-all duration-200"
+          className="w-full min-h-[178px] bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white rounded-3xl p-6 text-left shadow-lg shadow-orange-200 transition-all duration-200"
         >
           <div className="flex items-center justify-between mb-3">
             <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -54,7 +54,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartFlow, onSpeakTran
         {/* Traduce con voz */}
         <button
           onClick={onSpeakTranslate}
-          className="w-full bg-purple-500 hover:bg-purple-600 active:scale-[0.98] text-white rounded-3xl p-6 text-left shadow-lg shadow-purple-200 transition-all duration-200"
+          className="w-full min-h-[178px] bg-purple-500 hover:bg-purple-600 active:scale-[0.98] text-white rounded-3xl p-6 text-left shadow-lg shadow-purple-200 transition-all duration-200"
         >
           <div className="flex items-center justify-between mb-3">
             <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -73,7 +73,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartFlow, onSpeakTran
         {/* Coach IA */}
         <button
           onClick={onCoach}
-          className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white rounded-3xl p-6 text-left shadow-lg shadow-emerald-200 transition-all duration-200"
+          className="w-full min-h-[178px] bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white rounded-3xl p-6 text-left shadow-lg shadow-emerald-200 transition-all duration-200"
         >
           <div className="flex items-center justify-between mb-3">
             <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -92,7 +92,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartFlow, onSpeakTran
         {/* Biblioteca */}
         <button
           onClick={onBiblioteca}
-          className="w-full bg-indigo-500 hover:bg-indigo-600 active:scale-[0.98] text-white rounded-3xl p-6 text-left shadow-lg shadow-indigo-200 transition-all duration-200"
+          className="w-full min-h-[178px] bg-indigo-500 hover:bg-indigo-600 active:scale-[0.98] text-white rounded-3xl p-6 text-left shadow-lg shadow-indigo-200 transition-all duration-200"
         >
           <div className="flex items-center justify-between mb-3">
             <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -111,7 +111,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartFlow, onSpeakTran
       </div>
 
       {/* Footer */}
-      <div className="px-5 py-8 text-center">
+      <div className="px-5 py-7 sm:py-8 text-center">
         <p className="text-gray-400 text-xs">Tu coach de inglés práctico • siempre disponible</p>
       </div>
     </div>

@@ -65,6 +65,9 @@ export async function generateSpeech(text: string, speed: SpeechSpeed = 'normal'
   const cachedUrl = _cache.get(key);
 
   let url: string;
+  const audio = new Audio();
+  audio.preload = 'auto';
+  _audio = audio;
 
   if (cachedUrl) {
     // Cache hit — play immediately without a network round-trip
@@ -86,11 +89,13 @@ export async function generateSpeech(text: string, speed: SpeechSpeed = 'normal'
       });
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return;
+      cleanup();
       throw new Error('No se pudo conectar con el servidor de voz.');
     }
 
     if (!response.ok) {
       const body = await response.json().catch(() => ({})) as { error?: string };
+      cleanup();
       throw new Error(body.error ?? `Error del servidor: ${response.status}`);
     }
 
@@ -99,8 +104,8 @@ export async function generateSpeech(text: string, speed: SpeechSpeed = 'normal'
   }
 
   _blobUrl = url;
-  const audio = new Audio(url);
-  _audio = audio;
+  audio.src = url;
+  audio.load();
 
   await new Promise<void>((resolve, reject) => {
     audio.onended = () => {
@@ -114,7 +119,7 @@ export async function generateSpeech(text: string, speed: SpeechSpeed = 'normal'
     audio.play().catch((err: unknown) => {
       cleanup();
       if (err instanceof Error && err.name === 'NotAllowedError') {
-        resolve(); // Autoplay blocked — non-fatal
+        reject(new Error('Tu navegador bloqueo el audio. Toca Escuchar otra vez.'));
       } else {
         reject(new Error('No se pudo reproducir el audio.'));
       }
@@ -127,4 +132,12 @@ export async function generateSpeech(text: string, speed: SpeechSpeed = 'normal'
  */
 export function stopSpeech(): void {
   cleanup();
+}
+
+export function pauseSpeech(): void {
+  _audio?.pause();
+}
+
+export async function resumeSpeech(): Promise<void> {
+  if (_audio?.paused) await _audio.play();
 }

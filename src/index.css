@@ -16,6 +16,7 @@
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 
   #root {
@@ -23,6 +24,29 @@
     min-height: 100svh;
     display: flex;
     flex-direction: column;
+  }
+
+  button,
+  [role='button'] {
+    touch-action: manipulation;
+  }
+
+  audio {
+    display: block;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  @media (max-width: 640px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px;
+    }
+
+    .min-h-screen {
+      min-height: 100svh;
+    }
   }
 }
 

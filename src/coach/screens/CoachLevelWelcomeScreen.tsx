@@ -29,6 +29,35 @@ export const CoachLevelWelcomeScreen: React.FC<CoachLevelWelcomeScreenProps> = (
 }) => {
   const [selectedToBeUnit, setSelectedToBeUnit] = useState<Unit | null>(null);
   const greeting = name ? `Hola, ${name}. Empecemos desde la base.` : 'Empecemos desde la base.';
+  const highestCompletedUnitIndex = units.reduce((highest, unit, index) => {
+    const firstLessonId = unit.lessonIds[0];
+    return firstLessonId && progress.lessons[firstLessonId]?.status === 'completed' ? index : highest;
+  }, -1);
+
+  if (selectedToBeUnit) {
+    const lessonProgress = progress.lessons[TO_BE_LESSON_ID];
+    const completed = lessonProgress?.status === 'completed';
+    const inProgress = lessonProgress?.status === 'in-progress';
+    const lastStepId = lessonProgress?.lastStepId;
+
+    return (
+      <ToBeUnitOptionsScreen
+        completed={completed}
+        inProgress={inProgress}
+        onBack={() => setSelectedToBeUnit(null)}
+        onContinue={() => onOpenLesson(selectedToBeUnit.id, TO_BE_LESSON_ID, lastStepId, completed)}
+        onReviewFromStart={() => onOpenLesson(selectedToBeUnit.id, TO_BE_LESSON_ID, undefined, true)}
+        onFinalPractice={() =>
+          onOpenLesson(
+            selectedToBeUnit.id,
+            TO_BE_LESSON_ID,
+            toBeStepId(TO_BE_LESSON_ID, TO_BE_FINAL_VOCAB_STEP_SLUG),
+            completed,
+          )
+        }
+      />
+    );
+  }
 
   if (selectedToBeUnit) {
     const lessonProgress = progress.lessons[TO_BE_LESSON_ID];
@@ -98,8 +127,8 @@ export const CoachLevelWelcomeScreen: React.FC<CoachLevelWelcomeScreenProps> = (
             const locked = unit.comingSoon || !lesson;
 
             const lessonProgress = firstLessonId ? progress.lessons[firstLessonId] : undefined;
-            const completed = lessonProgress?.status === 'completed';
-            const inProgress = lessonProgress?.status === 'in-progress';
+            const completed = lessonProgress?.status === 'completed' || index < highestCompletedUnitIndex;
+            const inProgress = !completed && lessonProgress?.status === 'in-progress';
 
             return (
               <button

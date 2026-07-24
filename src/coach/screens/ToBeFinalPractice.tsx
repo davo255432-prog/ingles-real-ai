@@ -145,10 +145,17 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) chunksRef.current.push(event.data);
       };
-      recorder.start();
-      intervalRef.current = setInterval(() => {
-        if (recorder.state === 'recording') recorder.requestData();
-      }, 500);
+      const ios =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (ios) {
+        recorder.start();
+        intervalRef.current = setInterval(() => {
+          if (recorder.state === 'recording') recorder.requestData();
+        }, 500);
+      } else {
+        recorder.start(250);
+      }
       startBrowserRecognition();
       setMicState('recording');
     } catch (err) {
@@ -329,9 +336,13 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
         )}
 
         {audioUrl && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4">
-            <p className="text-gray-700 text-sm font-bold mb-2">Escucha tu grabacion</p>
-            <audio controls src={audioUrl} className="w-full" />
+          <div className="bg-emerald-50 rounded-2xl p-5 shadow-sm border-2 border-emerald-200 mb-4">
+            <p className="text-gray-900 text-lg sm:text-xl font-extrabold leading-snug mb-3">
+              Escúchate y mejora. ¡Vamos, que sí puedes!
+            </p>
+            <div className="bg-white rounded-2xl p-2 border border-emerald-100 overflow-hidden">
+              <audio controls src={audioUrl} className="block w-full max-w-full h-12" />
+            </div>
           </div>
         )}
 

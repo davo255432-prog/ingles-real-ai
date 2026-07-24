@@ -165,7 +165,9 @@ interface OptionExercise {
 type ToBeStep =
   | { id: string; kind: 'welcome' }
   | { id: string; kind: 'score-intro' }
-  | { id: string; kind: 'overview' }
+  | { id: string; kind: 'family'; lessonId: FamilyLessonId }
+  | { id: string; kind: 'location-intro' }
+  | { id: string; kind: 'location-prepositions' }
   | { id: string; kind: 'phrase'; phrase: BePhrase; blockIntro?: string; blockTitle?: string }
   | { id: string; kind: 'exercise'; ex: OptionExercise }
   | { id: string; kind: 'order'; prompt: string; words: string[]; answer: string; coach: string }
@@ -186,8 +188,13 @@ function gap(phrase: BePhrase): string {
 function buildSteps(): ToBeStep[] {
   const steps: ToBeStep[] = [];
   steps.push({ id: sid('welcome'), kind: 'welcome' });
-  steps.push({ id: sid('score-intro'), kind: 'score-intro' });
-  steps.push({ id: sid('overview'), kind: 'overview' });
+  steps.push({ id: sid('overview'), kind: 'family', lessonId: 'am' });
+  steps.push({ id: sid('overview-is'), kind: 'family', lessonId: 'is-people' });
+  steps.push({ id: sid('overview-it'), kind: 'family', lessonId: 'is-it' });
+  steps.push({ id: sid('overview-are'), kind: 'family', lessonId: 'are-you-we' });
+  steps.push({ id: sid('overview-they'), kind: 'family', lessonId: 'are-they' });
+  steps.push({ id: sid('location-intro'), kind: 'location-intro' });
+  steps.push({ id: sid('location-prepositions'), kind: 'location-prepositions' });
 
   // Biblioteca Visual: después de presentar am, is y are.
   TO_BE_VISUAL_SCENES.forEach((scene, sceneIndex) => {
@@ -210,6 +217,12 @@ function buildSteps(): ToBeStep[] {
         blockTitle: block.title,
       });
     });
+
+    // Explica la puntuación cuando el alumno ya recibió enseñanza y está
+    // a punto de comenzar el primer ejercicio evaluado. Conserva el mismo ID.
+    if (block.id === 'am') {
+      steps.push({ id: sid('score-intro'), kind: 'score-intro' });
+    }
 
     // Ejercicio corto: elegir am/is/are para una frase del bloque.
     const ePhrase = block.phrases[0];
@@ -434,12 +447,17 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
   const [correct, setCorrect] = useState(0);
   const [exerciseCount, setExerciseCount] = useState(0);
   const [finishedScore, setFinishedScore] = useState<number | null>(null);
+  const [completedStepIds, setCompletedStepIds] = useState<Set<string>>(() => new Set());
+  const furthestIndexRef = useRef(startIndex);
 
   const step = steps[index];
 
   // Persiste el paso exacto cada vez que cambia (capa de avance).
   useEffect(() => {
-    if (!finished && step) onStepChange(step.id);
+    if (!finished && step && index >= furthestIndexRef.current) {
+      furthestIndexRef.current = index;
+      onStepChange(step.id);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, finished]);
 
@@ -449,9 +467,16 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
     if (isExercise) {
       setExerciseCount(nextExerciseCount);
       if (wasCorrect) setCorrect(nextCorrect);
+      setCompletedStepIds((previous) => {
+        const next = new Set(previous);
+        next.add(step.id);
+        return next;
+      });
     }
     if (index < total - 1) {
-      setIndex((i) => i + 1);
+      let nextIndex = index + 1;
+      while (nextIndex < total && completedStepIds.has(steps[nextIndex].id)) nextIndex += 1;
+      setIndex(Math.min(nextIndex, total - 1));
     } else {
       stopSpeech();
       const score = nextExerciseCount > 0 ? Math.round((nextCorrect / nextExerciseCount) * 100) : 100;
@@ -461,12 +486,25 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
     }
   };
 
+  const goBack = () => {
+    stopSpeech();
+    if (index === 0) {
+      onExit();
+      return;
+    }
+    let previousIndex = index - 1;
+    while (previousIndex > 0 && completedStepIds.has(steps[previousIndex].id)) previousIndex -= 1;
+    setIndex(previousIndex);
+  };
+
   const repeatUnit = () => {
     stopSpeech();
     setIndex(0);
     setCorrect(0);
     setExerciseCount(0);
     setFinishedScore(null);
+    setCompletedStepIds(new Set());
+    furthestIndexRef.current = 0;
     setFinished(false);
   };
 
@@ -529,10 +567,12 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
   }
 
   return (
-    <Shell onExit={onExit} progressPct={progressPct} counter={`${index + 1}/${total}`}>
+    <Shell onExit={goBack} progressPct={progressPct} counter={`${index + 1}/${total}`}>
       {step.kind === 'welcome' && <Welcome userName={userName} onNext={() => advance()} />}
       {step.kind === 'score-intro' && <ScoreIntro onNext={() => advance()} />}
-      {step.kind === 'overview' && <Overview onNext={() => advance()} />}
+      {step.kind === 'family' && <FamilyLesson lessonId={step.lessonId} onNext={() => advance()} />}
+      {step.kind === 'location-intro' && <LocationIntro onNext={() => advance()} />}
+      {step.kind === 'location-prepositions' && <LocationPrepositions onNext={() => advance()} />}
       {step.kind === 'phrase' && <PhraseCard step={step} onNext={() => advance()} />}
       {step.kind === 'exercise' && (
         <ExerciseCard
@@ -588,7 +628,7 @@ const Shell: React.FC<{
           <button
             onClick={onExit}
             className="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-500"
-            aria-label="Salir de la lección"
+            aria-label="Volver al paso anterior"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
@@ -685,35 +725,79 @@ const AudioButton: React.FC<{ state: AudioState; onPlay: () => void; size?: 'sm'
 const Welcome: React.FC<{ userName?: string; onNext: () => void }> = ({ userName, onNext }) => {
   const name = userName?.trim();
   const greeting = name ? `Hola, ${name}.` : 'Hola.';
+  const purposes = [
+    {
+      label: 'Identidad',
+      en: 'I am David.',
+      es: 'Yo soy David.',
+      tone: 'border-sky-200 bg-sky-50',
+      badge: 'bg-sky-500',
+    },
+    {
+      label: 'Estado',
+      en: 'Maria is ready.',
+      es: 'María está lista.',
+      tone: 'border-violet-200 bg-violet-50',
+      badge: 'bg-violet-500',
+    },
+    {
+      label: 'Lugar',
+      en: 'They are at work.',
+      es: 'Ellos están en el trabajo.',
+      tone: 'border-amber-200 bg-amber-50',
+      badge: 'bg-amber-500',
+    },
+  ] as const;
   return (
     <>
-      <div className="pt-4 pb-6 flex-1 flex flex-col justify-center">
-        <div className="text-center mb-7">
-          <div className="mx-auto w-20 h-20 rounded-full bg-emerald-100 border-2 border-emerald-300 flex items-center justify-center mb-4">
-            <span className="text-4xl" aria-hidden="true">🎓</span>
+      <div className="pt-2 pb-5 flex-1 flex flex-col justify-center">
+        <div className="text-center mb-5">
+          <div className="mx-auto w-16 h-16 rounded-full bg-emerald-100 border-2 border-emerald-300 flex items-center justify-center mb-3">
+            <span className="text-3xl" aria-hidden="true">🎓</span>
           </div>
           <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-2">Unidad 2</p>
-          <h1 className="text-4xl font-black text-gray-950 leading-tight">Verbo to be</h1>
+          <h1 className="text-4xl font-black text-gray-950 leading-tight">Aprende a decir ser y estar</h1>
         </div>
-        <div className="bg-white rounded-3xl p-6 shadow-md border border-emerald-100">
-          <p className="text-gray-900 text-xl font-extrabold leading-relaxed">
-            {greeting} Ahora aprenderás a decir <span className="text-emerald-700">ser</span> y{' '}
-            <span className="text-emerald-700">estar</span> en inglés.
+
+        <div className="bg-white rounded-3xl p-5 shadow-md border border-emerald-100">
+          <p className="text-gray-900 text-lg font-extrabold leading-relaxed text-center">
+            {greeting} Usamos <span className="text-emerald-700">to be</span> para hablar de tres cosas de la vida real:
           </p>
-          <div className="grid grid-cols-3 gap-2 my-5">
-            {['am', 'is', 'are'].map((item) => (
-              <div key={item} className="rounded-2xl bg-emerald-50 border border-emerald-200 py-3 text-center">
-                <p className="text-emerald-800 text-2xl font-black">{item}</p>
+
+          <div className="mt-4 space-y-2.5">
+            {purposes.map((purpose, index) => (
+              <div key={purpose.label} className={`rounded-2xl border-2 p-3.5 ${purpose.tone}`}>
+                <div className="flex items-center gap-3">
+                  <span className={`w-8 h-8 shrink-0 rounded-full text-white font-black flex items-center justify-center ${purpose.badge}`}>
+                    {index + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-gray-600 text-xs font-black uppercase tracking-wide">{purpose.label}</p>
+                    <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
+                      <p className="text-gray-950 text-lg font-black">{purpose.en}</p>
+                      <p className="text-gray-600 text-sm font-bold">{purpose.es}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-          <p className="text-gray-600 text-base font-bold leading-relaxed">
-            Con estas tres formas podrás presentarte, decir cómo estás y describir personas o cosas.
+
+          <p className="mt-4 text-center text-gray-600 text-sm font-bold leading-relaxed">
+            La forma cambia según quién aparece.
+            <span className="block mt-1">Aprenderás estas tres formas:</span>
           </p>
+          <div className="grid grid-cols-3 gap-2 mt-2">
+            {['am', 'is', 'are'].map((item) => (
+              <div key={item} className="rounded-xl bg-emerald-50 border border-emerald-200 py-2 text-center">
+                <p className="text-emerald-800 text-xl font-black">{item}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       <div className="mt-auto">
-        <PrimaryButton onClick={onNext}>Empezar</PrimaryButton>
+        <PrimaryButton onClick={onNext}>Entender paso a paso</PrimaryButton>
       </div>
     </>
   );
@@ -724,7 +808,7 @@ const ScoreIntro: React.FC<{ onNext: () => void }> = ({ onNext }) => (
   <>
     <div className="pt-4 pb-6 flex-1 flex flex-col justify-center text-center">
       <p className="text-emerald-700 text-sm font-black uppercase tracking-wide mb-3">Antes de practicar</p>
-      <h1 className="text-4xl font-black text-gray-950 leading-tight mb-4">Asi ganas tu nota</h1>
+      <h1 className="text-4xl font-black text-gray-950 leading-tight mb-4">Así ganas tu nota</h1>
       <p className="text-gray-700 text-lg font-bold leading-relaxed mb-7">
         La meta es mejorar. Puedes fallar, corregir y repetir hasta llegar a 100.
       </p>
@@ -742,7 +826,7 @@ const ScoreIntro: React.FC<{ onNext: () => void }> = ({ onNext }) => (
           <div className="w-16 h-16 rounded-2xl bg-sky-100 flex items-center justify-center text-2xl font-black text-sky-800">+70</div>
           <div>
             <p className="text-gray-950 text-xl font-black">Fallas y corriges</p>
-            <p className="text-gray-600 text-base font-bold">Tambien cuenta, porque estas aprendiendo.</p>
+            <p className="text-gray-600 text-base font-bold">También cuenta, porque estás aprendiendo.</p>
           </div>
         </div>
 
@@ -750,7 +834,7 @@ const ScoreIntro: React.FC<{ onNext: () => void }> = ({ onNext }) => (
           <div className="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center text-3xl" aria-hidden="true">↻</div>
           <div>
             <p className="text-gray-950 text-xl font-black">Repite hasta 100</p>
-            <p className="text-gray-600 text-base font-bold">No es castigo. Es practica real.</p>
+            <p className="text-gray-600 text-base font-bold">No es castigo. Es práctica real.</p>
           </div>
         </div>
       </div>
@@ -764,68 +848,267 @@ const ScoreIntro: React.FC<{ onNext: () => void }> = ({ onNext }) => (
     </div>
   </>
 );
-const Overview: React.FC<{ onNext: () => void }> = ({ onNext }) => (
-  <>
-    <div className="pt-2 pb-4 flex-1">
-      <p className="text-emerald-700 text-xs font-black uppercase tracking-wide mb-2">Regla base</p>
-      <h1 className="text-3xl font-black text-gray-950 mb-2">Cada persona usa una forma</h1>
-      <p className="text-gray-700 text-base font-bold leading-relaxed mb-5">
-        No memorices una tabla. Mira qué palabra se une con cada grupo.
-      </p>
-      <div className="flex flex-col gap-4">
-        {TO_BE_GROUPS.map((g) => {
-          const s = FORM_STYLE[g.verb];
-          return (
-            <div key={g.verb} className={`rounded-3xl border-2 ${s.soft} p-5 shadow-sm`}>
-              <div className="flex items-center gap-3 mb-3">
-                <div className={`w-20 rounded-2xl bg-white py-3 text-center text-3xl font-black ${s.accent}`}>
-                  {g.verb}
-                </div>
-                <div className="flex-1">
-                  <p className="text-gray-500 text-xs font-black uppercase tracking-wide">se usa con</p>
-                  <p className="text-gray-950 text-lg font-black">{g.pronouns}</p>
-                </div>
-              </div>
-              <div className="rounded-2xl bg-white/80 p-3">
-                <p className="text-gray-500 text-sm font-bold">Ejemplo visual</p>
-                <p className="text-gray-950 text-xl font-black">{g.example}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+interface FamilyLessonData {
+  form: BeForm;
+  eyebrow: string;
+  title: string;
+  explanation: string;
+  subjects: { label: string; visualId: VisualId }[];
+  example: string;
+  meaning: string;
+  formula: [string, BeForm, string];
+}
 
-      <div className="mt-5 rounded-3xl border-2 border-emerald-200 bg-white p-4 shadow-sm">
-        <p className="text-emerald-700 text-xs font-black uppercase tracking-wide">Inglés para la vida real</p>
-        <p className="mt-1 text-gray-950 text-lg font-black">Situaciones que vas a practicar</p>
-        <p className="mt-1 text-gray-500 text-sm font-bold">Mira cada situación y piensa qué frase usarías. Desliza para verlas todas.</p>
-        <div className="mt-3 flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory">
-          {TO_BE_VISUAL_SCENES.map((scene) => {
-            const visual = getVisual(scene.visualId);
-            return (
-              <div key={scene.id} className="w-32 shrink-0 snap-start">
-                <div className="h-24 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
+type FamilyLessonId = 'am' | 'is-people' | 'is-it' | 'are-you-we' | 'are-they';
+
+const FAMILY_LESSONS: Record<FamilyLessonId, FamilyLessonData> = {
+  am: {
+    form: 'am',
+    eyebrow: 'Primera familia',
+    title: 'I siempre va con am',
+    explanation: 'Cuando hablas de ti, empiezas con I. Después de I usamos am.',
+    subjects: [{ label: 'I', visualId: 'unit1.pronouns.i' }],
+    example: 'I am David.',
+    meaning: 'Yo soy David.',
+    formula: ['I', 'am', 'David'],
+  },
+  'is-people': {
+    form: 'is',
+    eyebrow: 'Segunda familia',
+    title: 'he y she van con is',
+    explanation: 'Para hablar de un hombre o de una mujer usamos is.',
+    subjects: [
+      { label: 'he', visualId: 'unit1.pronouns.he' },
+      { label: 'she', visualId: 'unit1.pronouns.she' },
+    ],
+    example: 'Maria is ready.',
+    meaning: 'María está lista.',
+    formula: ['Maria', 'is', 'ready'],
+  },
+  'is-it': {
+    form: 'is',
+    eyebrow: 'Segunda familia',
+    title: 'it también va con is',
+    explanation: 'Para una cosa o un animal usamos it con is.',
+    subjects: [{ label: 'it', visualId: 'unit1.pronouns.it' }],
+    example: 'It is here.',
+    meaning: 'Está aquí.',
+    formula: ['It', 'is', 'here'],
+  },
+  'are-you-we': {
+    form: 'are',
+    eyebrow: 'Tercera familia',
+    title: 'you y we van con are',
+    explanation: 'Para la persona con quien hablas o para un grupo que te incluye usamos are.',
+    subjects: [
+      { label: 'you', visualId: 'unit1.pronouns.you' },
+      { label: 'we', visualId: 'unit1.pronouns.we' },
+    ],
+    example: 'We are at work.',
+    meaning: 'Nosotros estamos en el trabajo.',
+    formula: ['We', 'are', 'at work'],
+  },
+  'are-they': {
+    form: 'are',
+    eyebrow: 'Tercera familia',
+    title: 'they también va con are',
+    explanation: 'Para un grupo que no te incluye usamos they con are.',
+    subjects: [{ label: 'they', visualId: 'unit1.pronouns.they' }],
+    example: 'They are at work.',
+    meaning: 'Ellos están en el trabajo.',
+    formula: ['They', 'are', 'at work'],
+  },
+};
+
+const FamilyLesson: React.FC<{ lessonId: FamilyLessonId; onNext: () => void }> = ({ lessonId, onNext }) => {
+  const lesson = FAMILY_LESSONS[lessonId];
+  const style = FORM_STYLE[lesson.form];
+
+  return (
+    <>
+      <div className="pt-2 pb-4 flex-1">
+        <p className="text-emerald-700 text-xs font-black uppercase tracking-wide mb-2">{lesson.eyebrow}</p>
+        <h1 className="text-3xl font-black text-gray-950 leading-tight mb-2">{lesson.title}</h1>
+        <p className="text-gray-700 text-base font-bold leading-relaxed mb-5">{lesson.explanation}</p>
+
+        <div className={`rounded-3xl border-2 p-4 shadow-sm ${style.soft}`}>
+          <div className={`grid gap-3 ${lesson.subjects.length === 1 ? 'mx-auto max-w-sm grid-cols-1' : 'grid-cols-2'}`}>
+            {lesson.subjects.map((subject) => {
+              const visual = getVisual(subject.visualId);
+              return (
+                <div key={subject.label} className="rounded-2xl border border-white bg-white p-2 text-center shadow-sm">
                   <img
                     src={visual.src}
                     alt={visual.alt}
-                    className="h-full w-full object-cover"
+                    className="aspect-[4/3] w-full rounded-2xl bg-white object-contain object-center"
                     onError={(event) => handleVisualError(event, visual)}
                   />
+                  <p className={`pb-1 pt-2 text-xl font-black ${style.accent}`}>{subject.label}</p>
                 </div>
-                <p className="mt-2 text-center text-xs font-black leading-tight text-gray-800">{scene.en}</p>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+
+          <div className="mt-4 rounded-2xl bg-white p-4 text-center">
+            <p className="text-gray-500 text-xs font-black uppercase tracking-wide">Mira cómo se construye</p>
+            <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
+              {lesson.formula.map((part, index) => (
+                <React.Fragment key={`${part}-${index}`}>
+                  {index > 0 && <span className="text-gray-400 font-black">+</span>}
+                  <span className={`rounded-xl px-3 py-2 text-lg font-black ${index === 1 ? style.chip : 'bg-gray-100 text-gray-900'}`}>
+                    {part}
+                  </span>
+                </React.Fragment>
+              ))}
+            </div>
+            <p className="mt-4 text-2xl font-black text-gray-950">{lesson.example}</p>
+            <p className="mt-1 text-base font-bold text-gray-600">{lesson.meaning}</p>
+          </div>
         </div>
+      </div>
+      <div className="mt-auto">
+        <PrimaryButton onClick={onNext}>{lessonId === 'are-they' ? 'Ver situaciones reales' : 'Continuar'}</PrimaryButton>
+      </div>
+    </>
+  );
+};
+
+// ── Tarjeta de frase (enseñanza) ─────────────────────────────────────────────
+const LocationIntro: React.FC<{ onNext: () => void }> = ({ onNext }) => (
+  <>
+    <div className="flex flex-1 flex-col justify-center py-6">
+      <div className="rounded-[2rem] border-2 border-emerald-100 bg-white p-6 shadow-lg">
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-3xl" aria-hidden="true">
+          📍
+        </div>
+        <p className="mb-2 text-center text-xs font-black uppercase tracking-widest text-emerald-700">Un paso más</p>
+        <h1 className="mb-3 text-center text-3xl font-black leading-tight text-gray-950">Ahora aprenderás a decir dónde</h1>
+        <p className="mx-auto max-w-md text-center text-base font-bold leading-relaxed text-gray-600">
+          Para completar oraciones sobre lugares, en esta unidad usaremos dos preposiciones muy comunes.
+        </p>
+
+        <div className="my-6 grid grid-cols-2 gap-3">
+          <div className="rounded-3xl border-2 border-sky-200 bg-sky-50 px-4 py-5 text-center">
+            <p className="text-4xl font-black text-sky-600">at</p>
+            <p className="mt-1 text-sm font-black text-gray-700">un punto o actividad</p>
+          </div>
+          <div className="rounded-3xl border-2 border-violet-200 bg-violet-50 px-4 py-5 text-center">
+            <p className="text-4xl font-black text-violet-600">in</p>
+            <p className="mt-1 text-sm font-black text-gray-700">dentro de un espacio</p>
+          </div>
+        </div>
+
+        <div className="rounded-3xl bg-gray-50 p-5">
+          <p className="mb-3 text-center text-xs font-black uppercase tracking-wide text-gray-500">Así completas la oración</p>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <span className="rounded-xl bg-white px-3 py-2 text-lg font-black text-gray-950 shadow-sm">I</span>
+            <span className="text-lg font-black text-gray-400">+</span>
+            <span className="rounded-xl bg-emerald-100 px-3 py-2 text-lg font-black text-emerald-700">am</span>
+            <span className="text-lg font-black text-gray-400">+</span>
+            <span className="rounded-xl bg-sky-100 px-3 py-2 text-lg font-black text-sky-700">at</span>
+            <span className="text-lg font-black text-gray-400">+</span>
+            <span className="rounded-xl bg-white px-3 py-2 text-lg font-black text-gray-950 shadow-sm">work</span>
+          </div>
+          <p className="mt-4 text-center text-xl font-black text-gray-950">I am at work.</p>
+        </div>
+
+        <p className="mt-5 text-center text-sm font-bold leading-relaxed text-gray-600">
+          Comenzaremos con <span className="font-black text-sky-700">at</span> e <span className="font-black text-violet-700">in</span>. Más adelante aprenderás otras preposiciones de lugar.
+        </p>
       </div>
     </div>
     <div className="mt-auto">
-      <PrimaryButton onClick={onNext}>Continuar</PrimaryButton>
+      <PrimaryButton onClick={onNext}>Entender at e in</PrimaryButton>
     </div>
   </>
 );
 
-// ── Tarjeta de frase (enseñanza) ─────────────────────────────────────────────
+const LOCATION_EXAMPLES = {
+  at: {
+    visualId: 'unit2.to-be.david-at-work' as VisualId,
+    phrase: 'I am at work.',
+    meaning: 'Estoy en el trabajo.',
+  },
+  in: [
+    {
+      visualId: 'unit2.to-be.maria-in-the-office' as VisualId,
+      phrase: 'She is in the office.',
+      meaning: 'Ella está en la oficina.',
+    },
+    {
+      visualId: 'unit2.to-be.david-in-california' as VisualId,
+      phrase: 'I am in California.',
+      meaning: 'Estoy en California.',
+    },
+  ],
+};
+
+const LocationPrepositions: React.FC<{ onNext: () => void }> = ({ onNext }) => {
+  const atVisual = getVisual(LOCATION_EXAMPLES.at.visualId);
+
+  return (
+    <>
+      <div className="flex-1 pb-4 pt-2">
+        <p className="mb-2 text-xs font-black uppercase tracking-wide text-emerald-700">Antes de ver los lugares</p>
+        <h1 className="mb-2 text-3xl font-black leading-tight text-gray-950">¿Dónde está? Usa at o in</h1>
+        <p className="mb-5 text-base font-bold leading-relaxed text-gray-700">
+          Mira el lugar y piensa si es un punto específico o si alguien está dentro de un espacio o zona.
+        </p>
+
+        <section className="mb-4 rounded-3xl border-2 border-sky-200 bg-sky-50 p-4 shadow-sm">
+          <div className="mb-3 flex items-center gap-3">
+            <span className="rounded-2xl bg-sky-500 px-4 py-2 text-2xl font-black text-white">at</span>
+            <div>
+              <p className="font-black text-gray-950">Punto o actividad específica</p>
+              <p className="text-sm font-bold text-gray-600">Trabajo, casa, escuela o aeropuerto.</p>
+            </div>
+          </div>
+          <div className="rounded-2xl bg-white p-2 text-center shadow-sm">
+            <img
+              src={atVisual.src}
+              alt={atVisual.alt}
+              className="aspect-[4/3] w-full rounded-2xl object-contain"
+              onError={(event) => handleVisualError(event, atVisual)}
+            />
+            <p className="mt-2 text-xl font-black text-gray-950">{LOCATION_EXAMPLES.at.phrase}</p>
+            <p className="pb-1 text-sm font-bold text-gray-600">{LOCATION_EXAMPLES.at.meaning}</p>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border-2 border-violet-200 bg-violet-50 p-4 shadow-sm">
+          <div className="mb-3 flex items-center gap-3">
+            <span className="rounded-2xl bg-violet-500 px-4 py-2 text-2xl font-black text-white">in</span>
+            <div>
+              <p className="font-black text-gray-950">Dentro de un espacio o zona</p>
+              <p className="text-sm font-bold text-gray-600">Una oficina, ciudad, estado o país.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {LOCATION_EXAMPLES.in.map((example) => {
+              const visual = getVisual(example.visualId);
+              return (
+                <div key={example.visualId} className="rounded-2xl bg-white p-2 text-center shadow-sm">
+                  <img
+                    src={visual.src}
+                    alt={visual.alt}
+                    className="aspect-[4/3] w-full rounded-2xl object-contain"
+                    onError={(event) => handleVisualError(event, visual)}
+                  />
+                  <p className="mt-2 text-base font-black leading-tight text-gray-950">{example.phrase}</p>
+                  <p className="pb-1 text-xs font-bold leading-tight text-gray-600">{example.meaning}</p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      </div>
+      <div className="mt-auto">
+        <PrimaryButton onClick={onNext}>Ver situaciones reales</PrimaryButton>
+      </div>
+    </>
+  );
+};
+
 const PhraseCard: React.FC<{
   step: Extract<ToBeStep, { kind: 'phrase' }>;
   onNext: () => void;
@@ -863,7 +1146,7 @@ const PhraseCard: React.FC<{
             <img
               src={visual.src}
               alt={visual.alt}
-              className="mb-4 h-52 w-full rounded-2xl object-cover sm:h-64"
+              className="mb-4 aspect-[5/4] w-full rounded-2xl bg-white object-contain object-center"
               onError={(event) => handleVisualError(event, visual)}
             />
           ) : (
@@ -954,6 +1237,7 @@ const VisualSceneCard: React.FC<{
 };
 
 const ExerciseCard: React.FC<{ ex: OptionExercise; onDone: (correct: boolean) => void }> = ({ ex, onDone }) => {
+  const optionOrder = useMemo(() => shuffle(ex.options), [ex]);
   const [selected, setSelected] = useState<string | null>(null);
   const [stage, setStage] = useState<'answer' | 'wrong' | 'right'>('answer');
   const [attempts, setAttempts] = useState(0);
@@ -1016,12 +1300,20 @@ const ExerciseCard: React.FC<{ ex: OptionExercise; onDone: (correct: boolean) =>
         {/* Opciones */}
         {stage !== 'right' && (
           <div className={ex.figures ? 'grid grid-cols-2 gap-3 mb-4' : 'flex flex-col gap-3 mb-4'}>
-            {ex.options.map((opt) => {
+            {optionOrder.map((opt, index) => {
               const isSel = selected === opt;
+              const optionColor = [
+                'border-emerald-200 bg-emerald-50 text-emerald-950',
+                'border-sky-200 bg-sky-50 text-sky-950',
+                'border-violet-200 bg-violet-50 text-violet-950',
+                'border-amber-200 bg-amber-50 text-amber-950',
+              ][index % 4];
               const base = ex.figures
                 ? 'rounded-2xl border-2 py-6 text-5xl flex items-center justify-center transition-all'
                 : 'w-full text-left border-2 rounded-2xl px-4 py-3.5 font-semibold transition-all';
-              const cls = isSel ? 'bg-emerald-50 border-emerald-400 text-emerald-800' : 'bg-white border-gray-200 text-gray-800';
+              const cls = isSel
+                ? 'border-emerald-500 bg-emerald-100 text-emerald-900 shadow-md ring-2 ring-emerald-200'
+                : optionColor;
               return (
                 <button key={opt} onClick={() => setSelected(opt)} className={`${base} ${cls}`}>
                   {opt}
@@ -1036,7 +1328,13 @@ const ExerciseCard: React.FC<{ ex: OptionExercise; onDone: (correct: boolean) =>
           <div ref={achievementRef}>
             <AchievementCard
               title="¡Muy bien!"
-              subtitle={firstTryCorrect ? 'Elegiste la forma correcta de to be. +100' : 'Corregiste y aprendiste. +70'}
+              subtitle={
+                firstTryCorrect
+                  ? needsAudio
+                    ? 'Entendiste la frase correctamente. +100'
+                    : 'Elegiste la forma correcta de to be. +100'
+                  : 'Corregiste y aprendiste. +70'
+              }
             />
           </div>
         )}
@@ -1559,7 +1857,7 @@ const VoiceRepeat: React.FC<{ phrase: BePhrase; label: string; onNext: () => voi
             <img
               src={visual.src}
               alt={visual.alt}
-              className="mb-4 h-48 w-full rounded-2xl object-cover sm:h-60"
+              className="mb-4 aspect-[5/4] w-full rounded-2xl bg-white object-contain object-center"
               onError={(event) => handleVisualError(event, visual)}
             />
           ) : (

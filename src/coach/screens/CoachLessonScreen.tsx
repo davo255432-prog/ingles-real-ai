@@ -3,7 +3,14 @@ import type { Lesson, LessonStatus, Piece, Step } from '../types';
 import { PronounsPractice } from './PronounsPractice';
 import { ToBePractice } from './ToBePractice';
 import { SpeakPractice } from './SpeakPractice';
-import { PRONOUNS_INFO, type PronounInfo } from '../data/curriculum';
+import { EssentialVerbsPractice } from './EssentialVerbsPractice';
+import { SentenceBuildingPractice } from './SentenceBuildingPractice';
+import {
+  ESSENTIAL_VERBS_LESSON_ID,
+  PRONOUNS_INFO,
+  SENTENCE_BUILDING_LESSON_ID,
+  type PronounInfo,
+} from '../data/curriculum';
 import { getPronounVisual, handleVisualError } from '../visual-library';
 
 interface CoachLessonScreenProps {
@@ -167,6 +174,28 @@ export const CoachLessonScreen: React.FC<CoachLessonScreenProps> = ({
           onStatus('completed', { lastStepId: step.id, lastScore: score })
         }
         onBackToMap={onFinish}
+      />
+    );
+  }
+
+  if (lesson.id === ESSENTIAL_VERBS_LESSON_ID) {
+    return (
+      <EssentialVerbsPractice
+        onExit={onBack}
+        onComplete={(score) =>
+          onStatus('completed', { lastStepId: step?.id, lastScore: score })
+        }
+      />
+    );
+  }
+
+  if (lesson.id === SENTENCE_BUILDING_LESSON_ID || step?.sentenceBuilding) {
+    return (
+      <SentenceBuildingPractice
+        onExit={onBack}
+        onComplete={(score) =>
+          onStatus('completed', { lastStepId: step?.id, lastScore: score })
+        }
       />
     );
   }

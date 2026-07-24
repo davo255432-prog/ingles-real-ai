@@ -112,7 +112,7 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
       // subida y la transcripción (sobre todo en celular con datos).
       const mr = new MediaRecorder(stream, {
         ...(mimeType ? { mimeType } : {}),
-        audioBitsPerSecond: 32000,
+        audioBitsPerSecond: 64000,
       });
       mediaRecorderRef.current = mr;
 
@@ -120,13 +120,18 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
 
-      // iOS Safari ignores the timeslice in mr.start(N) and never fires
-      // ondataavailable during recording. Fix: start without timeslice and
-      // poll requestData() every 500 ms so chunks accumulate on all platforms.
-      mr.start();
-      dataIntervalRef.current = setInterval(() => {
-        if (mr.state === 'recording') mr.requestData();
-      }, 500);
+      const usesIOSRecording =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+      if (usesIOSRecording) {
+        mr.start();
+        dataIntervalRef.current = setInterval(() => {
+          if (mr.state === 'recording') mr.requestData();
+        }, 500);
+      } else {
+        mr.start(250);
+      }
 
       setRecordState('recording');
     } catch (err) {
@@ -153,6 +158,11 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
 
     await new Promise<void>((resolve) => {
       mr.addEventListener('stop', () => resolve(), { once: true });
+      try {
+        mr.requestData();
+      } catch {
+        // Algunos navegadores no permiten requestData justo antes de stop.
+      }
       mr.stop();
     });
 
@@ -298,7 +308,7 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
   // ── Record button ─────────────────────────────────────────────────────────
 
   const recordBtnClass = [
-    'w-full flex flex-col items-center justify-center gap-2 py-8 rounded-3xl font-semibold text-lg transition-all duration-200',
+    'w-full flex flex-col items-center justify-center gap-2 py-8 rounded-3xl font-bold text-xl transition-all duration-200',
     isProcessing
       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
       : recordState === 'recording'
@@ -331,8 +341,10 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
             </svg>
           </button>
           <div>
-            <h1 className="text-lg font-bold text-gray-800">Traduce con voz</h1>
-            <p className="text-xs text-gray-400">Habla en español o escucha inglés en tiempo real.</p>
+            <h1 className="text-3xl font-extrabold text-gray-900 leading-tight">Traductor de voz</h1>
+            <p className="text-base font-semibold text-gray-800 leading-relaxed mt-2">
+              Habla o escribe en español o inglés y obtén la traducción al instante.
+            </p>
           </div>
         </div>
 
@@ -354,10 +366,10 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
                 <span className="text-2xl">🗣️</span>
                 <div className="flex-1 min-w-0">
                   <p className={mode === 'speak' ? 'font-bold text-purple-800' : 'font-bold text-gray-800'}>
-                    Quiero decir algo en inglés
+                    Di lo que quieras en español.
                   </p>
                   <p className="text-gray-500 text-sm leading-snug">
-                    Habla en español y obtén una frase en inglés lista para usar.
+                    Lo traduzco al inglés al instante.
                   </p>
                 </div>
               </div>
@@ -378,10 +390,10 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
                 <span className="text-2xl">👂</span>
                 <div className="flex-1 min-w-0">
                   <p className={mode === 'understand' ? 'font-bold text-purple-800' : 'font-bold text-gray-800'}>
-                    Quiero entender inglés
+                    Escucha inglés sin miedo.
                   </p>
                   <p className="text-gray-500 text-sm leading-snug">
-                    Escucha inglés y entiende su significado al instante.
+                    Entiende, traduce y continúa la conversación al instante.
                   </p>
                 </div>
               </div>
@@ -393,13 +405,23 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
         {recordState !== 'done' && (
           <div className="bg-purple-50 border border-purple-100 rounded-2xl px-5 py-4 mb-8">
             <div className="flex items-start gap-3">
-              <span className="text-2xl">🎙️</span>
+              <span className="text-2xl">💡</span>
               <div>
-                <p className="text-purple-800 font-semibold text-sm mb-1">¿Cómo funciona?</p>
+                <p className="text-purple-800 font-semibold text-sm mb-1">¿Cuándo usar esta opción?</p>
                 <p className="text-purple-700 text-sm leading-relaxed">
-                  {mode === 'understand'
-                    ? 'Presiona el botón y reproduce o di algo en inglés. Te muestro qué significa, cómo se escribe y cómo se pronuncia.'
-                    : 'Presiona el botón, habla en español lo que necesitas decir, y yo te doy la traducción en inglés lista para usar.'}
+                  {mode === 'understand' ? (
+                    <>
+                      ✔ Cuando alguien te hable en inglés.<br />
+                      ✔ Para entender conversaciones, anuncios, audios o videos.<br />
+                      ✔ Para responder y continuar la conversación con confianza.
+                    </>
+                  ) : (
+                    <>
+                      ✔ Cuando necesites hablar con alguien en inglés.<br />
+                      ✔ En el trabajo, tiendas, restaurantes o cualquier situación.<br />
+                      ✔ Di lo que quieras y obtén la frase lista para usar.
+                    </>
+                  )}
                 </p>
               </div>
             </div>
@@ -433,23 +455,18 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
             )}
           </div>
           <span>{recordLabel}</span>
+          {mode === 'understand' && <span className="text-sm font-semibold text-white/80">o escribe</span>}
         </button>
 
         {/* Escribir frase manualmente (solo modo entender, antes del resultado) */}
         {mode === 'understand' && recordState !== 'done' && (
           <div className="mt-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-gray-400 text-xs font-semibold">o escríbela</span>
-              <div className="flex-1 h-px bg-gray-200" />
-            </div>
-
             <textarea
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
               placeholder="Escribe una frase en inglés"
               rows={2}
-              className="w-full rounded-2xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none px-4 py-3 text-gray-800 text-base resize-none"
+              className="w-full rounded-2xl border-2 border-gray-400 bg-white shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-100 px-4 py-3 text-gray-900 text-base placeholder:text-gray-600 resize-none"
             />
 
             <button
@@ -463,7 +480,7 @@ export const SpeakAndTranslateScreen: React.FC<SpeakAndTranslateScreenProps> = (
                   : 'bg-purple-500 hover:bg-purple-600 text-white active:scale-95',
               ].join(' ')}
             >
-              {translatingText ? 'Traduciendo...' : 'Traducir'}
+              {translatingText ? 'Traduciendo...' : 'Traducir →'}
             </button>
 
             {textError && (
@@ -679,15 +696,23 @@ const ReplyInEnglish: React.FC = () => {
         ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4'].find((t) =>
           MediaRecorder.isTypeSupported(t),
         ) ?? '';
-      const mr = new MediaRecorder(stream, { ...(mimeType ? { mimeType } : {}), audioBitsPerSecond: 32000 });
+      const mr = new MediaRecorder(stream, { ...(mimeType ? { mimeType } : {}), audioBitsPerSecond: 64000 });
       mrRef.current = mr;
       mr.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
-      mr.start();
-      intervalRef.current = setInterval(() => {
-        if (mr.state === 'recording') mr.requestData();
-      }, 500);
+      const usesIOSRecording =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+      if (usesIOSRecording) {
+        mr.start();
+        intervalRef.current = setInterval(() => {
+          if (mr.state === 'recording') mr.requestData();
+        }, 500);
+      } else {
+        mr.start(250);
+      }
       setState('recording');
     } catch {
       streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -706,6 +731,11 @@ const ReplyInEnglish: React.FC = () => {
     setState('processing');
     await new Promise<void>((resolve) => {
       mr.addEventListener('stop', () => resolve(), { once: true });
+      try {
+        mr.requestData();
+      } catch {
+        // Algunos navegadores no permiten requestData justo antes de stop.
+      }
       mr.stop();
     });
     streamRef.current?.getTracks().forEach((t) => t.stop());
