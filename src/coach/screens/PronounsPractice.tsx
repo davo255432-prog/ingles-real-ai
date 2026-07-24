@@ -38,6 +38,13 @@ function shuffle<T>(arr: T[]): T[] {
   return r;
 }
 
+const MEMORY_OPTION_COLORS = [
+  'border-emerald-200 bg-emerald-50',
+  'border-sky-200 bg-sky-50',
+  'border-violet-200 bg-violet-50',
+  'border-amber-200 bg-amber-50',
+];
+
 function sample<T>(arr: T[], n: number): T[] {
   return shuffle(arr).slice(0, n);
 }
@@ -183,6 +190,8 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
   const [phase, setPhase] = useState<Phase>('intro');
   const [round, setRound] = useState(0); // fuerza regeneración en "Practicar otra vez"
   const questions = useMemo(() => generatePractice(), [round]);
+  const memoryPronounOrder = useMemo(() => shuffle(PRONOUNS_INFO), []);
+  const memoryMeaningOrder = useMemo(() => shuffle(PRONOUNS_INFO), []);
 
   const [qIndex, setQIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -830,7 +839,7 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
               <p className="text-emerald-700 text-sm font-black">{matchedPronouns.length}/{PRONOUNS_INFO.length}</p>
             </div>
             <div className="grid grid-cols-2 gap-2.5">
-              {PRONOUNS_INFO.map((p) => {
+              {memoryPronounOrder.map((p) => {
                 const isDone = matchedPronouns.includes(p.id);
                 const isSelected = selectedMemoryPronoun === p.id;
                 return (
@@ -864,8 +873,9 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
           <div className="bg-white border-2 border-sky-100 rounded-3xl p-4 shadow-sm">
             <p className="text-gray-900 text-sm font-black uppercase tracking-wide mb-3">Significados</p>
             <div className="grid grid-cols-1 gap-2.5">
-              {PRONOUNS_INFO.map((p) => {
+              {memoryMeaningOrder.map((p, index) => {
                 const isDone = matchedPronouns.includes(p.id);
+                const optionColor = MEMORY_OPTION_COLORS[index % MEMORY_OPTION_COLORS.length];
                 return (
                   <button
                     key={p.id}
@@ -875,8 +885,8 @@ export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUn
                       isDone
                         ? 'rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-4 py-3 text-left'
                         : selectedMemoryPronoun
-                          ? 'rounded-2xl border-2 border-sky-300 bg-sky-50 px-4 py-3 text-left active:scale-[0.98]'
-                          : 'rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3 text-left'
+                          ? `rounded-2xl border-2 px-4 py-3 text-left shadow-sm active:scale-[0.98] ${optionColor}`
+                          : `rounded-2xl border-2 px-4 py-3 text-left ${optionColor}`
                     }
                   >
                     <div className="flex items-center justify-between gap-3">

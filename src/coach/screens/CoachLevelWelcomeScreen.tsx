@@ -59,6 +59,31 @@ export const CoachLevelWelcomeScreen: React.FC<CoachLevelWelcomeScreenProps> = (
     );
   }
 
+  if (selectedToBeUnit) {
+    const lessonProgress = progress.lessons[TO_BE_LESSON_ID];
+    const completed = lessonProgress?.status === 'completed';
+    const inProgress = lessonProgress?.status === 'in-progress';
+    const lastStepId = lessonProgress?.lastStepId;
+
+    return (
+      <ToBeUnitOptionsScreen
+        completed={completed}
+        inProgress={inProgress}
+        onBack={() => setSelectedToBeUnit(null)}
+        onContinue={() => onOpenLesson(selectedToBeUnit.id, TO_BE_LESSON_ID, lastStepId, completed)}
+        onReviewFromStart={() => onOpenLesson(selectedToBeUnit.id, TO_BE_LESSON_ID, undefined, true)}
+        onFinalPractice={() =>
+          onOpenLesson(
+            selectedToBeUnit.id,
+            TO_BE_LESSON_ID,
+            toBeStepId(TO_BE_LESSON_ID, TO_BE_FINAL_VOCAB_STEP_SLUG),
+            completed,
+          )
+        }
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
       {/* Top bar */}
