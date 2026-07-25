@@ -448,6 +448,7 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
   const [exerciseCount, setExerciseCount] = useState(0);
   const [finishedScore, setFinishedScore] = useState<number | null>(null);
   const [completedStepIds, setCompletedStepIds] = useState<Set<string>>(() => new Set());
+  const [completedExerciseResults, setCompletedExerciseResults] = useState<Record<string, boolean>>({});
   const furthestIndexRef = useRef(startIndex);
 
   const step = steps[index];
@@ -467,6 +468,10 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
     if (isExercise) {
       setExerciseCount(nextExerciseCount);
       if (wasCorrect) setCorrect(nextCorrect);
+      setCompletedExerciseResults((previous) => ({
+        ...previous,
+        [step.id]: !!wasCorrect,
+      }));
       setCompletedStepIds((previous) => {
         const next = new Set(previous);
         next.add(step.id);
@@ -474,9 +479,7 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
       });
     }
     if (index < total - 1) {
-      let nextIndex = index + 1;
-      while (nextIndex < total && completedStepIds.has(steps[nextIndex].id)) nextIndex += 1;
-      setIndex(Math.min(nextIndex, total - 1));
+      setIndex(index + 1);
     } else {
       stopSpeech();
       const score = nextExerciseCount > 0 ? Math.round((nextCorrect / nextExerciseCount) * 100) : 100;
@@ -492,9 +495,7 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
       onExit();
       return;
     }
-    let previousIndex = index - 1;
-    while (previousIndex > 0 && completedStepIds.has(steps[previousIndex].id)) previousIndex -= 1;
-    setIndex(previousIndex);
+    setIndex(index - 1);
   };
 
   const repeatUnit = () => {
@@ -504,6 +505,7 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
     setExerciseCount(0);
     setFinishedScore(null);
     setCompletedStepIds(new Set());
+    setCompletedExerciseResults({});
     furthestIndexRef.current = 0;
     setFinished(false);
   };
@@ -578,7 +580,8 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
         <ExerciseCard
           key={step.id}
           ex={step.ex}
-          onDone={(ok) => advance(ok, true)}
+          completedResult={completedExerciseResults[step.id]}
+          onDone={(ok) => advance(ok, !completedStepIds.has(step.id))}
         />
       )}
       {step.kind === 'order' && (
@@ -588,7 +591,8 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
           words={step.words}
           answer={step.answer}
           coach={step.coach}
-          onDone={(ok) => advance(ok, true)}
+          completedResult={completedExerciseResults[step.id]}
+          onDone={(ok) => advance(ok, !completedStepIds.has(step.id))}
         />
       )}
       {step.kind === 'speak' && (
@@ -1236,19 +1240,25 @@ const VisualSceneCard: React.FC<{
   );
 };
 
-const ExerciseCard: React.FC<{ ex: OptionExercise; onDone: (correct: boolean) => void }> = ({ ex, onDone }) => {
+const ExerciseCard: React.FC<{
+  ex: OptionExercise;
+  completedResult?: boolean;
+  onDone: (correct: boolean) => void;
+}> = ({ ex, completedResult, onDone }) => {
   const optionOrder = useMemo(() => shuffle(ex.options), [ex]);
   const [selected, setSelected] = useState<string | null>(null);
-  const [stage, setStage] = useState<'answer' | 'wrong' | 'right'>('answer');
+  const [stage, setStage] = useState<'answer' | 'wrong' | 'right'>(
+    completedResult === undefined ? 'answer' : 'right',
+  );
   const [attempts, setAttempts] = useState(0);
-  const [firstTryCorrect, setFirstTryCorrect] = useState(true);
+  const [firstTryCorrect, setFirstTryCorrect] = useState(completedResult ?? true);
   const achievementRef = useRef<HTMLDivElement | null>(null);
   const audio = useAudio();
   const needsAudio = !!ex.audioText;
 
   // Reproduce automáticamente en ejercicios de oído.
   useEffect(() => {
-    if (needsAudio && ex.audioText) void audio.play(ex.audioText);
+    if (completedResult === undefined && needsAudio && ex.audioText) void audio.play(ex.audioText);
     return () => audio.reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -1382,12 +1392,13 @@ const OrderCard: React.FC<{
   words: string[];
   answer: string;
   coach: string;
+  completedResult?: boolean;
   onDone: (correct: boolean) => void;
-}> = ({ prompt, words, answer, coach, onDone }) => {
+}> = ({ prompt, words, answer, coach, completedResult, onDone }) => {
   const bank = useMemo(() => shuffle(words.map((w, i) => ({ id: `${w}-${i}`, text: w }))), [words]);
   const [built, setBuilt] = useState<{ id: string; text: string }[]>([]);
   const [checked, setChecked] = useState(false);
-  const [firstTryCorrect, setFirstTryCorrect] = useState(true);
+  const [firstTryCorrect, setFirstTryCorrect] = useState(completedResult ?? true);
   const achievementRef = useRef<HTMLDivElement | null>(null);
 
   const remaining = bank.filter((b) => !built.some((x) => x.id === b.id));
@@ -1397,6 +1408,26 @@ const OrderCard: React.FC<{
   useEffect(() => {
     if (checked && isCorrect) achievementRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [checked, isCorrect]);
+
+  if (completedResult !== undefined) {
+    return (
+      <>
+        <div className="pt-2 pb-4 flex-1 flex flex-col">
+          <h2 className="text-xl font-extrabold text-gray-900 leading-snug mb-5">{prompt}</h2>
+          <div className="bg-white rounded-2xl border-2 border-emerald-200 p-5 text-center mb-4">
+            <p className="text-2xl font-black text-gray-950">{answer}</p>
+          </div>
+          <AchievementCard
+            title="¡Muy bien!"
+            subtitle={completedResult ? 'Respuesta ya completada. +100' : 'Respuesta ya corregida. +70'}
+          />
+        </div>
+        <div className="mt-auto">
+          <PrimaryButton onClick={() => onDone(completedResult)}>Continuar</PrimaryButton>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
