@@ -159,6 +159,7 @@ interface OptionExercise {
   example?: string;      // ejemplo distinto (al fallar)
   figures?: boolean;     // opciones como figuras grandes (elegir la figura)
   audioText?: string;    // si existe, muestra botón de audio y exige escuchar
+  resultVisualId?: VisualId; // imagen oficial revelada solo despues de acertar
 }
 
 // ── Pasos internos de la unidad ──────────────────────────────────────────────
@@ -329,6 +330,7 @@ function buildSteps(): ToBeStep[] {
       answer: 'is',
       coach: 'he / she / it → is.',
       example: 'He is tired.',
+      resultVisualId: 'unit2.to-be.david-tired',
     },
   });
   steps.push({
@@ -341,6 +343,7 @@ function buildSteps(): ToBeStep[] {
       answer: 'are',
       coach: 'you / we / they → are.',
       example: 'You are here.',
+      resultVisualId: 'unit1.pronouns.you',
     },
   });
 
@@ -382,6 +385,7 @@ function buildListen(phrase: BePhrase): OptionExercise {
     answer: phrase.es,
     audioText: phrase.en,
     coach: `"${phrase.en}" = ${phrase.es}`,
+    resultVisualId: BE_PHRASE_VISUAL_IDS[phrase.id],
   };
 }
 
@@ -1255,6 +1259,8 @@ const ExerciseCard: React.FC<{
   const achievementRef = useRef<HTMLDivElement | null>(null);
   const audio = useAudio();
   const needsAudio = !!ex.audioText;
+  const resultVisual = ex.resultVisualId ? getVisual(ex.resultVisualId) : undefined;
+  const resultSentence = ex.audioText ?? ex.example;
 
   // Reproduce automáticamente en ejercicios de oído.
   useEffect(() => {
@@ -1336,6 +1342,24 @@ const ExerciseCard: React.FC<{
         {/* Feedback de acierto */}
         {stage === 'right' && (
           <div ref={achievementRef}>
+            {resultVisual && (
+              <div className="overflow-hidden rounded-3xl bg-white shadow-md border border-gray-100 mb-4">
+                <img
+                  src={resultVisual.src}
+                  alt={resultVisual.alt}
+                  className="aspect-[5/4] w-full object-cover object-center"
+                  onError={(event) => handleVisualError(event, resultVisual)}
+                />
+                {resultSentence && (
+                  <div className="px-4 py-4 text-center">
+                    <p className="text-xl font-black text-gray-950">{resultSentence}</p>
+                    {needsAudio && (
+                      <p className="mt-1 text-sm font-semibold text-gray-500">{ex.answer}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             <AchievementCard
               title="¡Muy bien!"
               subtitle={
