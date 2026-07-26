@@ -217,6 +217,38 @@ export const VISUAL_CATALOG = {
     category: 'scenes',
     subjects: ['María', 'office', 'inside'],
   },
+  'unit2.to-be.david-maria-at-work': {
+    id: 'unit2.to-be.david-maria-at-work',
+    file: '../../assets/coach/unit2/to-be/david-maria-at-work.png',
+    alt: 'David y María trabajan juntos atendiendo un mostrador de servicio',
+    unit: 'unit2',
+    category: 'scenes',
+    subjects: ['David', 'María', 'service counter', 'work'],
+  },
+  'unit2.to-be.carlos-ana-at-home': {
+    id: 'unit2.to-be.carlos-ana-at-home',
+    file: '../../assets/coach/unit2/to-be/carlos-ana-at-home.png',
+    alt: 'Carlos y Ana descansan juntos en la sala de una casa',
+    unit: 'unit2',
+    category: 'scenes',
+    subjects: ['Carlos', 'Ana', 'home', 'inside'],
+  },
+  'unit2.to-be.we-at-work': {
+    id: 'unit2.to-be.we-at-work',
+    file: '../../assets/coach/unit2/to-be/we-at-work.png',
+    alt: 'David y María reciben al alumno como parte de su equipo de trabajo',
+    unit: 'unit2',
+    category: 'scenes',
+    subjects: ['David', 'María', 'learner', 'team', 'work'],
+  },
+  'unit2.to-be.they-at-the-restaurant': {
+    id: 'unit2.to-be.they-at-the-restaurant',
+    file: '../../assets/coach/unit2/to-be/they-at-the-restaurant.png',
+    alt: 'Carlos y Ana comparten una comida dentro de un restaurante',
+    unit: 'unit2',
+    category: 'scenes',
+    subjects: ['Carlos', 'Ana', 'restaurant', 'inside'],
+  },
 } as const satisfies Record<string, VisualMetadata>;
 
 export type VisualId = keyof typeof VISUAL_CATALOG;

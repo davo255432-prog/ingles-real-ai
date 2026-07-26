@@ -906,7 +906,7 @@ const FAMILY_LESSONS: Record<FamilyLessonId, FamilyLessonData> = {
     explanation: 'Para la persona con quien hablas o para un grupo que te incluye usamos are.',
     subjects: [
       { label: 'you', visualId: 'unit1.pronouns.you' },
-      { label: 'we', visualId: 'unit1.pronouns.we' },
+      { label: 'we', visualId: 'unit2.to-be.we-at-work' },
     ],
     example: 'We are at work.',
     meaning: 'Nosotros estamos en el trabajo.',
@@ -917,7 +917,7 @@ const FAMILY_LESSONS: Record<FamilyLessonId, FamilyLessonData> = {
     eyebrow: 'Tercera familia',
     title: 'they también va con are',
     explanation: 'Para un grupo que no te incluye usamos they con are.',
-    subjects: [{ label: 'they', visualId: 'unit1.pronouns.they' }],
+    subjects: [{ label: 'they', visualId: 'unit2.to-be.david-maria-at-work' }],
     example: 'They are at work.',
     meaning: 'Ellos están en el trabajo.',
     formula: ['They', 'are', 'at work'],
@@ -1217,7 +1217,7 @@ const VisualSceneCard: React.FC<{
         <img
           src={visual.src}
           alt={visual.alt}
-          className="mx-auto w-full max-h-[22rem] rounded-2xl object-contain"
+          className="mx-auto aspect-[5/4] w-full rounded-2xl object-cover object-center"
           onError={(event) => handleVisualError(event, visual)}
         />
 

@@ -31,4 +31,8 @@ export const TO_BE_VISUAL_SCENES: readonly ToBeVisualScene[] = [
   { id: 'ana-at-school', visualId: 'unit2.to-be.ana-at-school', en: 'Ana is at school.', es: 'Ana está en la escuela.', pron: 'á-na is at skúul', form: 'is' },
   { id: 'ana-ready', visualId: 'unit2.to-be.ana-ready', en: 'Ana is ready.', es: 'Ana está lista.', pron: 'á-na is ré-di', form: 'is' },
   { id: 'dog-here', visualId: 'unit2.to-be.dog-here', en: 'The dog is here.', es: 'El perro está aquí.', pron: 'de dog is jir', form: 'is' },
+  { id: 'david-maria-at-work', visualId: 'unit2.to-be.david-maria-at-work', en: 'They are at work.', es: 'Ellos están en el trabajo.', pron: 'dei ar at werk', form: 'are' },
+  { id: 'carlos-ana-at-home', visualId: 'unit2.to-be.carlos-ana-at-home', en: 'They are at home.', es: 'Ellos están en casa.', pron: 'dei ar at joum', form: 'are' },
+  { id: 'we-at-work', visualId: 'unit2.to-be.we-at-work', en: 'We are at work.', es: 'Nosotros estamos en el trabajo.', pron: 'wi ar at werk', form: 'are' },
+  { id: 'they-at-the-restaurant', visualId: 'unit2.to-be.they-at-the-restaurant', en: 'They are at the restaurant.', es: 'Ellos están en el restaurante.', pron: 'dei ar at de rés-to-rant', form: 'are' },
 ];
