@@ -165,6 +165,7 @@ interface OptionExercise {
 // ── Pasos internos de la unidad ──────────────────────────────────────────────
 type ToBeStep =
   | { id: string; kind: 'welcome' }
+  | { id: string; kind: 'learning-path' }
   | { id: string; kind: 'score-intro' }
   | { id: string; kind: 'family'; lessonId: FamilyLessonId }
   | { id: string; kind: 'location-intro' }
@@ -222,6 +223,7 @@ function buildSteps(): ToBeStep[] {
     // Explica la puntuación cuando el alumno ya recibió enseñanza y está
     // a punto de comenzar el primer ejercicio evaluado. Conserva el mismo ID.
     if (block.id === 'am') {
+      steps.push({ id: sid('learning-path'), kind: 'learning-path' });
       steps.push({ id: sid('score-intro'), kind: 'score-intro' });
     }
 
@@ -575,6 +577,7 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
   return (
     <Shell onExit={goBack} progressPct={progressPct} counter={`${index + 1}/${total}`}>
       {step.kind === 'welcome' && <Welcome userName={userName} onNext={() => advance()} />}
+      {step.kind === 'learning-path' && <LearningPath onNext={() => advance()} />}
       {step.kind === 'score-intro' && <ScoreIntro onNext={() => advance()} />}
       {step.kind === 'family' && <FamilyLesson lessonId={step.lessonId} onNext={() => advance()} />}
       {step.kind === 'location-intro' && <LocationIntro onNext={() => advance()} />}
@@ -812,6 +815,59 @@ const Welcome: React.FC<{ userName?: string; onNext: () => void }> = ({ userName
 };
 
 // ── Cuadro visual am / is / are ──────────────────────────────────────────────
+const LearningPath: React.FC<{ onNext: () => void }> = ({ onNext }) => {
+  const stages = [
+    { number: '1', title: 'Entiende', detail: 'Aprende cómo usar am, is y are.', tone: 'bg-sky-50 border-sky-200 text-sky-800' },
+    { number: '2', title: 'Mira', detail: 'Conecta cada frase con una situación real.', tone: 'bg-violet-50 border-violet-200 text-violet-800' },
+    { number: '3', title: 'Escucha y habla', detail: 'Entrena el oído y suelta la lengua.', tone: 'bg-emerald-50 border-emerald-200 text-emerald-800' },
+    { number: '4', title: 'Practica', detail: 'Repite hasta sentirte seguro.', tone: 'bg-amber-50 border-amber-200 text-amber-800' },
+  ] as const;
+
+  return (
+    <>
+      <div className="pt-3 pb-5 flex-1 flex flex-col justify-center">
+        <div className="text-center mb-5">
+          <div className="mx-auto mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-emerald-800">
+            <span aria-hidden="true">✓</span>
+            <span className="text-xs font-black uppercase tracking-wide">Primer aprendizaje completado</span>
+          </div>
+          <h1 className="text-3xl font-black text-gray-950 leading-tight">
+            ¡Muy bien! Ya diste el primer paso.
+          </h1>
+          <p className="mt-2 text-gray-600 text-base font-bold leading-relaxed">
+            Ya comenzaste a construir frases con to be. Ahora llevarás lo aprendido a situaciones reales.
+          </p>
+        </div>
+
+        <div className="rounded-3xl bg-white border border-emerald-100 p-4 shadow-md">
+          <div className="space-y-3">
+            {stages.map((stage) => (
+              <div key={stage.number} className={`rounded-2xl border-2 p-4 flex items-center gap-3 ${stage.tone}`}>
+                <span className="w-10 h-10 shrink-0 rounded-full bg-white flex items-center justify-center text-lg font-black shadow-sm">
+                  {stage.number}
+                </span>
+                <div>
+                  <p className="text-lg font-black">{stage.title}</p>
+                  <p className="text-sm font-bold text-gray-600 leading-snug">{stage.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-center">
+            <p className="text-emerald-800 font-black">Puedes equivocarte.</p>
+            <p className="text-gray-600 text-sm font-bold">Aquí aprenderás corrigiendo.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-auto">
+        <PrimaryButton onClick={onNext}>Ver cómo ganas puntos</PrimaryButton>
+      </div>
+    </>
+  );
+};
+
 const ScoreIntro: React.FC<{ onNext: () => void }> = ({ onNext }) => (
   <>
     <div className="pt-4 pb-6 flex-1 flex flex-col justify-center text-center">

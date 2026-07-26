@@ -73,7 +73,9 @@ const LEARNING_COMMITMENT_KEY = 'unit-3-learning-commitment-seen';
 function App() {
   const unit2Section = new URLSearchParams(window.location.search).get('unit2-section');
   const unit2InitialStepId =
-    unit2Section === 'final-review'
+    unit2Section === 'learning-path'
+      ? toBeStepId(TO_BE_LESSON_ID, 'learning-path')
+      : unit2Section === 'final-review'
       ? toBeStepId(TO_BE_LESSON_ID, 'rev-1')
       : unit2Section === 'pre-challenge'
       ? toBeStepId(TO_BE_LESSON_ID, TO_BE_FINAL_PRACTICE_STEP_SLUG)
