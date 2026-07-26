@@ -975,7 +975,7 @@ const FamilyLesson: React.FC<{ lessonId: FamilyLessonId; onNext: () => void }> =
         </div>
       </div>
       <div className="mt-auto">
-        <PrimaryButton onClick={onNext}>{lessonId === 'are-they' ? 'Ver situaciones reales' : 'Continuar'}</PrimaryButton>
+        <PrimaryButton onClick={onNext}>{lessonId === 'are-they' ? 'Aprender a decir dónde' : 'Continuar'}</PrimaryButton>
       </div>
     </>
   );
