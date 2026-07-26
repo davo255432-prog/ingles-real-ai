@@ -1,11 +1,13 @@
 // Unidad 2 - Practica final oral con vocabulario cerrado.
 // No usa IA generativa: solo plantillas locales con pronombres + verbo to be.
+import type { VisualId } from '../visual-library';
 
 export interface ToBeFinalPracticeItem {
   id: string;
   situationEs: string;
   suggestedEn: string;
   suggestedPronunciation: string;
+  visualId: VisualId;
 }
 
 export interface ToBeFinalMissionStory {
@@ -18,6 +20,8 @@ export interface ToBeFinalMissionStory {
   listenExpectedEn: string;
   listenPronunciation: string;
   listenKeywords: string[];
+  visualIds: VisualId[];
+  listenVisualIds: VisualId[];
 }
 
 export interface ToBeFinalVocabularyItem {
@@ -199,48 +203,56 @@ export const TO_BE_USEFUL_CHUNKS: ToBeConnectorChunk[] = [
 export const TO_BE_FINAL_PRACTICES: ToBeFinalPracticeItem[] = [
   {
     id: 'intro-david-california',
+    visualId: 'unit2.to-be.david-at-work',
     situationEs: `Hola. Mi nombre es ${VOCAB.david.es}. Soy conductor. Estoy en el trabajo. Mi trabajo es bueno.`,
     suggestedEn: `${VOCAB.hello.en}. ${VOCAB.myNameIs.en} ${VOCAB.david.en}. I am a ${VOCAB.driver.en}. I am at ${VOCAB.work.en}. My ${VOCAB.job.en} is ${VOCAB.good.en}.`,
     suggestedPronunciation: `${VOCAB.hello.pronunciation}. ${VOCAB.myNameIs.pronunciation} ${VOCAB.david.pronunciation}. ai am a ${VOCAB.driver.pronunciation}. ai am at ${VOCAB.work.pronunciation}. mai ${VOCAB.job.pronunciation} is ${VOCAB.good.pronunciation}.`,
   },
   {
     id: 'maria-restaurant-busy',
+    visualId: 'unit2.to-be.maria-at-the-supermarket',
     situationEs: `${VOCAB.maria.es} esta en un restaurante. Ella esta ocupada. Ella esta lista.`,
     suggestedEn: `${VOCAB.maria.en} is in a ${VOCAB.restaurant.en}. She is ${VOCAB.busy.en}. She is ${VOCAB.ready.en}.`,
     suggestedPronunciation: `${VOCAB.maria.pronunciation} is in a ${VOCAB.restaurant.pronunciation}. shi is ${VOCAB.busy.pronunciation}. shi is ${VOCAB.ready.pronunciation}.`,
   },
   {
     id: 'we-friends-work',
+    visualId: 'unit2.to-be.we-at-work',
     situationEs: `Nosotros somos ${VOCAB.friends.es}. Estamos en el ${VOCAB.work.es}. Estamos ocupados.`,
     suggestedEn: `We are ${VOCAB.friends.en}. We are at ${VOCAB.work.en}. We are ${VOCAB.busy.en}.`,
     suggestedPronunciation: `wi ar ${VOCAB.friends.pronunciation}. wi ar at ${VOCAB.work.pronunciation}. wi ar ${VOCAB.busy.pronunciation}.`,
   },
   {
     id: 'they-restaurant-happy',
+    visualId: 'unit2.to-be.they-at-the-restaurant',
     situationEs: `Ellos estan en un restaurante. Ellos estan ocupados. Ellos estan felices.`,
     suggestedEn: `They are in a ${VOCAB.restaurant.en}. They are ${VOCAB.busy.en}. They are ${VOCAB.happy.en}.`,
     suggestedPronunciation: `dei ar in a ${VOCAB.restaurant.pronunciation}. dei ar ${VOCAB.busy.pronunciation}. dei ar ${VOCAB.happy.pronunciation}.`,
   },
   {
     id: 'he-carlos-school-ready',
+    visualId: 'unit2.to-be.carlos-at-work',
     situationEs: `El es ${VOCAB.carlos.es}. El esta en la ${VOCAB.school.es}. El esta listo.`,
     suggestedEn: `He is ${VOCAB.carlos.en}. He is at ${VOCAB.school.en}. He is ${VOCAB.ready.en}.`,
     suggestedPronunciation: `ji is ${VOCAB.carlos.pronunciation}. ji is at ${VOCAB.school.pronunciation}. ji is ${VOCAB.ready.pronunciation}.`,
   },
   {
     id: 'i-ana-work-ready',
+    visualId: 'unit2.to-be.ana-ready',
     situationEs: `Hola. Mi nombre es ${VOCAB.ana.es}. Estoy en el ${VOCAB.work.es}. Estoy ocupada. Estoy lista.`,
     suggestedEn: `${VOCAB.hello.en}. ${VOCAB.myNameIs.en} ${VOCAB.ana.en}. I am at ${VOCAB.work.en}. I am ${VOCAB.busy.en}. I am ${VOCAB.ready.en}.`,
     suggestedPronunciation: `${VOCAB.hello.pronunciation}. ${VOCAB.myNameIs.pronunciation} ${VOCAB.ana.pronunciation}. ai am at ${VOCAB.work.pronunciation}. ai am ${VOCAB.busy.pronunciation}. ai am ${VOCAB.ready.pronunciation}.`,
   },
   {
     id: 'you-here-ready',
+    visualId: 'unit2.to-be.david-ready',
     situationEs: `Tu estas ${VOCAB.here.es}. Tu estas listo.`,
     suggestedEn: `You are ${VOCAB.here.en}. You are ${VOCAB.ready.en}.`,
     suggestedPronunciation: `iu ar ${VOCAB.here.pronunciation}. iu ar ${VOCAB.ready.pronunciation}.`,
   },
   {
     id: 'we-school-happy',
+    visualId: 'unit2.to-be.we-at-work',
     situationEs: `Nosotros estamos en la ${VOCAB.school.es}. Nosotros estamos felices.`,
     suggestedEn: `We are at ${VOCAB.school.en}. We are ${VOCAB.happy.en}.`,
     suggestedPronunciation: `wi ar at ${VOCAB.school.pronunciation}. wi ar ${VOCAB.happy.pronunciation}.`,
@@ -320,6 +332,16 @@ export const TO_BE_FINAL_MISSION: ToBeFinalMissionStory = {
     'friends',
     'they',
     'happy',
+  ],
+  visualIds: [
+    'unit2.to-be.david-at-work',
+    'unit2.to-be.they-at-the-restaurant',
+    'unit2.to-be.we-at-work',
+  ],
+  listenVisualIds: [
+    'unit2.to-be.maria-at-the-supermarket',
+    'unit2.to-be.carlos-at-work',
+    'unit2.to-be.david-maria-at-work',
   ],
 };
 

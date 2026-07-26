@@ -4,6 +4,8 @@ import {
   getNextToBeFinalPractice,
   type ToBeFinalPracticeItem,
 } from '../data/toBeFinalPractice';
+import { GentleSpeakTimer } from '../components/GentleSpeakTimer';
+import { getVisual, handleVisualError } from '../visual-library';
 
 type MicState = 'idle' | 'requesting' | 'recording' | 'transcribing';
 
@@ -296,6 +298,7 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
       : hasResult
         ? 'Grabar otra vez'
         : 'Responder hablando';
+  const visual = getVisual(practice.visualId);
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
@@ -322,16 +325,31 @@ export const ToBeFinalPractice: React.FC<ToBeFinalPracticeProps> = ({ onExit, on
           Responde en ingles con tu voz
         </h1>
 
-        <div className="bg-white rounded-3xl p-5 shadow-md border border-gray-100 mb-4">
-          <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Situacion</p>
-          <p className="text-gray-900 text-lg leading-relaxed font-semibold">{practice.situationEs}</p>
+        <div className="overflow-hidden rounded-3xl bg-white shadow-md border border-gray-100 mb-4">
+          <img
+            src={visual.src}
+            alt={visual.alt}
+            className="aspect-[5/4] w-full object-cover object-center"
+            onError={(event) => handleVisualError(event, visual)}
+          />
+          <div className="p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Situacion</p>
+            <p className="text-gray-900 text-lg leading-relaxed font-semibold">{practice.situationEs}</p>
+          </div>
         </div>
 
         {!hasResult && (
-          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 mb-4">
-            <p className="text-emerald-800 text-sm leading-relaxed">
-              Primero habla. Despues veras tu transcripcion y una version sugerida para comparar.
-            </p>
+          <div className="mb-4 flex flex-col gap-3">
+            <GentleSpeakTimer
+              seconds={10}
+              active={micState === 'idle'}
+              resetKey={practice.id}
+            />
+            <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
+              <p className="text-emerald-800 text-sm leading-relaxed">
+                Primero habla. Despues veras tu transcripcion y una version sugerida para comparar.
+              </p>
+            </div>
           </div>
         )}
 

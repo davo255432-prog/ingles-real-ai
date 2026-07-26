@@ -8,6 +8,8 @@ import {
 } from '../../services/speechApi';
 import { evaluateSpeaking, transcribeAudio, type SpeakingEvaluation } from '../../services/voiceApi';
 import { TO_BE_FINAL_MISSION } from '../data/toBeFinalPractice';
+import { GentleSpeakTimer } from '../components/GentleSpeakTimer';
+import { getVisual, handleVisualError, type ResolvedVisual } from '../visual-library';
 
 type MicState = 'idle' | 'requesting' | 'recording' | 'transcribing' | 'evaluating';
 type ListenState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
@@ -348,6 +350,8 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
       : listenState === 'paused'
         ? 'Continuar escuchando'
         : 'Escuchar historia';
+  const missionVisuals = TO_BE_FINAL_MISSION.visualIds.map(getVisual);
+  const listeningVisuals = TO_BE_FINAL_MISSION.listenVisualIds.map(getVisual);
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-emerald-50 to-gray-50">
@@ -391,10 +395,23 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
             )}
           </div>
 
+          <VisualCueStrip visuals={missionVisuals} />
+
           <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 mb-4">
             <p className="text-xs font-bold uppercase tracking-wide text-emerald-700 mb-2">Situacion</p>
             <p className="text-gray-900 font-semibold leading-relaxed">{TO_BE_FINAL_MISSION.situationEs}</p>
           </div>
+
+          {!evaluation && (
+            <div className="mb-4">
+              <GentleSpeakTimer
+                seconds={7}
+                active={micState === 'idle'}
+                resetKey={TO_BE_FINAL_MISSION.id}
+                tone="amber"
+              />
+            </div>
+          )}
 
           <button
             onClick={handleMic}
@@ -475,6 +492,8 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
               </div>
             )}
           </div>
+
+          <VisualCueStrip visuals={listeningVisuals} />
 
           <p className="text-gray-500 text-sm leading-relaxed mb-4">{TO_BE_FINAL_MISSION.listenPrompt}</p>
 
@@ -600,6 +619,25 @@ export const ToBeFinalMission: React.FC<ToBeFinalMissionProps> = ({ onExit, onCo
     </div>
   );
 };
+
+const VisualCueStrip: React.FC<{ visuals: ResolvedVisual[] }> = ({ visuals }) => (
+  <div className="mb-4 rounded-2xl bg-gray-50 p-2">
+    <p className="px-1 pb-2 text-[10px] font-black uppercase tracking-wide text-gray-500">
+      Pistas visuales
+    </p>
+    <div className="grid grid-cols-3 gap-2">
+      {visuals.map((visual) => (
+        <img
+          key={visual.id}
+          src={visual.src}
+          alt={visual.alt}
+          className="aspect-[4/3] w-full rounded-xl bg-white object-cover object-center shadow-sm"
+          onError={(event) => handleVisualError(event, visual)}
+        />
+      ))}
+    </div>
+  </div>
+);
 
 const ResultBlock: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4">

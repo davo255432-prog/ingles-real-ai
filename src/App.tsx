@@ -51,6 +51,12 @@ import { LearningCommitmentScreen } from './coach/screens/LearningCommitmentScre
 import { PronounsPractice } from './coach/screens/PronounsPractice';
 import { SentenceBuildingPractice } from './coach/screens/SentenceBuildingPractice';
 import { ToBePractice } from './coach/screens/ToBePractice';
+import { TO_BE_LESSON_ID } from './coach/data/curriculum';
+import {
+  TO_BE_FINAL_MISSION_STEP_SLUG,
+  TO_BE_FINAL_PRACTICE_STEP_SLUG,
+  toBeStepId,
+} from './coach/data/toBeFinalPractice';
 
 // Biblioteca (placeholder)
 import { BibliotecaScreen } from './screens/BibliotecaScreen';
@@ -65,6 +71,13 @@ const UNIT_2_PREVIEW_KEY = 'unit2-to-be';
 const LEARNING_COMMITMENT_KEY = 'unit-3-learning-commitment-seen';
 
 function App() {
+  const unit2Section = new URLSearchParams(window.location.search).get('unit2-section');
+  const unit2InitialStepId =
+    unit2Section === 'pre-challenge'
+      ? toBeStepId(TO_BE_LESSON_ID, TO_BE_FINAL_PRACTICE_STEP_SLUG)
+      : unit2Section === 'final-challenge'
+        ? toBeStepId(TO_BE_LESSON_ID, TO_BE_FINAL_MISSION_STEP_SLUG)
+        : undefined;
   const showUnit2Preview =
     new URLSearchParams(window.location.search).get('preview') ===
     UNIT_2_PREVIEW_KEY;
@@ -90,6 +103,7 @@ function App() {
       <div className="min-h-screen bg-slate-200 flex justify-center items-start notranslate" translate="no">
         <div className="w-full max-w-[640px] min-h-screen bg-gray-50 shadow-[0_0_40px_rgba(0,0,0,0.12)]">
           <ToBePractice
+            initialStepId={unit2InitialStepId}
             onExit={() => {
               window.location.href = window.location.pathname;
             }}
