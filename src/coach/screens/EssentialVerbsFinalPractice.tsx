@@ -8,6 +8,7 @@ import {
 } from '../data/essentialVerbsPractice';
 import { getUnit3Visual, UNIT_3_VISUALS } from '../data/unit3Visuals';
 import { OfficialVisual } from '../components/OfficialVisual';
+import { useScrollToTop } from '../../hooks/useScrollToTop';
 
 interface EssentialVerbsFinalPracticeProps {
   onBack: () => void;
@@ -28,6 +29,7 @@ export const EssentialVerbsFinalPractice: React.FC<EssentialVerbsFinalPracticePr
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [modelPlaying, setModelPlaying] = useState(false);
+  useScrollToTop(practice.id);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);

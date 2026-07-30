@@ -404,6 +404,7 @@ interface TeachingCardProps {
 
 function TeachingCard(props: TeachingCardProps) {
   const [phase, setPhase] = useState<'learn' | 'real-use' | 'practice'>('learn');
+  useScrollToTop(phase);
   const correct = props.selected === props.exercise.answer;
   if (phase === 'practice') {
     return (
@@ -731,6 +732,7 @@ interface ConnectorStepProps {
 
 function ConnectorStep(props: ConnectorStepProps) {
   const [practiceReady, setPracticeReady] = useState(false);
+  useScrollToTop(practiceReady);
   const { connector } = props;
   if (practiceReady) {
     return (
@@ -1319,6 +1321,7 @@ function ConnectorReviewStep({ onContinue }: { onContinue: () => void }) {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
+  useScrollToTop(questionIndex);
   const question = UNIT_3_CONNECTOR_REVIEW[questionIndex];
   const correct = selected === question.answer;
   const isLast = questionIndex === UNIT_3_CONNECTOR_REVIEW.length - 1;
