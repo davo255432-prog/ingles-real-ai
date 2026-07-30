@@ -548,7 +548,10 @@ function TeachingCard(props: TeachingCardProps) {
             <div key={example.english} className="border-t border-gray-100 pt-3">
               {UNIT_3_VISUALS.examples[
                 example.english as keyof typeof UNIT_3_VISUALS.examples
-              ] && (
+              ] &&
+                UNIT_3_VISUALS.examples[
+                  example.english as keyof typeof UNIT_3_VISUALS.examples
+                ] !== props.visualId && (
                 <OfficialVisual
                   visualId={
                     UNIT_3_VISUALS.examples[

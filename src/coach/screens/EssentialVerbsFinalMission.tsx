@@ -38,7 +38,7 @@ export const EssentialVerbsFinalMission: React.FC<EssentialVerbsFinalMissionProp
     getDifferentItem(UNIT_3_SPEAKING_STORIES),
   );
   const [listeningStory, setListeningStory] = useState<Unit3MissionStory>(() =>
-    getDifferentItem(UNIT_3_LISTENING_STORIES),
+    getListeningStoryWithDifferentVisual(speakingStory),
   );
   const [micState, setMicState] = useState<MicState>('idle');
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -160,7 +160,15 @@ export const EssentialVerbsFinalMission: React.FC<EssentialVerbsFinalMissionProp
 
   const newSpeakingStory = () => {
     resetSpeaking();
-    setSpeakingStory((current) => getDifferentItem(UNIT_3_SPEAKING_STORIES, current.id));
+    setSpeakingStory((current) => {
+      const nextStory = getDifferentItem(UNIT_3_SPEAKING_STORIES, current.id);
+      if (getSpeakingVisual(nextStory) === getListeningVisual(listeningStory)) {
+        setListeningStory(getListeningStoryWithDifferentVisual(nextStory, listeningStory.id));
+        setListenAnswer('');
+        setComprehension(null);
+      }
+      return nextStory;
+    });
   };
 
   const playListening = async () => {
@@ -190,7 +198,9 @@ export const EssentialVerbsFinalMission: React.FC<EssentialVerbsFinalMissionProp
     setListenState('idle');
     setListenAnswer('');
     setComprehension(null);
-    setListeningStory((current) => getDifferentItem(UNIT_3_LISTENING_STORIES, current.id));
+    setListeningStory((current) =>
+      getListeningStoryWithDifferentVisual(speakingStory, current.id),
+    );
   };
 
   const replayListening = async () => {
@@ -333,6 +343,30 @@ export const EssentialVerbsFinalMission: React.FC<EssentialVerbsFinalMissionProp
     </div>
   );
 };
+
+function getSpeakingVisual(story: Unit3MissionStory) {
+  return getUnit3Visual(UNIT_3_VISUALS.speakingMission, story.id);
+}
+
+function getListeningVisual(story: Unit3MissionStory) {
+  return getUnit3Visual(UNIT_3_VISUALS.listeningMission, story.id);
+}
+
+function getListeningStoryWithDifferentVisual(
+  speakingStory: Unit3MissionStory,
+  excludedListeningId?: string,
+): Unit3MissionStory {
+  const speakingVisual = getSpeakingVisual(speakingStory);
+  const availableStories = UNIT_3_LISTENING_STORIES.filter(
+    (story) =>
+      story.id !== excludedListeningId &&
+      getListeningVisual(story) !== speakingVisual,
+  );
+
+  return getDifferentItem(
+    availableStories.length > 0 ? availableStories : UNIT_3_LISTENING_STORIES,
+  );
+}
 
 function Result({ label, value }: { label: string; value: string }) {
   return <div className="bg-gray-50 rounded-2xl p-4"><p className="text-gray-500 text-xs font-black uppercase">{label}</p><p className="text-gray-950 font-bold mt-1">{value}</p></div>;
