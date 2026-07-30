@@ -28,6 +28,7 @@ import { OfficialVisual } from '../components/OfficialVisual';
 import type { VisualId } from '../visual-library';
 import { EssentialVerbsFinalPractice } from './EssentialVerbsFinalPractice';
 import { useScrollToTop } from '../../hooks/useScrollToTop';
+import { useScrollToAction } from '../../hooks/useScrollToAction';
 import {
   EssentialVerbsFinalMission,
   type Unit3BestResult,
@@ -856,6 +857,8 @@ interface ExercisePanelProps {
 }
 
 function ExercisePanel(props: ExercisePanelProps) {
+  const actionRef = useRef<HTMLDivElement>(null);
+  useScrollToAction(props.checked, actionRef);
   const completedPhrase = props.prompt
     .replace(/^Completa:\s*/i, '')
     .replace('___', props.answer);
@@ -921,13 +924,15 @@ function ExercisePanel(props: ExercisePanelProps) {
           </div>
         )
       )}
-      {!props.checked ? (
-        <PrimaryButton onClick={props.onCheck} disabled={!props.selected}>Comprobar</PrimaryButton>
-      ) : !props.correct ? (
-        <PrimaryButton onClick={props.onRetry}>Intentar de nuevo</PrimaryButton>
-      ) : (
-        <PrimaryButton onClick={props.onContinue}>Continuar</PrimaryButton>
-      )}
+      <div ref={actionRef}>
+        {!props.checked ? (
+          <PrimaryButton onClick={props.onCheck} disabled={!props.selected}>Comprobar</PrimaryButton>
+        ) : !props.correct ? (
+          <PrimaryButton onClick={props.onRetry}>Intentar de nuevo</PrimaryButton>
+        ) : (
+          <PrimaryButton onClick={props.onContinue}>Continuar</PrimaryButton>
+        )}
+      </div>
     </div>
   );
 }
@@ -1012,6 +1017,8 @@ function MatchingChallenge(props: {
   const [starTargetId, setStarTargetId] = useState<string | null>(null);
   const [dragging, setDragging] = useState<{ id: string; x: number; y: number } | null>(null);
   const complete = matchedIds.length === props.items.length;
+  const actionRef = useRef<HTMLDivElement>(null);
+  useScrollToAction(complete, actionRef);
   const destinations = useMemo(
     () => [...props.items].sort((a, b) => b.id.localeCompare(a.id)),
     [props.items],
@@ -1161,9 +1168,11 @@ function MatchingChallenge(props: {
           Casi. Prueba otra conexión.
         </p>
       )}
-      <PrimaryButton onClick={props.onContinue} disabled={!complete}>
-        Continuar
-      </PrimaryButton>
+      <div ref={actionRef}>
+        <PrimaryButton onClick={props.onContinue} disabled={!complete}>
+          Continuar
+        </PrimaryButton>
+      </div>
     </section>
   );
 }
@@ -1275,6 +1284,8 @@ function PronounReviewButton(props: {
 
 function BuilderStep(props: { revealedPieces: number; onReveal: () => void; onContinue: () => void }) {
   const complete = props.revealedPieces === UNIT_3_GUIDED_BUILD.pieces.length;
+  const actionRef = useRef<HTMLDivElement>(null);
+  useScrollToAction(complete, actionRef);
   return (
     <section className="pt-4">
       <p className="text-sm font-extrabold uppercase text-sky-700 mb-2">Construcción guiada</p>
@@ -1310,9 +1321,11 @@ function BuilderStep(props: { revealedPieces: number; onReveal: () => void; onCo
           </div>
         )}
       </div>
-      <PrimaryButton onClick={complete ? props.onContinue : props.onReveal}>
-        {complete ? 'Terminar vista previa' : 'Agregar la siguiente pieza'}
-      </PrimaryButton>
+      <div ref={actionRef}>
+        <PrimaryButton onClick={complete ? props.onContinue : props.onReveal}>
+          {complete ? 'Terminar vista previa' : 'Agregar la siguiente pieza'}
+        </PrimaryButton>
+      </div>
     </section>
   );
 }
@@ -1392,6 +1405,8 @@ function ConnectorReviewStep({ onContinue }: { onContinue: () => void }) {
 function DialogueStep({ onContinue }: { onContinue: () => void }) {
   const [playing, setPlaying] = useState<SpeechSpeed | null>(null);
   const [achievement, setAchievement] = useState(false);
+  const actionRef = useRef<HTMLDivElement>(null);
+  useScrollToAction(achievement, actionRef);
   const dialogueText = UNIT_3_BASE_DIALOGUE.lines.map((line) => line.english).join(' ');
 
   useEffect(() => () => stopSpeech(), []);
@@ -1433,15 +1448,19 @@ function DialogueStep({ onContinue }: { onContinue: () => void }) {
           text="Escuchaste verbos y conectores dentro de una situación."
         />
       )}
-      <PrimaryButton onClick={achievement ? onContinue : () => setAchievement(true)}>
-        {achievement ? 'Prepararme para el reto' : 'Completar diálogo'}
-      </PrimaryButton>
+      <div ref={actionRef}>
+        <PrimaryButton onClick={achievement ? onContinue : () => setAchievement(true)}>
+          {achievement ? 'Prepararme para el reto' : 'Completar diálogo'}
+        </PrimaryButton>
+      </div>
     </section>
   );
 }
 
 function PreChallengeStep({ onContinue }: { onContinue: () => void }) {
   const [achievement, setAchievement] = useState(false);
+  const actionRef = useRef<HTMLDivElement>(null);
+  useScrollToAction(achievement, actionRef);
   const preparedVocabulary = UNIT_3_VOCABULARY.filter((item) =>
     UNIT_3_MISSION_PREPARATION.vocabularyIds.includes(item.id),
   );
@@ -1487,9 +1506,11 @@ function PreChallengeStep({ onContinue }: { onContinue: () => void }) {
           text="Nada nuevo aparecerá: ya reconoces las palabras y los bloques."
         />
       )}
-      <PrimaryButton onClick={achievement ? onContinue : () => setAchievement(true)}>
-        {achievement ? 'Comenzar práctica hablada' : 'Terminar preparación'}
-      </PrimaryButton>
+      <div ref={actionRef}>
+        <PrimaryButton onClick={achievement ? onContinue : () => setAchievement(true)}>
+          {achievement ? 'Comenzar práctica hablada' : 'Terminar preparación'}
+        </PrimaryButton>
+      </div>
     </section>
   );
 }

@@ -9,6 +9,7 @@ import {
 import { getUnit3Visual, UNIT_3_VISUALS } from '../data/unit3Visuals';
 import { OfficialVisual } from '../components/OfficialVisual';
 import { useScrollToTop } from '../../hooks/useScrollToTop';
+import { useScrollToAction } from '../../hooks/useScrollToAction';
 
 interface EssentialVerbsFinalPracticeProps {
   onBack: () => void;
@@ -30,6 +31,8 @@ export const EssentialVerbsFinalPractice: React.FC<EssentialVerbsFinalPracticePr
   const [error, setError] = useState<string | null>(null);
   const [modelPlaying, setModelPlaying] = useState(false);
   useScrollToTop(practice.id);
+  const resultRef = useRef<HTMLDivElement>(null);
+  useScrollToAction(Boolean(audioUrl), resultRef);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -204,7 +207,7 @@ export const EssentialVerbsFinalPractice: React.FC<EssentialVerbsFinalPracticePr
       </button>
 
       {audioUrl && (
-        <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-5 mb-4">
+        <div ref={resultRef} className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-5 mb-4">
           <div className="flex gap-2 mb-2" aria-hidden="true">
             <span className="animate-pulse">⭐</span>
             <span className="animate-bounce">⭐</span>
