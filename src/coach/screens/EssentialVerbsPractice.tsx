@@ -23,6 +23,9 @@ import {
   type Unit3MatchingItem,
   type Unit3RepetitionPhrase,
 } from '../data/essentialVerbsPractice';
+import { getUnit3Visual, UNIT_3_VISUALS } from '../data/unit3Visuals';
+import { OfficialVisual } from '../components/OfficialVisual';
+import type { VisualId } from '../visual-library';
 import { EssentialVerbsFinalPractice } from './EssentialVerbsFinalPractice';
 import {
   EssentialVerbsFinalMission,
@@ -197,6 +200,8 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({
             realUse={step.item.realUse}
             examples={step.item.examples}
             exercise={step.item.exercise}
+            visualId={UNIT_3_VISUALS.verbs[step.item.id]}
+            realUseVisualId={UNIT_3_VISUALS.verbRealUse[step.item.id]}
             selected={selected}
             checked={checked}
             onSelect={setSelected}
@@ -214,6 +219,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({
             title="Lleva cada frase a su situación"
             intro="Arrastra la frase o tócala y después toca la situación correcta."
             items={UNIT_3_VERB_MATCHING}
+            visualIds={UNIT_3_VISUALS.matching}
             onContinue={next}
           />
         )}
@@ -312,6 +318,10 @@ function ActivationStep({ onContinue }: { onContinue: () => void }) {
       <div className="space-y-3 mb-6">
         {UNIT_3_ACTIVATION.map((example) => (
           <article key={example.english} className="bg-white border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <OfficialVisual
+              visualId={getUnit3Visual(UNIT_3_VISUALS.activation, example.english)}
+              className="mb-4"
+            />
             <p className="text-gray-950 text-xl font-extrabold">{example.english}</p>
             <p className="text-gray-600 font-medium mt-1">{example.spanish}</p>
             <p className="text-emerald-700 font-bold mt-2">{example.pronunciation}</p>
@@ -349,6 +359,10 @@ function VerbsIntroStep({ onContinue }: { onContinue: () => void }) {
             key={verb.id}
             className="bg-white border-2 border-emerald-200 rounded-2xl p-4 shadow-sm"
           >
+            <OfficialVisual
+              visualId={UNIT_3_VISUALS.verbs[verb.id]}
+              className="mb-3"
+            />
             <p className="text-emerald-800 text-2xl font-black">{verb.label}</p>
             <p className="text-gray-600 font-bold">{verb.spanish}</p>
             <p className="text-gray-900 text-sm font-extrabold leading-snug mt-3">
@@ -376,6 +390,8 @@ interface TeachingCardProps {
   realUse: EssentialVerbCard['realUse'];
   examples: EssentialVerbCard['examples'];
   exercise: EssentialVerbCard['exercise'];
+  visualId: VisualId;
+  realUseVisualId: VisualId;
   selected: string | null;
   checked: boolean;
   onSelect: (value: string) => void;
@@ -409,6 +425,7 @@ function TeachingCard(props: TeachingCardProps) {
           Úsalo en una situación real
         </p>
         <div className="bg-white border-2 border-violet-200 rounded-3xl p-6 shadow-sm mb-5">
+          <OfficialVisual visualId={props.realUseVisualId} className="mb-5" eager />
           <div className="bg-violet-50 border border-violet-200 rounded-2xl p-5 mb-5">
             <p className="text-violet-800 text-sm font-black uppercase mb-2">Situación</p>
             <p className="text-gray-950 text-xl font-extrabold leading-relaxed">
@@ -443,6 +460,7 @@ function TeachingCard(props: TeachingCardProps) {
             {props.pronunciation}
           </span>
         </div>
+        <OfficialVisual visualId={props.visualId} className="mb-4" eager />
         <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-5 mb-4">
           <p className="text-emerald-800 text-lg font-black uppercase mb-3">Regla clave:</p>
           {props.title === 'have' ? (
@@ -526,6 +544,18 @@ function TeachingCard(props: TeachingCardProps) {
         <div className="space-y-3">
           {props.examples.map((example) => (
             <div key={example.english} className="border-t border-gray-100 pt-3">
+              {UNIT_3_VISUALS.examples[
+                example.english as keyof typeof UNIT_3_VISUALS.examples
+              ] && (
+                <OfficialVisual
+                  visualId={
+                    UNIT_3_VISUALS.examples[
+                      example.english as keyof typeof UNIT_3_VISUALS.examples
+                    ]
+                  }
+                  className="mb-3"
+                />
+              )}
               <p className="text-gray-950 text-lg font-extrabold">{example.english}</p>
               <p className="text-gray-600 font-medium">{example.spanish}</p>
               <p className="text-emerald-700 font-bold text-sm mt-1">{example.pronunciation}</p>
@@ -568,6 +598,7 @@ function PrepositionsReview({ onContinue }: { onContinue: () => void }) {
           <span className="text-5xl" aria-hidden="true">🏙️</span>
         </div>
         <div className="p-5">
+          <OfficialVisual visualId={UNIT_3_VISUALS.prepositions.in} className="mb-4" />
           <div className="flex items-center gap-4 mb-4">
             <span className="text-5xl" aria-hidden="true">🧍</span>
             <div>
@@ -589,6 +620,7 @@ function PrepositionsReview({ onContinue }: { onContinue: () => void }) {
           <span className="text-5xl" aria-hidden="true">🏠</span>
         </div>
         <div className="p-5">
+          <OfficialVisual visualId={UNIT_3_VISUALS.prepositions.home} className="mb-4" />
           <div className="flex items-center gap-4 mb-4">
             <span className="text-5xl" aria-hidden="true">🧍</span>
             <div>
@@ -599,6 +631,7 @@ function PrepositionsReview({ onContinue }: { onContinue: () => void }) {
           </div>
           <AudioButton phrase="I am at home." />
           <div className="border-t-2 border-amber-200 mt-5 pt-4">
+            <OfficialVisual visualId={UNIT_3_VISUALS.prepositions.work} className="mb-4" />
             <p className="text-gray-950 text-lg font-black">I am at work.</p>
             <p className="text-gray-700 font-semibold">Estoy en el trabajo.</p>
             <AudioButton phrase="I am at work." />
@@ -719,6 +752,10 @@ function ConnectorStep(props: ConnectorStepProps) {
           </div>
           <CompactAudioButton phrase={connector.label} label={connector.label} />
         </div>
+        <OfficialVisual
+          visualId={UNIT_3_VISUALS.connectors[connector.id]}
+          className="mb-4"
+        />
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
             <p className="text-emerald-800 text-xs font-black uppercase mb-1">Significado</p>
@@ -959,6 +996,7 @@ function MatchingChallenge(props: {
   title: string;
   intro: string;
   items: Unit3MatchingItem[];
+  visualIds?: Readonly<Record<string, VisualId>>;
   onContinue: () => void;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -1100,6 +1138,9 @@ function MatchingChallenge(props: {
               {matched && (
                 <>
                   <p className="text-emerald-800 font-black mt-2">¡Muy bien! Conexión correcta.</p>
+                  {props.visualIds?.[item.id] && (
+                    <OfficialVisual visualId={props.visualIds[item.id]} className="mt-3" />
+                  )}
                   {item.audioPhrase && <AudioButton phrase={item.audioPhrase} />}
                 </>
               )}
@@ -1150,6 +1191,7 @@ function PronounReviewButton(props: {
   tone: 'sky' | 'amber' | 'emerald';
 }) {
   const [playing, setPlaying] = useState(false);
+  const visualId = getUnit3Visual(UNIT_3_VISUALS.pronouns, props.pronoun.english);
   const toneStyles = {
     sky: {
       card: 'border-sky-200',
@@ -1198,6 +1240,7 @@ function PronounReviewButton(props: {
       }
       aria-label={`Escuchar ${props.pronoun.english}`}
     >
+      <OfficialVisual visualId={visualId} className="mb-2" />
       <div className="flex items-start justify-between gap-1">
         <span className={playing ? 'text-xl font-black text-white' : 'text-xl font-black text-gray-950'}>
           {props.pronoun.english}
@@ -1230,6 +1273,7 @@ function BuilderStep(props: { revealedPieces: number; onReveal: () => void; onCo
       <p className="text-sm font-extrabold uppercase text-sky-700 mb-2">Construcción guiada</p>
       <h1 className="text-3xl font-black text-gray-950 mb-3">Construye una idea completa</h1>
       <p className="text-gray-700 font-medium leading-relaxed mb-5">Agrega una pieza a la vez y observa cómo crece la frase.</p>
+      <OfficialVisual visualId={UNIT_3_VISUALS.builder} className="mb-4" />
       <div className="bg-white border-2 border-sky-200 rounded-3xl p-5 shadow-sm mb-4">
         <div className="grid grid-cols-2 gap-2 mb-5">
           {UNIT_3_GUIDED_BUILD.pieces.map((piece, pieceIndex) => (
@@ -1359,6 +1403,7 @@ function DialogueStep({ onContinue }: { onContinue: () => void }) {
       <p className="text-violet-700 text-sm font-black uppercase">Diálogo real</p>
       <h1 className="text-gray-950 text-3xl font-black mt-1">{UNIT_3_BASE_DIALOGUE.title}</h1>
       <p className="text-gray-700 font-semibold mt-2 mb-5">{UNIT_3_BASE_DIALOGUE.context}</p>
+      <OfficialVisual visualId={UNIT_3_VISUALS.dialogue} className="mb-4" eager />
       <div className="space-y-3 mb-4">
         {UNIT_3_BASE_DIALOGUE.lines.map((line, index) => (
           <article key={`${line.speaker}-${line.english}`} className={index % 2 === 0 ? 'bg-white border-2 border-violet-200 rounded-2xl p-4 mr-8' : 'bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 ml-8'}>
@@ -1401,6 +1446,7 @@ function PreChallengeStep({ onContinue }: { onContinue: () => void }) {
           Revisa estas palabras antes de comenzar. Nada nuevo aparecerá en el reto.
         </p>
       </div>
+      <OfficialVisual visualId={UNIT_3_VISUALS.preparation} className="mb-5" />
       <p className="text-gray-500 text-xs font-black uppercase mb-2">Verbos y conectores</p>
       <div className="flex flex-wrap gap-2 mb-5">
         {[...UNIT_3_MISSION_PREPARATION.verbs, ...UNIT_3_MISSION_PREPARATION.connectors].map((word) => (
@@ -1642,6 +1688,10 @@ function RepetitionStep(props: {
         Primero escucha el modelo. Después repite la frase con tu voz.
       </p>
 
+      <OfficialVisual
+        visualId={getUnit3Visual(UNIT_3_VISUALS.repetition, props.phrase.id)}
+        className="mb-4"
+      />
       <div className="bg-white border-2 border-violet-200 rounded-3xl p-6 shadow-sm mb-4">
         <p className="text-gray-950 text-2xl font-black leading-tight">{props.phrase.english}</p>
         <p className="text-gray-600 font-semibold mt-2">{props.phrase.spanish}</p>

@@ -6,6 +6,8 @@ import {
   getDifferentItem,
   type Unit3SpeakingPractice,
 } from '../data/essentialVerbsPractice';
+import { getUnit3Visual, UNIT_3_VISUALS } from '../data/unit3Visuals';
+import { OfficialVisual } from '../components/OfficialVisual';
 
 interface EssentialVerbsFinalPracticeProps {
   onBack: () => void;
@@ -176,6 +178,11 @@ export const EssentialVerbsFinalPractice: React.FC<EssentialVerbsFinalPracticePr
       <h1 className="text-gray-950 text-3xl font-black mt-1 mb-2">Responde con tu voz</h1>
       <p className="text-gray-700 font-semibold mb-5">Une verbos y conectores en una situación real.</p>
 
+      <OfficialVisual
+        visualId={getUnit3Visual(UNIT_3_VISUALS.speakingPractice, practice.id)}
+        className="mb-4"
+        eager
+      />
       <div className="bg-white border-2 border-emerald-200 rounded-3xl p-5 shadow-sm mb-4">
         <p className="text-gray-500 text-xs font-black uppercase mb-2">Situación</p>
         <p className="text-gray-950 text-xl font-extrabold leading-relaxed">{practice.situation}</p>

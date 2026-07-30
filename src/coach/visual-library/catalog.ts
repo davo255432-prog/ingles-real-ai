@@ -1,6 +1,62 @@
 import type { VisualMetadata } from './types';
 
 export const VISUAL_CATALOG = {
+  'global.scenes.david-needs-help-at-work': {
+    id: 'global.scenes.david-needs-help-at-work',
+    file: '../../assets/coach/global/scenes/david-needs-help-at-work.png',
+    alt: 'David está cansado en su puesto de trabajo y solicita ayuda a una compañera',
+    unit: 'global',
+    category: 'scenes',
+    subjects: ['David', 'coworker', 'work', 'help', 'tired'],
+  },
+  'global.scenes.david-ready-with-essentials': {
+    id: 'global.scenes.david-ready-with-essentials',
+    file: '../../assets/coach/global/scenes/david-ready-with-essentials.png',
+    alt: 'David está listo para salir con mochila, llaves, teléfono, agua y comida',
+    unit: 'global',
+    category: 'scenes',
+    subjects: ['David', 'ready', 'backpack', 'keys', 'phone', 'water', 'food', 'home'],
+  },
+  'global.scenes.carlos-ana-with-food': {
+    id: 'global.scenes.carlos-ana-with-food',
+    file: '../../assets/coach/global/scenes/carlos-ana-with-food.png',
+    alt: 'Carlos y Ana organizan juntos una compra de alimentos en la cocina',
+    unit: 'global',
+    category: 'scenes',
+    subjects: ['Carlos', 'Ana', 'food', 'groceries', 'home', 'kitchen', 'collaboration'],
+  },
+  'global.scenes.david-maria-going-to-school': {
+    id: 'global.scenes.david-maria-going-to-school',
+    file: '../../assets/coach/global/scenes/david-maria-going-to-school.png',
+    alt: 'David y María caminan cansados pero motivados hacia la entrada de una escuela',
+    unit: 'global',
+    category: 'scenes',
+    subjects: ['David', 'María', 'school', 'backpacks', 'books', 'tired', 'outside'],
+  },
+  'global.scenes.david-carlos-work-dialogue': {
+    id: 'global.scenes.david-carlos-work-dialogue',
+    file: '../../assets/coach/global/scenes/david-carlos-work-dialogue.png',
+    alt: 'David y Carlos colaboran frente a una computadora para resolver una tarea del trabajo',
+    unit: 'global',
+    category: 'scenes',
+    subjects: ['David', 'Carlos', 'work', 'computer', 'help', 'dialogue', 'collaboration'],
+  },
+  'global.scenes.david-going-to-school': {
+    id: 'global.scenes.david-going-to-school',
+    file: '../../assets/coach/global/scenes/david-going-to-school.png',
+    alt: 'David camina preparado hacia la entrada de una escuela con mochila, cuaderno y teléfono',
+    unit: 'global',
+    category: 'scenes',
+    subjects: ['David', 'school', 'backpack', 'notebook', 'phone', 'keys', 'water', 'outside'],
+  },
+  'global.scenes.david-wants-water': {
+    id: 'global.scenes.david-wants-water',
+    file: '../../assets/coach/global/scenes/david-wants-water.png',
+    alt: 'David sostiene un vaso vacio y busca agua en un dispensador del trabajo',
+    unit: 'global',
+    category: 'scenes',
+    subjects: ['David', 'water', 'want', 'empty cup', 'water dispenser', 'work'],
+  },
   'unit1.pronouns.i': {
     id: 'unit1.pronouns.i',
     file: '../../assets/coach/unit1/pronouns/i-david.png',

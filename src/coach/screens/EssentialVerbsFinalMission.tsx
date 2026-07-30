@@ -13,6 +13,8 @@ import {
   getDifferentItem,
   type Unit3MissionStory,
 } from '../data/essentialVerbsPractice';
+import { getUnit3Visual, UNIT_3_VISUALS } from '../data/unit3Visuals';
+import { OfficialVisual } from '../components/OfficialVisual';
 
 export interface Unit3BestResult {
   pronunciation: number;
@@ -228,6 +230,11 @@ export const EssentialVerbsFinalMission: React.FC<EssentialVerbsFinalMissionProp
           </div>
           {evaluation && <span className="w-16 h-16 rounded-2xl bg-violet-100 text-violet-800 flex items-center justify-center text-xl font-black">{evaluation.score}</span>}
         </div>
+        <OfficialVisual
+          visualId={getUnit3Visual(UNIT_3_VISUALS.speakingMission, speakingStory.id)}
+          className="mb-4"
+          eager
+        />
         <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4 mb-4">
           <p className="text-gray-950 text-lg font-extrabold">{speakingStory.situation}</p>
         </div>
@@ -270,6 +277,10 @@ export const EssentialVerbsFinalMission: React.FC<EssentialVerbsFinalMissionProp
           <div><p className="text-sky-700 text-xs font-black uppercase">Reto 2</p><h2 className="text-gray-950 text-2xl font-black">Escucha la historia</h2></div>
           {comprehension !== null && <span className="w-16 h-16 rounded-2xl bg-sky-100 text-sky-800 flex items-center justify-center text-xl font-black">{comprehension}</span>}
         </div>
+        <OfficialVisual
+          visualId={getUnit3Visual(UNIT_3_VISUALS.listeningMission, listeningStory.id)}
+          className="mb-4"
+        />
         <p className="text-gray-700 font-semibold mb-3">{listeningStory.situation}</p>
         <div className="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 mb-3">
           <p className="text-sky-900 font-black">Pausa, escribe y continúa cuando estés listo.</p>
