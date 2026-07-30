@@ -69,8 +69,11 @@ const UNIT_1_PREVIEW_PARAM = 'preview-unit-1';
 const UNIT_1_PREVIEW_KEY = 'revision-u1-81c3d6';
 const UNIT_2_PREVIEW_KEY = 'revision-u2-2e9a74';
 const LEARNING_COMMITMENT_KEY = 'unit-3-learning-commitment-seen';
+const REVIEW_ACCESS_KEY = 'revision-total-4c8f2e';
 
 function App() {
+  const hasReviewAccess =
+    new URLSearchParams(window.location.search).get('access') === REVIEW_ACCESS_KEY;
   const unit2Section = new URLSearchParams(window.location.search).get('unit2-section');
   const unit2InitialStepId =
     unit2Section === 'learning-path'
@@ -101,6 +104,22 @@ function App() {
   const [showLearningCommitment, setShowLearningCommitment] = useState(
     () => sessionStorage.getItem(LEARNING_COMMITMENT_KEY) !== 'yes',
   );
+
+  if (!hasReviewAccess) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center px-6">
+        <main className="w-full max-w-md rounded-3xl bg-white border border-slate-200 p-8 text-center shadow-xl">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-3xl">
+            🔒
+          </div>
+          <h1 className="text-3xl font-black text-slate-950">Enlace de revisión vencido</h1>
+          <p className="mt-3 font-semibold leading-relaxed text-slate-600">
+            Solicita el enlace actualizado para acceder a Inglés Real AI.
+          </p>
+        </main>
+      </div>
+    );
+  }
 
   if (showUnit2Preview) {
     return (
