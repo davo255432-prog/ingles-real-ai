@@ -27,6 +27,7 @@ import { getUnit3Visual, UNIT_3_VISUALS } from '../data/unit3Visuals';
 import { OfficialVisual } from '../components/OfficialVisual';
 import type { VisualId } from '../visual-library';
 import { EssentialVerbsFinalPractice } from './EssentialVerbsFinalPractice';
+import { useScrollToTop } from '../../hooks/useScrollToTop';
 import {
   EssentialVerbsFinalMission,
   type Unit3BestResult,
@@ -97,6 +98,7 @@ export const EssentialVerbsPractice: React.FC<EssentialVerbsPracticeProps> = ({
   const [checked, setChecked] = useState(false);
   const [revealedPieces, setRevealedPieces] = useState(1);
   const [bestResult, setBestResult] = useState<Unit3BestResult | null>(null);
+  useScrollToTop(index);
 
   useEffect(() => {
     const teachingPhrases = [

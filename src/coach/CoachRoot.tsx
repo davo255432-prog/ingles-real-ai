@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useScrollToTop } from '../hooks/useScrollToTop';
 import type { CoachScreen, LessonStatus, LevelId, TestResult } from './types';
 import { useCoachProgress } from './hooks/useCoachProgress';
 import { CoachLevelSelectScreen } from './screens/CoachLevelSelectScreen';
@@ -52,6 +53,7 @@ export const CoachRoot: React.FC<CoachRootProps> = ({ onExit }) => {
   const [coachScreen, setCoachScreen] = useState<CoachScreen>(
     !profile || needsName ? 'coach-name' : 'coach-progress',
   );
+  useScrollToTop(`${coachScreen}:${activeLessonId ?? ''}`);
 
   // Nombre pendiente durante el onboarding nuevo (se captura antes del nivel).
   const [pendingName, setPendingName] = useState('');

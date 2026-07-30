@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useScrollToTop } from '../../hooks/useScrollToTop';
 import { PRONOUNS_INFO, type PronounInfo } from '../data/curriculum';
 import { generateSpeech, stopSpeech } from '../../services/speechApi';
 import { getPronounVisual, handleVisualError } from '../visual-library';
@@ -188,6 +189,7 @@ type Stage = 'answer' | 'firstError' | 'teachCard';
 
 export const PronounsPractice: React.FC<PronounsPracticeProps> = ({ onExit, onUnitComplete, onBackToMap }) => {
   const [phase, setPhase] = useState<Phase>('intro');
+  useScrollToTop(phase);
   const [round, setRound] = useState(0); // fuerza regeneración en "Practicar otra vez"
   const questions = useMemo(() => generatePractice(), [round]);
   const memoryPronounOrder = useMemo(() => shuffle(PRONOUNS_INFO), []);

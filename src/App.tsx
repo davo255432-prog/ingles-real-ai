@@ -3,6 +3,7 @@ import { API_BASE } from './config/api';
 import type { Screen, PracticeData, UrgentPhraseData, CorrectionData } from './types';
 import { mockCorrectionData, mockUrgentCorrectionData } from './data/mockData';
 import { generatePracticeEnrichment } from './services/practiceApi';
+import { useScrollToTop } from './hooks/useScrollToTop';
 
 // Screens — Home
 import { HomeScreen } from './screens/HomeScreen';
@@ -203,6 +204,7 @@ function App() {
 
 function MainApp() {
   const [screen, setScreen] = useState<Screen>('home');
+  useScrollToTop(screen);
 
   // Mantiene el servidor despierto: ping al abrir y cada 4 min mientras la app
   // esté abierta, para evitar el arranque en frío de Railway (que hace muy lenta

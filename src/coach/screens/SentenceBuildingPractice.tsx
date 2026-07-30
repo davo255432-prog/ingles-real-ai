@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useScrollToTop } from '../../hooks/useScrollToTop';
 import { generateSpeech, stopSpeech } from '../../services/speechApi';
 import {
   COMMON_SENTENCE_ERRORS,
@@ -63,6 +64,7 @@ export const SentenceBuildingPractice: React.FC<SentenceBuildingPracticeProps> =
     [],
   );
   const [index, setIndex] = useState(0);
+  useScrollToTop(index);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });

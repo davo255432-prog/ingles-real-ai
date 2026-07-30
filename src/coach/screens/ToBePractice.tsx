@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useScrollToTop } from '../../hooks/useScrollToTop';
 import {
   TO_BE_BLOCKS,
   TO_BE_DIALOGUES,
@@ -449,6 +450,7 @@ export const ToBePractice: React.FC<ToBePracticeProps> = ({
   }, [initialStepId, steps]);
 
   const [index, setIndex] = useState(startIndex);
+  useScrollToTop(index);
   const [finished, setFinished] = useState(false);
   const [correct, setCorrect] = useState(0);
   const [exerciseCount, setExerciseCount] = useState(0);
