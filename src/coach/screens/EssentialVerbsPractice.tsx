@@ -356,6 +356,21 @@ function VerbsIntroStep({ onContinue }: { onContinue: () => void }) {
       <p className="text-gray-700 text-base font-semibold leading-relaxed mb-5">
         Estos cuatro verbos te ayudarán a comunicar acciones e ideas útiles en situaciones reales.
       </p>
+      <div className="bg-sky-50 border-2 border-sky-200 rounded-3xl p-5 mb-5">
+        <p className="text-sky-800 text-xs font-black uppercase mb-2">La familia de esta unidad</p>
+        <p className="text-gray-950 text-lg font-black leading-relaxed mb-3">
+          I · YOU · WE · THEY
+        </p>
+        <p className="text-gray-700 font-semibold leading-relaxed">
+          Con estos pronombres usamos directamente <strong>need</strong>, <strong>have</strong>,{' '}
+          <strong>want</strong> y <strong>go to</strong>.
+        </p>
+        <div className="bg-white border border-sky-200 rounded-2xl p-4 mt-4">
+          <p className="text-sky-900 font-extrabold leading-relaxed">
+            Con he, she e it los verbos cambian. Aprenderás esas formas juntas más adelante.
+          </p>
+        </div>
+      </div>
       <div className="grid grid-cols-2 gap-3 mb-6">
         {ESSENTIAL_VERBS.map((verb) => (
           <article
@@ -467,84 +482,18 @@ function TeachingCard(props: TeachingCardProps) {
         <OfficialVisual visualId={props.visualId} className="mb-4" eager />
         <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-5 mb-4">
           <p className="text-emerald-800 text-lg font-black uppercase mb-3">Regla clave:</p>
-          {props.title === 'have' ? (
-            <>
-              <p className="text-gray-950 text-lg font-extrabold mb-3">
-                En esta práctica, <span className="text-emerald-700 text-xl">HAVE</span> se usa solo con:
-              </p>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {['I', 'YOU', 'WE', 'THEY'].map((pronoun) => (
-                  <span
-                    key={pronoun}
-                    className="bg-white border border-emerald-300 rounded-lg px-3 py-2 text-emerald-900 font-black"
-                  >
-                    {pronoun}
-                  </span>
-                ))}
-              </div>
-              <div className="bg-emerald-700 text-white rounded-xl px-4 py-3 text-center text-lg font-black">
-                PRONOMBRE + <span className="text-xl text-yellow-200">HAVE</span> + COSA
-              </div>
-            </>
-          ) : (
-            <p className="text-gray-950 text-lg font-extrabold leading-relaxed">{props.rule}</p>
-          )}
-        </div>
-        {props.title === 'have' && ESSENTIAL_VERBS.find((verb) => verb.id === 'have')?.importantNote && (
-          <div className="bg-sky-50 border-2 border-sky-300 rounded-2xl p-5 mb-5">
-            <p className="text-sky-800 text-xl font-black mb-4">Cambio importante</p>
-            <div className="space-y-3 mb-4">
-              <div className="bg-white border border-emerald-200 rounded-2xl p-4 flex items-center justify-between gap-3">
-                <p className="text-gray-900 font-black">I · YOU · WE · THEY</p>
-                <span className="bg-emerald-700 text-white rounded-xl px-4 py-2 text-xl font-black">
-                  HAVE
-                </span>
-              </div>
-              <div className="bg-white border border-sky-200 rounded-2xl p-4 flex items-center justify-between gap-3">
-                <p className="text-gray-900 font-black">HE · SHE · IT</p>
-                <span className="bg-sky-700 text-white rounded-xl px-4 py-2 text-xl font-black">
-                  HAS
-                </span>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2 my-4">
-              <div className="bg-white rounded-xl p-3 text-center border border-sky-200">
-                <p className="text-gray-950 font-black">I have</p>
-                <p className="text-gray-600 font-semibold">yo tengo</p>
-              </div>
-              <div className="bg-white rounded-xl p-3 text-center border border-sky-200">
-                <p className="text-gray-950 font-black">He has</p>
-                <p className="text-gray-600 font-semibold">él tiene</p>
-              </div>
-            </div>
-            <div className="border-t-2 border-sky-200 pt-4 mt-4">
-              <p className="text-emerald-800 text-sm font-black uppercase mb-2">
-                Por ahora practicaremos
-              </p>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {['I HAVE', 'YOU HAVE', 'WE HAVE', 'THEY HAVE'].map((form) => (
-                  <span
-                    key={form}
-                    className="bg-emerald-100 border border-emerald-300 rounded-lg px-3 py-2 text-emerald-900 font-black"
-                  >
-                    {form}
-                  </span>
-                ))}
-              </div>
-              <p className="text-sky-800 text-sm font-black uppercase mb-2">Más adelante</p>
-              <div className="flex flex-wrap gap-2">
-                {['HE HAS', 'SHE HAS', 'IT HAS'].map((form) => (
-                  <span
-                    key={form}
-                    className="bg-white border border-sky-300 rounded-lg px-3 py-2 text-sky-900 font-black"
-                  >
-                    {form}
-                  </span>
-                ))}
-              </div>
-            </div>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {['I', 'YOU', 'WE', 'THEY'].map((pronoun) => (
+              <span
+                key={pronoun}
+                className="bg-white border border-emerald-300 rounded-lg px-3 py-2 text-emerald-900 font-black"
+              >
+                {pronoun}
+              </span>
+            ))}
           </div>
-        )}
+          <p className="text-gray-950 text-lg font-extrabold leading-relaxed">{props.rule}</p>
+        </div>
         <div className="space-y-3">
           {props.examples.map((example) => (
             <div key={example.english} className="border-t border-gray-100 pt-3">

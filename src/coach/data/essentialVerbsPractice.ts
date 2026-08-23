@@ -42,12 +42,6 @@ export interface EssentialVerbCard {
     spanish: string;
     pronunciation: string;
   };
-  importantNote?: {
-    title: string;
-    text: string;
-    examples: string[];
-    focus: string;
-  };
   examples: Unit3Example[];
   exercise: {
     prompt: string;
@@ -102,7 +96,7 @@ export const ESSENTIAL_VERBS: EssentialVerbCard[] = [
     label: 'need',
     spanish: 'necesitar',
     pronunciation: 'nid',
-    miniRule: 'Usa pronombre + need + cosa para decir lo que necesitas.',
+    miniRule: 'Usa I, you, we o they + need + cosa para expresar una necesidad.',
     realUse: {
       situation: 'Estás en el trabajo y necesitas ayuda.',
       english: 'I am at work. I need help.',
@@ -125,18 +119,12 @@ export const ESSENTIAL_VERBS: EssentialVerbCard[] = [
     label: 'have',
     spanish: 'tener',
     pronunciation: 'jav',
-    miniRule: 'Usa I, you, we o they + have + cosa para decir lo que tienes.',
+    miniRule: 'Usa I, you, we o they + have + cosa para decir lo que alguien tiene.',
     realUse: {
       situation: 'Estás listo para salir. Tienes agua y comida.',
       english: 'I am ready. I have water and food.',
       spanish: 'Estoy listo. Tengo agua y comida.',
       pronunciation: 'ai am re-di. ai jav uo-ter and fud',
-    },
-    importantNote: {
-      title: 'Cambio importante',
-      text: 'Con he, she e it usamos has en lugar de have.',
-      examples: ['I have = yo tengo', 'He has = él tiene'],
-      focus: 'Por ahora practicaremos have con I, you, we y they. Más adelante aprenderemos has.',
     },
     examples: [
       { english: 'I have the keys.', spanish: 'Tengo las llaves.', pronunciation: 'ai jav de kis' },
@@ -146,7 +134,7 @@ export const ESSENTIAL_VERBS: EssentialVerbCard[] = [
       prompt: 'Completa: We ___ the keys.',
       options: ['want', 'have', 'go to'],
       answer: 'have',
-      explanation: 'Have expresa posesion. Todavia no usamos he/she has.',
+      explanation: 'Have expresa posesión. En esta unidad lo usamos con I, you, we y they.',
     },
   },
   {
@@ -154,7 +142,7 @@ export const ESSENTIAL_VERBS: EssentialVerbCard[] = [
     label: 'want',
     spanish: 'querer',
     pronunciation: 'uant',
-    miniRule: 'Usa pronombre + want + cosa para decir lo que deseas.',
+    miniRule: 'Usa I, you, we o they + want + cosa para expresar un deseo.',
     realUse: {
       situation: 'Estás en el trabajo y quieres agua.',
       english: 'I am at work. I want water.',
@@ -177,9 +165,9 @@ export const ESSENTIAL_VERBS: EssentialVerbCard[] = [
     label: 'go to',
     spanish: 'ir a',
     pronunciation: 'gou ru',
-    miniRule: 'Aprende go to como un bloque para hablar de un destino.',
+    miniRule: 'Usa I, you, we o they + go to + lugar para hablar de una rutina o destino habitual.',
     realUse: {
-      situation: 'Estás listo y vas al trabajo.',
+      situation: 'Es parte de tu rutina: todos los días vas al trabajo.',
       english: 'I am ready. I go to work.',
       spanish: 'Estoy listo. Voy al trabajo.',
       pronunciation: 'ai am re-di. ai gou ru uerk',
@@ -192,7 +180,7 @@ export const ESSENTIAL_VERBS: EssentialVerbCard[] = [
       prompt: 'Completa: We ___ school.',
       options: ['go to', 'are', 'need'],
       answer: 'go to',
-      explanation: 'Go to conecta la accion de ir con un destino.',
+      explanation: 'Go to conecta una rutina de movimiento con su destino.',
     },
   },
 ];
